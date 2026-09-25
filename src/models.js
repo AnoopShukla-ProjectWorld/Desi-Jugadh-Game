@@ -1082,14 +1082,153 @@ export class AssetFactory {
     return group;
   }
 
-  static createPlasticBottle() {
+  // --- 1. PHONE PIECES & RUBBER BAND JUGAAD ITEMS ---
+  static createBrokenPhoneScreen() {
     const group = new THREE.Group();
-    group.name = "Item_Bottle";
-    const bottle = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.45, 10), new THREE.MeshStandardMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.7 }));
-    bottle.rotation.z = Math.PI / 2;
-    bottle.position.y = 0.1;
-    group.add(bottle);
-    group.userData = { type: 'bottle', isCorrect: false, title: 'Plastic Bottle', rejectMsg: 'Plastic bottle se scooter ka bojh kaise rukega? Dab jayegi!' };
+    group.name = "Item_PhoneScreen";
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = 256; canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, 256, 512);
+    // Cracked spider-web pattern
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(128, 256);
+    ctx.lineTo(40, 90); ctx.lineTo(128, 256);
+    ctx.lineTo(220, 110); ctx.lineTo(128, 256);
+    ctx.lineTo(30, 420); ctx.lineTo(128, 256);
+    ctx.lineTo(210, 400); ctx.stroke();
+    
+    const tex = new THREE.CanvasTexture(canvas);
+    const glass = new THREE.Mesh(
+      new THREE.BoxGeometry(0.18, 0.02, 0.34),
+      new THREE.MeshStandardMaterial({ map: tex, roughness: 0.2, metalness: 0.8 })
+    );
+    glass.position.y = 0.01;
+    glass.castShadow = true;
+    group.add(glass);
+    group.userData = { type: 'phone_screen', title: 'Toota Hua Phone Screen', isPhonePart: true };
+    return group;
+  }
+
+  static createBrokenPhoneBack() {
+    const group = new THREE.Group();
+    group.name = "Item_PhoneBack";
+    const backMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4, metalness: 0.7 });
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.022, 0.35), backMat);
+    body.position.y = 0.011;
+    body.castShadow = true;
+    group.add(body);
+    // Camera bump
+    const cam = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.015, 12), new THREE.MeshStandardMaterial({ color: 0x09090b, metalness: 0.9 }));
+    cam.position.set(0.04, 0.025, -0.11);
+    group.add(cam);
+    group.userData = { type: 'phone_back', title: 'Phone Ka Back Cover', isPhonePart: true };
+    return group;
+  }
+
+  static createPhoneBattery() {
+    const group = new THREE.Group();
+    group.name = "Item_PhoneBattery";
+    const batMesh = new THREE.Mesh(
+      new THREE.BoxGeometry(0.11, 0.016, 0.18),
+      new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.6, roughness: 0.3 })
+    );
+    batMesh.position.y = 0.008;
+    batMesh.castShadow = true;
+    group.add(batMesh);
+    // Gold contacts
+    const pin = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.018, 0.012), new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.9 }));
+    pin.position.set(0, 0.009, -0.09);
+    group.add(pin);
+    group.userData = { type: 'phone_battery', title: 'Phone Ki Battery', isPhonePart: true };
+    return group;
+  }
+
+  static createMithaiRubberBand() {
+    const group = new THREE.Group();
+    group.name = "Item_RubberBand";
+    const bandMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.5 });
+    for (let i = 0; i < 3; i++) {
+      const loop = new THREE.Mesh(new THREE.TorusGeometry(0.09 + i * 0.015, 0.012, 8, 20), bandMat);
+      loop.rotation.x = Math.PI / 2 + (i - 1) * 0.2;
+      loop.rotation.y = (i - 1) * 0.3;
+      loop.position.y = 0.03 + i * 0.01;
+      loop.castShadow = true;
+      group.add(loop);
+    }
+    const redLoop = new THREE.Mesh(new THREE.TorusGeometry(0.08, 0.01, 8, 20), new THREE.MeshStandardMaterial({ color: 0xef4444 }));
+    redLoop.rotation.x = Math.PI / 2;
+    redLoop.position.y = 0.045;
+    group.add(redLoop);
+
+    group.userData = { type: 'rubber_band', isCorrect: true, title: 'Mithai Wali Rubber Band' };
+    return group;
+  }
+
+  static createThickRope() {
+    const group = new THREE.Group();
+    group.name = "Item_ThickRope";
+    const ropeMat = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.95 });
+    for (let r = 0; r < 3; r++) {
+      const coil = new THREE.Mesh(new THREE.TorusGeometry(0.18 + r * 0.08, 0.035, 10, 24), ropeMat);
+      coil.rotation.x = Math.PI / 2;
+      coil.position.y = 0.04 + r * 0.02;
+      coil.castShadow = true;
+      group.add(coil);
+    }
+    group.userData = {
+      type: 'rope',
+      isCorrect: false,
+      title: 'Bhari Jute Ki Rassi',
+      rejectMsg: 'Miyaan! Itni moti rassi se mobile baandhoge toh jeb me kaise ghusega? Koi patli rubber band dhundo!'
+    };
+    return group;
+  }
+
+  static createFixedRubberBandPhone() {
+    const group = new THREE.Group();
+    group.name = "Item_FixedPhone";
+
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.03, 0.35), new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3 }));
+    body.position.y = 0.015;
+    group.add(body);
+
+    // Active glowing screen
+    const canvas = document.createElement('canvas');
+    canvas.width = 256; canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#065f46';
+    ctx.fillRect(0, 0, 256, 512);
+    ctx.fillStyle = '#34d399';
+    ctx.font = 'bold 36px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('⚡ 100% JUGAAD', 128, 140);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 26px sans-serif';
+    ctx.fillText('Sheesh Mahal Map', 128, 220);
+    ctx.fillText('📍 Navigating...', 128, 280);
+    ctx.fillStyle = '#facc15';
+    ctx.fillText('Guddu Weds Rani 💍', 128, 380);
+
+    const tex = new THREE.CanvasTexture(canvas);
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.17, 0.32), new THREE.MeshBasicMaterial({ map: tex }));
+    screen.rotation.x = -Math.PI / 2;
+    screen.position.set(0, 0.032, 0);
+    group.add(screen);
+
+    // Two bright yellow/orange rubber bands wrapped around the phone horizontally
+    const bandMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.4 });
+    [-0.08, 0.08].forEach(bz => {
+      const band = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.036, 0.024), bandMat);
+      band.position.set(0, 0.016, bz);
+      group.add(band);
+    });
+
+    group.userData = { type: 'fixed_phone', title: 'Rubber Band Se Juda Naya Phone' };
     return group;
   }
 

@@ -508,6 +508,73 @@ class DesiAudioEngine {
     });
   }
 
+  // Phone Clattering & Cracking Drop Sound on Stone Floor
+  playPhoneDropSound() {
+    this.init();
+    if (this.isMuted) return;
+    const t = this.ctx.currentTime;
+    
+    // Sharp high-pitch snap/crack of glass + plastic
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(620, t);
+    osc.frequency.exponentialRampToValueAtTime(140, t + 0.12);
+    gain.gain.setValueAtTime(0.35, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.14);
+
+    // Stone thud impact
+    const osc2 = this.ctx.createOscillator();
+    const gain2 = this.ctx.createGain();
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(180, t + 0.02);
+    osc2.frequency.exponentialRampToValueAtTime(60, t + 0.22);
+    gain2.gain.setValueAtTime(0.4, t + 0.02);
+    gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+    osc2.connect(gain2);
+    gain2.connect(this.ctx.destination);
+    osc2.start(t + 0.02);
+    osc2.stop(t + 0.25);
+
+    // Secondary plastic bounce
+    const osc3 = this.ctx.createOscillator();
+    const gain3 = this.ctx.createGain();
+    osc3.type = 'sine';
+    osc3.frequency.setValueAtTime(450, t + 0.18);
+    osc3.frequency.exponentialRampToValueAtTime(220, t + 0.28);
+    gain3.gain.setValueAtTime(0.2, t + 0.18);
+    gain3.gain.exponentialRampToValueAtTime(0.001, t + 0.32);
+    osc3.connect(gain3);
+    gain3.connect(this.ctx.destination);
+    osc3.start(t + 0.18);
+    osc3.stop(t + 0.32);
+  }
+
+  // Cheerful Retro Nokia / Desi Smartphone Reboot & Screen Wake-Up Chime
+  playPhoneRebootSound() {
+    this.init();
+    if (this.isMuted) return;
+    const t = this.ctx.currentTime;
+    const notes = [659.25, 587.33, 369.99, 415.30, 554.37, 493.88, 293.66, 329.63]; // Iconic Nokia tune opening notes!
+    notes.forEach((freq, idx) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, t + idx * 0.09);
+      gain.gain.setValueAtTime(0.001, t + idx * 0.09);
+      gain.gain.linearRampToValueAtTime(0.22, t + idx * 0.09 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.09 + 0.16);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(t + idx * 0.09);
+      osc.stop(t + idx * 0.09 + 0.16);
+    });
+  }
+
   speak(text, speaker = 'Chacha') {
     // Human voice completely disabled - dialogues appear cleanly in comic text box
     if ('speechSynthesis' in window) {

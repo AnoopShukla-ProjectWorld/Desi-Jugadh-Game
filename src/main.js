@@ -70,10 +70,11 @@ class Game {
     this.env = AssetFactory.createStreetEnvironment();
     this.scene.add(this.env);
 
-    // Vintage Scooter (with Seated Rider hidden initially)
+    // Vintage Scooter (Parked upright outside home in driveway at x = -2.8, z = 0.0)
     this.scooter = AssetFactory.createVintageScooter();
-    this.scooter.position.set(-6, 0, -0.5);
-    this.scooter.rotation.x = -0.32;
+    this.scooter.position.set(-2.8, 0, 0.0);
+    this.scooter.rotation.set(0, 0, 0);
+    this.scooter.userData.setFallenState(false);
     this.scooter.userData.riderMesh.visible = false;
     this.scene.add(this.scooter);
 
@@ -87,6 +88,18 @@ class Game {
     this.player.position.set(-6.0, 0.32, -4.6);
     this.player.visible = false;
     this.scene.add(this.player);
+
+    // Dynamic Falling Phone Mesh used for 3D cutscene drop animation
+    this.fallingPhoneMesh = AssetFactory.createBrokenPhoneBack();
+    const fallingScreen = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.17, 0.32),
+      new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+    );
+    fallingScreen.rotation.x = -Math.PI / 2;
+    fallingScreen.position.set(0, 0.024, 0);
+    this.fallingPhoneMesh.add(fallingScreen);
+    this.fallingPhoneMesh.visible = false;
+    this.scene.add(this.fallingPhoneMesh);
 
     // Warning Barrier before Excavation (at x = 8.2)
     this.warningBarrier = AssetFactory.createWarningBarrier();
@@ -113,40 +126,65 @@ class Game {
     // Scattered Puzzle Items
     this.items = [];
 
-    const broom = AssetFactory.createBroom();
-    broom.position.set(-2.5, 0, 1.8);
-    this.scene.add(broom);
-    this.items.push(broom);
+    // Broken Phone Pieces (Initially spawned during cutscene on the verandah floor)
+    this.phoneScreenItem = AssetFactory.createBrokenPhoneScreen();
+    this.phoneScreenItem.position.set(-5.8, 0.32, -3.4);
+    this.phoneScreenItem.visible = false;
+    this.scene.add(this.phoneScreenItem);
+    this.items.push(this.phoneScreenItem);
 
-    const bottle = AssetFactory.createPlasticBottle();
-    bottle.position.set(0.5, 0, -2.6);
-    this.scene.add(bottle);
-    this.items.push(bottle);
+    this.phoneBackItem = AssetFactory.createBrokenPhoneBack();
+    this.phoneBackItem.position.set(-6.1, 0.32, -3.2);
+    this.phoneBackItem.visible = false;
+    this.scene.add(this.phoneBackItem);
+    this.items.push(this.phoneBackItem);
 
-    const brick = AssetFactory.createBrick();
-    brick.position.set(-1.0, 0, -1.5);
-    this.scene.add(brick);
-    this.items.push(brick);
+    this.phoneBatteryItem = AssetFactory.createPhoneBattery();
+    this.phoneBatteryItem.position.set(-5.9, 0.32, -3.0);
+    this.phoneBatteryItem.visible = false;
+    this.scene.add(this.phoneBatteryItem);
+    this.items.push(this.phoneBatteryItem);
 
-    const cardboard = AssetFactory.createCardboard();
-    cardboard.position.set(4.8, 0, 2.0);
-    this.scene.add(cardboard);
-    this.items.push(cardboard);
+    // Correct Jugaad Item for Level 1: Yellow Mithai Rubber Band (on verandah plinth)
+    const rubberBand = AssetFactory.createMithaiRubberBand();
+    rubberBand.position.set(-4.5, 0.32, -3.6);
+    this.scene.add(rubberBand);
+    this.items.push(rubberBand);
 
+    // Distractor Item: Thick Jute Rope
+    const rope = AssetFactory.createThickRope();
+    rope.position.set(-4.8, 0.32, -2.5);
+    this.scene.add(rope);
+    this.items.push(rope);
+
+    // Level 2 Plank Item (Road trench bridge)
     const plank = AssetFactory.createTimberPlank();
     plank.position.set(6.8, 0, -2.8);
     this.scene.add(plank);
     this.items.push(plank);
 
-    const tyre = AssetFactory.createOldTyre();
-    tyre.position.set(15.5, 0, 1.8);
-    this.scene.add(tyre);
-    this.items.push(tyre);
-
+    // Level 3 Grass Item (Cow feed)
     const grass = AssetFactory.createGrassRotiBasket();
     grass.position.set(18.0, 0, -3.2);
     this.scene.add(grass);
     this.items.push(grass);
+
+    // Level 4 Climax Brick Item (Placed near Sheesh Mahal wedding construction debris)
+    const brick = AssetFactory.createBrick();
+    brick.position.set(38.2, 0, -2.2);
+    this.scene.add(brick);
+    this.items.push(brick);
+
+    // Other street props / distractors
+    const broom = AssetFactory.createBroom();
+    broom.position.set(-2.5, 0, 1.8);
+    this.scene.add(broom);
+    this.items.push(broom);
+
+    const tyre = AssetFactory.createOldTyre();
+    tyre.position.set(15.5, 0, 1.8);
+    this.scene.add(tyre);
+    this.items.push(tyre);
 
     // 8 Shiny Collectible Desi Rupee Coins along the road
     const coinCoords = [
@@ -320,8 +358,9 @@ class Game {
 
     this.showDialogue(
       'Chacha',
-      'Arre miyaan! Scooter ka stand toot gaya! Mohalle me kabaad dhundo aur Laal Eent jaisa koi thos stand banao!'
+      'Arre bhagyawan ka urgent phone aa raha hai Sheesh Mahal se!'
     );
+    if (this.questText) this.questText.textContent = '📞 Chachi ka urgent call suniye...';
   }
 
   showDialogue(speaker, text) {
@@ -352,11 +391,23 @@ class Game {
     this.meterPercent.textContent = `${this.meter}%`;
   }
 
-  // 1. Cinematic Opening Cutscene (Sheesh Mahal Call -> Mohalla Flyover -> Chacha's Home Departure)
+  // 1. Cinematic Opening Cutscene (Sheesh Mahal Call -> Mohalla Flyover -> Chacha's Phone Drop)
   startCutscene() {
     this.isCutscene = true;
     this.cutsceneTime = 0;
     this.cutscenePhase = 1;
+    this.phoneDropped = false;
+
+    // Reset phone drop pieces visibility
+    if (this.fallingPhoneMesh) this.fallingPhoneMesh.visible = false;
+    if (this.phoneScreenItem) this.phoneScreenItem.visible = false;
+    if (this.phoneBackItem) this.phoneBackItem.visible = false;
+    if (this.phoneBatteryItem) this.phoneBatteryItem.visible = false;
+
+    // Scooter starts standing upright in driveway
+    if (this.scooter && this.scooter.userData.setFallenState) {
+      this.scooter.userData.setFallenState(false);
+    }
 
     // Reset Chacha Home doors closed initially
     if (this.chachaHome) this.chachaHome.userData.closeDoors();
@@ -379,7 +430,7 @@ class Game {
 
     audio.playPhoneRing();
 
-    // Position camera framing Chachi from comfortable medium-wide angle (NOT zoomed in / chipka hua)
+    // Position camera framing Chachi from comfortable medium-wide angle
     this.camera.position.set(34.2, 1.85, 2.8);
     this.camera.lookAt(39.8, 1.25, 0.3);
   }
@@ -391,15 +442,22 @@ class Game {
     // Ensure Chacha's doors remain open
     if (this.chachaHome) this.chachaHome.userData.openDoors();
 
-    // Chacha safely in front of verandah steps entering driveway at (-5.5, 0, -1.8) facing scooter
-    this.player.position.set(-5.5, 0, -1.8);
-    this.player.rotation.y = 0.5; // looking towards scooter
+    // Ensure broken phone pieces are visible on verandah
+    if (this.phoneScreenItem) this.phoneScreenItem.visible = true;
+    if (this.phoneBackItem) this.phoneBackItem.visible = true;
+    if (this.phoneBatteryItem) this.phoneBatteryItem.visible = true;
+    if (this.fallingPhoneMesh) this.fallingPhoneMesh.visible = false;
+
+    // Chacha stands on verandah looking down at broken phone
+    this.player.position.set(-5.8, 0.32, -3.0);
+    this.player.rotation.y = 0.2;
     this.player.visible = true;
     if (this.player.userData.setPhoneCallPose) this.player.userData.setPhoneCallPose(false);
     if (this.player.userData.rightArmPivot) this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
     if (this.player.userData.leftArmPivot) this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
     if (this.player.userData.leftLegPivot) this.player.userData.leftLegPivot.rotation.set(0, 0, 0);
     if (this.player.userData.rightLegPivot) this.player.userData.rightLegPivot.rotation.set(0, 0, 0);
+    if (this.player.userData.headGroup) this.player.userData.headGroup.rotation.set(0, 0, 0);
 
     const overlay = document.getElementById('cutscene-overlay');
     if (overlay) {
@@ -410,16 +468,16 @@ class Game {
       }, 400);
     }
 
-    // Return camera smoothly to player gameplay view
-    this.camera.position.set(-4.5, 4.8, 8.5);
-    this.camera.lookAt(-3.0, 1.2, 0);
+    // Return camera smoothly framing Chacha and the broken phone on the verandah
+    this.camera.position.set(-4.2, 3.2, 0.8);
+    this.camera.lookAt(-5.8, 0.5, -3.2);
 
     this.showDialogue(
       'Chacha',
-      'Arre miyaan! Chetak scooter ka stand toot gaya! Mohalle me kabaad dhundo aur Laal Eent jaisa koi thos stand banao!'
+      'Arre miyaan! Screen aur battery dono nikal gayi! Chachi ki location dekhne ke liye pehle phone jodhna padega! Verandah par pili rubber band dhundo!'
     );
-    this.questText.textContent = 'Scooter khadi nahi ho rahi! Paas se laal eent (brick) dhundo aur stand banao!';
-    this.promptTip.innerHTML = 'W/A/S/D to Move | [E] to Inspect / Pick up items | [Space] to Honk';
+    this.questText.textContent = 'Level 1: Toota hua phone theek karo! Verandah par pili rubber band dhundo aur [E] se phone jodo!';
+    this.promptTip.innerHTML = 'Walk to Mithai Rubber Band [E] | Wrap broken phone pieces on verandah!';
   }
 
   // 2. Floating 3D -> Screen Score FX
@@ -886,36 +944,49 @@ class Game {
     if (this.inventory) {
       const carried = this.inventory;
 
-      // CRISIS 1: Near Scooter (-6, 0, -0.5)
-      const distToScooter = pPos.distanceTo(this.scooter.position);
-      if (this.stage === 0 && distToScooter < 2.8) {
-        if (carried.userData.type === 'brick') {
+      // CRISIS 1: Near Broken Phone on Verandah (x: -5.9, z: -3.2)
+      const distToPhone = pPos.distanceTo(new THREE.Vector3(-5.9, 0.32, -3.2));
+      if (this.stage === 0 && distToPhone < 3.2) {
+        if (carried.userData.type === 'rubber_band') {
           this.player.remove(carried);
-          this.scene.add(carried);
-          carried.position.set(-6.1, 0, -0.9);
-          this.scooter.rotation.x = 0; // Stands upright!
           this.inventory = null;
+
+          // Remove scattered phone pieces
+          [this.phoneScreenItem, this.phoneBackItem, this.phoneBatteryItem].forEach(item => {
+            if (item) {
+              this.scene.remove(item);
+              this.items = this.items.filter(it => it !== item);
+            }
+          });
+
+          // Spawn assembled phone bound with yellow rubber bands!
+          this.fixedPhone = AssetFactory.createFixedRubberBandPhone();
+          this.fixedPhone.position.set(-5.9, 0.32, -3.2);
+          this.scene.add(this.fixedPhone);
+
+          if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
+            this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
+            this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
+          }
+
           this.stage = 1;
           this.updateMeter(25);
-          audio.playBrickThud();
-          this.triggerJugaadToast('🎉 JUGAAD 1: LAAL EENT KA STAND! (+25%)');
-
-          // Auto-mount Chacha on scooter so the ride immediately begins!
-          this.isRiding = true;
-          this.player.visible = false;
-          this.scooter.userData.riderMesh.visible = true;
-          audio.startScooterEngine();
-          audio.playHorn();
+          audio.playPhoneRebootSound();
+          audio.playJugaadSuccess();
+          this.triggerJugaadToast('🎉 JUGAAD 1: RUBBER BAND SE PHONE REPAIRED! (+25%)');
 
           this.showDialogue(
             'Chacha',
-            'Dhup-dhup-dhup! Chetak start ho gayi! Ab steering sambhalo aur aage sadak par badho!'
+            'Wah miyaan! Mithai wali rubber band se phone ekdum mast tightly jud gaya! Screen on ho gayi aur Sheesh Mahal ka rasta dikh raha hai! Ab jaldi se driveway me Chetak scooter par baitho [E]!'
           );
-          this.questText.textContent = 'Scooter drive karo aage! Savdhan, sadak par nazar rakhein!';
-          this.promptTip.innerHTML = 'Drive [W/S/A/D] | [E] Stop & Dismount | [Space] Honk';
+          this.questText.textContent = 'Driveway me Chetak Scooter par baitho [E] aur Sheesh Mahal ki taraf nikal pado!';
+          this.promptTip.innerHTML = 'Press <b>[E]</b> near Chetak Scooter to Kickstart & Mount!';
+          return;
+        } else if (carried.userData.type === 'rope') {
+          this.showDialogue('Chacha', carried.userData.rejectMsg || 'Moti rassi se phone nahi bandhega!');
           return;
         } else {
-          this.showDialogue('Chacha', carried.userData.rejectMsg || 'Yeh cheez scooter ka stand nahi ban sakti!');
+          this.showDialogue('Chacha', carried.userData.rejectMsg || 'Is cheez se phone theek nahi hoga! Verandah se pili rubber band dhundo!');
           return;
         }
       }
@@ -986,6 +1057,47 @@ class Game {
         }
       }
 
+      // CRISIS 4: At Sheesh Mahal gate, prop up fallen scooter with Red Brick!
+      if (this.stage === 4 && distToScooter < 3.4) {
+        if (carried.userData.type === 'brick') {
+          this.player.remove(carried);
+          this.scene.add(carried);
+          carried.position.set(this.scooter.position.x - 0.42, 0.17, this.scooter.position.z - 0.42);
+          this.scooter.userData.setFallenState(false); // Upright supported by brick!
+          this.inventory = null;
+
+          if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
+            this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
+            this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
+          }
+
+          this.stage = 5;
+          this.updateMeter(100);
+          audio.playBrickThud();
+          audio.playJugaadSuccess();
+          this.burstConfetti(this.scooter.position);
+          this.addScore(500, 1);
+
+          this.triggerJugaadToast('🏆 JUGAAD 4: LAAL EENT KA SOLID STAND! (+25%)');
+          this.showDialogue(
+            'Chacha',
+            'Wah Miyaan! Laal Eent se Chetak shaahi style me khadi ho gayi! Guddu ka sehra aur Chacha ki izzat dono bach gayi!'
+          );
+          this.questText.textContent = '🌟 CONGRATULATIONS! You mastered the Bhopal Mohalla Jugaad!';
+          this.promptTip.innerHTML = 'Wah Miyaan! 100% Desi Swag Champion! 🏆';
+
+          if (this.victoryModal) {
+            setTimeout(() => {
+              this.victoryModal.style.display = 'flex';
+            }, 1200);
+          }
+          return;
+        } else {
+          this.showDialogue('Chacha', carried.userData.rejectMsg || 'Yeh cheez scooter ka stand nahi ban sakti! Wedding tent ke malbe se Laal Eent dhundo!');
+          return;
+        }
+      }
+
       // Drop item anywhere
       this.player.remove(carried);
       this.scene.add(carried);
@@ -1000,8 +1112,8 @@ class Game {
       return;
     }
 
-    // 3. Mount Scooter (Once stand is fixed) - SEATED RIDER POSE!
-    if (this.stage >= 1 && !this.isRiding) {
+    // 3. Mount Scooter (Unlocked once Phone is repaired!)
+    if (this.stage >= 1 && this.stage < 4 && !this.isRiding) {
       const distToScooter = pPos.distanceTo(this.scooter.position);
       if (distToScooter < 2.8) {
         this.isRiding = true;
@@ -1120,25 +1232,109 @@ class Game {
         // Camera pulled back at comfortable medium-wide angle framing verandah, nameplate, and Chacha
         this.camera.position.set(-3.0, 2.1, 0.8);
         this.camera.lookAt(-6.0, 1.35, -3.6);
-      } else if (t < 8.4) {
-        // Shot 3B: Call ends, Chacha lowers phone, spots broken kickstand from verandah
-        if (this.player.userData.setPhoneCallPose) {
-          this.player.userData.setPhoneCallPose(false);
-        }
-        if (this.player.userData.rightArmPivot) this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
-        if (this.player.userData.leftArmPivot) this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
-
+      } else if (t < 8.2) {
+        // Shot 3B: Call ends! Chacha lowers arm to put phone into pocket
         if (this.cutscenePhase === 2) {
           this.cutscenePhase = 3;
           const speakerTitle = document.getElementById('cutscene-speaker-title');
           const cutsceneText = document.getElementById('cutscene-text');
-          if (speakerTitle) speakerTitle.textContent = '🛵 Chacha (Mohalla Driveway)';
-          if (cutsceneText) cutsceneText.textContent = '"Arre baap re! Chetak ka stand toot ke gir gaya! Mohalle me kabaad dhundo aur Laal Eent jaisa koi jugaad stand banao!"';
+          if (speakerTitle) speakerTitle.textContent = '🛵 Chacha (Mohalla Verandah)';
+          if (cutsceneText) cutsceneText.textContent = '"Chalo, phone jeb me daalta hoon aur nikalti sawaari..."';
         }
 
-        // Camera shifts to medium view framing Chacha on verandah looking towards scooter
-        this.camera.position.set(-3.2, 2.2, 1.8);
-        this.camera.lookAt(-4.4, 0.9, -1.0);
+        // Lower the phone arm towards pocket
+        const lowerProg = Math.min(1, (t - 7.0) / 1.1);
+        if (this.player.userData.phoneArmGroup) {
+          this.player.userData.phoneArmGroup.rotation.set(
+            lowerProg * 0.85,
+            -lowerProg * 0.45,
+            lowerProg * 0.65
+          );
+        }
+        if (this.player.userData.headGroup) {
+          this.player.userData.headGroup.rotation.x = lowerProg * 0.25;
+          this.player.userData.headGroup.rotation.z = -lowerProg * 0.15;
+        }
+
+        this.camera.position.lerp(new THREE.Vector3(-3.8, 1.85, -0.6), 0.06);
+        this.camera.lookAt(-6.0, 1.0, -3.6);
+      } else if (t < 9.0) {
+        // Shot 3C: SLIP & TUMBLE! Phone slips from hand and drops with 3D gravity physics!
+        if (this.cutscenePhase === 3) {
+          this.cutscenePhase = 4;
+          if (this.player.userData.setPhoneCallPose) this.player.userData.setPhoneCallPose(false);
+          if (this.player.userData.rightArmPivot) {
+            this.player.userData.rightArmPivot.rotation.set(-0.25, 0.1, 0.35);
+          }
+          if (this.fallingPhoneMesh) {
+            this.fallingPhoneMesh.visible = true;
+            this.fallingPhoneMesh.position.set(-5.9, 0.95, -3.4);
+            this.fallingPhoneMesh.rotation.set(0, 0, 0);
+          }
+        }
+
+        const fallProg = Math.min(1, (t - 8.2) / 0.78);
+        const curY = 0.95 - fallProg * fallProg * (0.95 - 0.33);
+
+        if (this.fallingPhoneMesh) {
+          this.fallingPhoneMesh.position.y = curY;
+          this.fallingPhoneMesh.position.x = -5.9 + Math.sin(fallProg * Math.PI * 2) * 0.05;
+          this.fallingPhoneMesh.rotation.x += delta * 16;
+          this.fallingPhoneMesh.rotation.y += delta * 12;
+          this.fallingPhoneMesh.rotation.z += delta * 8;
+        }
+
+        // Camera smoothly tracks down towards the falling phone
+        this.camera.position.lerp(new THREE.Vector3(-4.4, 1.45, -1.5), 0.08);
+        this.camera.lookAt(-5.9, 0.55, -3.4);
+      } else if (t < 11.2) {
+        // Shot 3D: IMPACT & SPLIT! Hits stone floor with KHATTT! Splits into 3 pieces, Chacha shocked!
+        if (this.cutscenePhase === 4) {
+          this.cutscenePhase = 5;
+          if (this.fallingPhoneMesh) this.fallingPhoneMesh.visible = false;
+
+          // Sound of phone hitting stone verandah & splitting
+          audio.playPhoneDropSound();
+
+          // Spawn the 3 broken pieces on verandah
+          if (this.phoneScreenItem) {
+            this.phoneScreenItem.position.set(-5.8, 0.32, -3.45);
+            this.phoneScreenItem.rotation.set(0, 0.35, 0.02);
+            this.phoneScreenItem.visible = true;
+          }
+          if (this.phoneBackItem) {
+            this.phoneBackItem.position.set(-6.15, 0.32, -3.3);
+            this.phoneBackItem.rotation.set(Math.PI, 0.8, 0);
+            this.phoneBackItem.visible = true;
+          }
+          if (this.phoneBatteryItem) {
+            this.phoneBatteryItem.position.set(-5.95, 0.32, -3.05);
+            this.phoneBatteryItem.rotation.set(0, -0.6, 0);
+            this.phoneBatteryItem.visible = true;
+          }
+
+          const speakerTitle = document.getElementById('cutscene-speaker-title');
+          const cutsceneText = document.getElementById('cutscene-text');
+          if (speakerTitle) speakerTitle.textContent = '😱 Chacha (Comic Shock!)';
+          if (cutsceneText) cutsceneText.textContent = '"Haye daiyya re! Naya-navela phone haath se chhut gaya! Screen aur battery dono nikal gayi! Bina phone ke mandap ka rasta kaise milega?!"';
+        }
+
+        // COMIC SHOCK POSE: Hands to head/cheeks, mouth open in comic despair, trembling!
+        const jitter = Math.sin(time * 30) * 0.025;
+        if (this.player.userData.leftArmPivot) {
+          this.player.userData.leftArmPivot.rotation.set(-2.2 + jitter, 0.35, -0.65);
+        }
+        if (this.player.userData.rightArmPivot) {
+          this.player.userData.rightArmPivot.rotation.set(-2.2 - jitter, -0.35, 0.65);
+        }
+        if (this.player.userData.headGroup) {
+          this.player.userData.headGroup.rotation.x = 0.25 + jitter * 2;
+          this.player.userData.headGroup.rotation.z = jitter * 1.5;
+        }
+
+        // Close-up shot framing Chacha in shock and the 3 broken phone pieces on the floor
+        this.camera.position.lerp(new THREE.Vector3(-4.6, 1.55, -1.8), 0.06);
+        this.camera.lookAt(-5.9, 0.5, -3.3);
       } else {
         this.endCutscene();
       }
@@ -1498,30 +1694,31 @@ class Game {
       this.camera.position.z = THREE.MathUtils.lerp(this.camera.position.z, this.scooter.position.z + 8.8, 0.08);
       this.camera.lookAt(this.scooter.position.x + 2, 1.4, this.scooter.position.z);
 
-      // --- 4. GRAND FINISH LINE VICTORY (TRIGGERS ONLY AFTER ENTERING INSIDE PALACE GATE at x >= 43.5) ---
-      if (this.scooter.position.x >= 43.5) {
+      // --- 4. DESTINATION ARRIVAL CLIMAX: KICKSTAND SNAPS AT SHEESH MAHAL GATE! (x >= 37.0) ---
+      if (this.stage === 3 && this.scooter.position.x >= 37.0) {
         this.stage = 4;
-        this.updateMeter(100);
+        this.isRiding = false;
+        this.scooterSpeed = 0;
         audio.stopScooterEngine();
+        audio.playPlankSnap();
+        audio.playBrickThud();
 
-        // Confetti explosion
-        this.burstConfetti(this.scooter.position);
-        this.addScore(500, 1);
+        // Chetak's kickstand snaps! Scooter falls onto its side on red carpet
+        this.scooter.userData.setFallenState(true);
+        this.scooter.userData.riderMesh.visible = false;
 
-        this.triggerJugaadToast('🏆 VICTORY: SHEESH MAHAL ARRIVED! 🏆');
+        // Dismount Chacha next to the fallen scooter
+        this.player.position.set(this.scooter.position.x - 0.9, 0, this.scooter.position.z + 1.2);
+        this.player.rotation.y = 0.4;
+        this.player.visible = true;
+
+        this.triggerJugaadToast('⚠️ KHATTT! CHETAK KA STAND TOOT GAYA!');
         this.showDialogue(
           'Chacha',
-          'Wah Miyaan! Sheesh Mahal ke mandap me entry ho gayi! Guddu ka sehra aur Chacha ki izzat dono bach gayi!'
+          'Arey baap re baap! Sheesh Mahal pohochte hi Chetak ka kickstand toot ke alag ho gaya! Baaraat aane wali hai aur gaadi zameen par giri padi hai! Mandap ke malbe se Laal Eent dhundo aur Chetak ko khada karo!'
         );
-        this.questText.textContent = '🌟 CONGRATULATIONS! You mastered the Bhopal Mohalla Jugaad!';
-        this.promptTip.innerHTML = 'Wah Miyaan! 100% Desi Swag Champion! 🏆';
-
-        // Show Full Victory Modal
-        if (this.victoryModal) {
-          setTimeout(() => {
-            this.victoryModal.style.display = 'flex';
-          }, 1200);
-        }
+        this.questText.textContent = 'Crisis 4: Kickstand toot gaya! Mandap ke paas se Laal Eent [E] uthao aur Chetak ko khada karo!';
+        this.promptTip.innerHTML = 'Mandap ke construction malbe se Laal Eent dhundo [E] | Chetak ko khada karo!';
       }
     }
 
@@ -1592,12 +1789,14 @@ class Game {
 
       this.promptTip.innerHTML = 'Explore the mohalla with <b>W, A, S, D</b> | Find the right Jugaad objects!';
     } else {
-      if (this.stage === 0 && pPos.distanceTo(this.scooter.position) < 2.8) {
-        this.promptTip.innerHTML = `✨ Press <b>[E]</b> to test <b>${this.inventory.userData.title}</b> as Scooter Stand!`;
+      if (this.stage === 0 && pPos.distanceTo(new THREE.Vector3(-5.9, 0.32, -3.2)) < 3.2) {
+        this.promptTip.innerHTML = `✨ Press <b>[E]</b> to repair phone with <b>${this.inventory.userData.title}</b>!`;
       } else if (this.stage === 1 && pPos.distanceTo(this.trench.position) < 3.4) {
         this.promptTip.innerHTML = `✨ Press <b>[E]</b> to place <b>${this.inventory.userData.title}</b> across Trench!`;
       } else if (this.stage === 2 && pPos.distanceTo(this.cow.position) < 3.6) {
         this.promptTip.innerHTML = `✨ Press <b>[E]</b> to offer <b>${this.inventory.userData.title}</b> to Gau Mata!`;
+      } else if (this.stage === 4 && pPos.distanceTo(this.scooter.position) < 3.4) {
+        this.promptTip.innerHTML = `✨ Press <b>[E]</b> to prop up Chetak with <b>${this.inventory.userData.title}</b>!`;
       } else {
         this.promptTip.innerHTML = `Carrying: <b>${this.inventory.userData.title}</b> | Press <b>[E]</b> anywhere to drop`;
       }
