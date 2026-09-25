@@ -465,6 +465,49 @@ class DesiAudioEngine {
     }, beatInterval / 2);
   }
 
+  // Pleasant High-Pitch Golden Coin Pickup Chime
+  playCoinChime() {
+    this.init();
+    if (this.isMuted) return;
+    const t = this.ctx.currentTime;
+    [1046.50, 1318.51, 1567.98].forEach((freq, i) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t + i * 0.06);
+      gain.gain.setValueAtTime(0.001, t + i * 0.06);
+      gain.gain.linearRampToValueAtTime(0.22, t + i * 0.06 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + i * 0.06 + 0.32);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(t + i * 0.06);
+      osc.stop(t + i * 0.06 + 0.32);
+    });
+  }
+
+  // Classic Indian Telephone Ring for Chachi's Urgent Call
+  playPhoneRing() {
+    this.init();
+    if (this.isMuted) return;
+    const t = this.ctx.currentTime;
+    [853, 960].forEach(freq => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+      gain.gain.setValueAtTime(0.14, t);
+      gain.gain.setValueAtTime(0.14, t + 0.35);
+      gain.gain.setValueAtTime(0.001, t + 0.42);
+      gain.gain.setValueAtTime(0.14, t + 0.55);
+      gain.gain.setValueAtTime(0.14, t + 0.9);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 1.05);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(t);
+      osc.stop(t + 1.05);
+    });
+  }
+
   speak(text, speaker = 'Chacha') {
     // Human voice completely disabled - dialogues appear cleanly in comic text box
     if ('speechSynthesis' in window) {

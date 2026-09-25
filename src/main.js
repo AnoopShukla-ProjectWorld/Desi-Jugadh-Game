@@ -15,6 +15,15 @@ class Game {
     this.plankZ = 0;
     this.plankHalfWidth = 0.95; // Sturdy bridge width
 
+    // Opening Cutscene State
+    this.isCutscene = false;
+    this.cutsceneTime = 0;
+    this.cutscenePhase = 0;
+
+    // Collectibles & Barriers
+    this.coins = [];
+    this.warningBarrier = null;
+
     this.keys = { left: false, right: false, up: false, down: false };
 
     this.initScene();
@@ -73,6 +82,11 @@ class Game {
     this.player.position.set(-4, 0, 0.5);
     this.scene.add(this.player);
 
+    // Warning Barrier before Excavation (at x = 8.2)
+    this.warningBarrier = AssetFactory.createWarningBarrier();
+    this.warningBarrier.position.set(8.2, 0, 0);
+    this.scene.add(this.warningBarrier);
+
     // Road Excavation Trench at x = 11
     this.trench = AssetFactory.createRoadTrench();
     this.trench.position.set(11, 0, 0);
@@ -121,6 +135,24 @@ class Game {
     grass.position.set(18.0, 0, -3.2);
     this.scene.add(grass);
     this.items.push(grass);
+
+    // 8 Shiny Collectible Desi Rupee Coins along the road
+    const coinCoords = [
+      { x: -2.0, z: 0.0 },
+      { x: 2.2, z: 0.5 },
+      { x: 5.6, z: -0.5 },
+      { x: 11.0, z: 0.0 }, // Directly on the plank bridge!
+      { x: 15.2, z: 0.8 },
+      { x: 26.0, z: -0.6 },
+      { x: 32.5, z: 0.6 },
+      { x: 38.5, z: 0.0 }
+    ];
+    this.coins = coinCoords.map(pos => {
+      const c = AssetFactory.createDesiCoin();
+      c.position.set(pos.x, 0.65, pos.z);
+      this.scene.add(c);
+      return c;
+    });
 
     // Solid Colliders
     this.colliders = [
@@ -249,6 +281,76 @@ class Game {
     this.meterPercent.textContent = `${this.meter}%`;
   }
 
+  // 1. Cinematic Opening Cutscene (Sheesh Mahal Call -> Mohalla Flyover -> Chacha's Driveway)
+  startCutscene() {
+    this.isCutscene = true;
+    this.cutsceneTime = 0;
+    this.cutscenePhase = 1;
+
+    const overlay = document.getElementById('cutscene-overlay');
+    if (overlay) {
+      overlay.style.display = 'flex';
+      overlay.style.opacity = '1';
+    }
+
+    const speakerTitle = document.getElementById('cutscene-speaker-title');
+    const cutsceneText = document.getElementById('cutscene-text');
+    if (speakerTitle) speakerTitle.textContent = '👰 Chachi (Sheesh Mahal Mandap)';
+    if (cutsceneText) cutsceneText.textContent = '"Arey suno! Baaraat dwar par khadi hai! Pandit ji gusse me hain! Guddu ka dulha sehra leke turant aao!"';
+
+    audio.playPhoneRing();
+
+    // Position camera framing the illuminated Sheesh Mahal palace gate
+    this.camera.position.set(40.5, 3.2, 5.5);
+    this.camera.lookAt(43.0, 2.2, 0);
+  }
+
+  endCutscene() {
+    if (!this.isCutscene) return;
+    this.isCutscene = false;
+
+    const overlay = document.getElementById('cutscene-overlay');
+    if (overlay) {
+      overlay.style.opacity = '0';
+      setTimeout(() => {
+        overlay.style.display = 'none';
+        overlay.style.opacity = '1';
+      }, 400);
+    }
+
+    // Return camera smoothly to player gameplay view
+    this.camera.position.set(-4, 4.8, 9.5);
+    this.camera.lookAt(-2, 1.2, 0);
+
+    this.showDialogue(
+      'Chacha',
+      'Arre miyaan! Chetak scooter ka stand toot gaya! Mohalle me kabaad dhundo aur Laal Eent jaisa koi thos stand banao!'
+    );
+    this.questText.textContent = 'Scooter khadi nahi ho rahi! Paas se laal eent (brick) dhundo aur stand banao!';
+    this.promptTip.innerHTML = 'W/A/S/D to Move | [E] to Inspect / Pick up items | [Space] to Honk';
+  }
+
+  // 2. Floating 3D -> Screen Score FX
+  spawnFloatingScore(text, worldPos) {
+    const container = document.getElementById('floating-score-container');
+    if (!container) return;
+    const v = worldPos.clone();
+    v.project(this.camera);
+    const x = (v.x * 0.5 + 0.5) * window.innerWidth;
+    const y = (-(v.y * 0.5) + 0.5) * window.innerHeight;
+
+    const el = document.createElement('div');
+    el.className = 'floating-score';
+    el.textContent = text;
+    el.style.left = `${x}px`;
+    el.style.top = `${y}px`;
+    container.appendChild(el);
+
+    setTimeout(() => {
+      if (el.parentNode) el.parentNode.removeChild(el);
+    }, 1100);
+  }
+
   setupEvents() {
     window.addEventListener('resize', () => {
       this.camera.aspect = window.innerWidth / window.innerHeight;
@@ -260,6 +362,12 @@ class Game {
       audio.init();
       if (!audio.musicPlaying) audio.startDesiBGM();
 
+      // Skip cutscene on Space / Enter / Escape
+      if (this.isCutscene && (e.code === 'Space' || e.code === 'Enter' || e.code === 'Escape')) {
+        this.endCutscene();
+        return;
+      }
+
       if (e.code === 'ArrowLeft' || e.code === 'KeyA') this.keys.left = true;
       if (e.code === 'ArrowRight' || e.code === 'KeyD') this.keys.right = true;
       if (e.code === 'ArrowUp' || e.code === 'KeyW') this.keys.up = true;
@@ -270,6 +378,14 @@ class Game {
         audio.playHorn();
       }
     });
+
+    const btnSkipCutscene = document.getElementById('btn-skip-cutscene');
+    if (btnSkipCutscene) {
+      btnSkipCutscene.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.endCutscene();
+      });
+    }
 
     window.addEventListener('keyup', (e) => {
       if (e.code === 'ArrowLeft' || e.code === 'KeyA') this.keys.left = false;
@@ -506,6 +622,7 @@ class Game {
       if (levelMapScreen) levelMapScreen.style.display = 'none';
       audio.init();
       if (!audio.musicPlaying) audio.startDesiBGM();
+      this.startCutscene();
     };
 
     const btnStart = document.getElementById('btn-start-game');
@@ -680,11 +797,20 @@ class Game {
           this.updateMeter(25);
           audio.playBrickThud();
           this.triggerJugaadToast('🎉 JUGAAD 1: LAAL EENT KA STAND! (+25%)');
+
+          // Auto-mount Chacha on scooter so the ride immediately begins!
+          this.isRiding = true;
+          this.player.visible = false;
+          this.scooter.userData.riderMesh.visible = true;
+          audio.startScooterEngine();
+          audio.playHorn();
+
           this.showDialogue(
             'Chacha',
-            'Hao miyaan! Laal eent ka stand lag gaya! Ab sadak par dekho, municipal walon ne gehra gaddha khoda hai!'
+            'Dhup-dhup-dhup! Chetak start ho gayi! Ab steering sambhalo aur aage sadak par badho!'
           );
-          this.questText.textContent = 'Aage sadak par gehra gaddha hai! Construction pile se lamba lakdi ka phatta dhundo!';
+          this.questText.textContent = 'Scooter drive karo aage! Savdhan, sadak par nazar rakhein!';
+          this.promptTip.innerHTML = 'Drive [W/S/A/D] | [E] Stop & Dismount | [Space] Honk';
           return;
         } else {
           this.showDialogue('Chacha', carried.userData.rejectMsg || 'Yeh cheez scooter ka stand nahi ban sakti!');
@@ -706,15 +832,15 @@ class Game {
 
           this.plankPlaced = true;
           this.inventory = null;
-          this.stage = 2;
           this.updateMeter(50);
           audio.playPlankSnap();
           this.triggerJugaadToast('🎉 JUGAAD 2: TIMBER BRIDGE READY! (+25%)');
           this.showDialogue(
             'Chacha',
-            'Bhari lakdi ka phatta lag gaya! 3.6 meter ka chasm cover ho gaya! Aage dekho, Gau Mata raaste ke beech baithi hain!'
+            'Bhari lakdi ka phatta lag gaya! Bridge taiyaar hai! Ab vaapis scooter pe baitho [E] aur sambhalke bridge cross karo!'
           );
-          this.questText.textContent = 'Raste me Gau Mata baithi hain! Sabzi market se Taazi Ghaas & Roti le aao!';
+          this.questText.textContent = 'Scooter par baitho [E] aur dhyan se lakdi ke phatte ke upar se drive karo!';
+          this.promptTip.innerHTML = 'Press <b>[E]</b> near scooter to mount | Drive across plank carefully!';
           return;
         } else {
           this.showDialogue('Chacha', carried.userData.rejectMsg || 'Isse bridge nahi banega!');
@@ -739,9 +865,10 @@ class Game {
           this.triggerJugaadToast('🎉 JUGAAD 3: GAU MATA RASTA CLEAR! (+25%)');
           this.showDialogue(
             'Chacha',
-            'Gau Mata khush, rasta saaf! Ab vaapis scooter pe chalo aur kick maarke VIP road niklo!'
+            'Gau Mata khush, rasta saaf! Ab jaldi se scooter pe baitho [E] aur full throttle VIP road se Sheesh Mahal bhagao!'
           );
-          this.questText.textContent = 'Vaapis Scooter ke paas jao aur Kickstart [E] karke VIP Road niklo!';
+          this.questText.textContent = 'Scooter par baitho [E] aur full speed Sheesh Mahal gate me entry maaro!';
+          this.promptTip.innerHTML = 'Press <b>[E]</b> to Mount Scooter | Race to Sheesh Mahal!';
           return;
         } else {
           this.showDialogue('Chacha', carried.userData.rejectMsg || 'Gau Mata isko nahi khayengi!');
@@ -799,6 +926,65 @@ class Game {
 
     const delta = 0.016;
     const time = performance.now() * 0.002;
+
+    // --- 0. CINEMATIC CUTSCENE FLYOVER ---
+    if (this.isCutscene) {
+      this.cutsceneTime += delta;
+      const t = this.cutsceneTime;
+
+      if (t < 2.5) {
+        // Focus on Sheesh Mahal palace gate
+        this.camera.position.set(40.5, 3.2, 5.5);
+        this.camera.lookAt(43.0, 2.2, 0);
+      } else if (t < 5.2) {
+        // Smooth cinematic tracking shot backwards along the entire road
+        const u = (t - 2.5) / 2.7; // 0 to 1
+        const easeU = u * u * (3 - 2 * u); // SmoothStep
+
+        const camX = THREE.MathUtils.lerp(40.5, -4.0, easeU);
+        const camY = THREE.MathUtils.lerp(3.2, 3.2, easeU);
+        const camZ = THREE.MathUtils.lerp(5.5, 6.2, easeU);
+
+        this.camera.position.set(camX, camY, camZ);
+        this.camera.lookAt(camX - 2.8, 1.3, 0);
+
+        // Transition speech toast to Chacha
+        if (this.cutscenePhase === 1) {
+          this.cutscenePhase = 2;
+          const speakerTitle = document.getElementById('cutscene-speaker-title');
+          const cutsceneText = document.getElementById('cutscene-text');
+          if (speakerTitle) speakerTitle.textContent = '🛵 Chacha (Mohalla Driveway)';
+          if (cutsceneText) cutsceneText.textContent = '"Arre baap re! Chetak scooter ka stand toot ke gir gaya! Mohalle se koi mazboot laal eent dhundni padegi!"';
+        }
+      } else if (t < 6.5) {
+        // Settle near Chacha & fallen scooter
+        this.camera.position.set(-4.0, 2.8, 5.5);
+        this.camera.lookAt(-5.5, 1.0, -0.5);
+      } else {
+        this.endCutscene();
+      }
+
+      this.renderer.render(this.scene, this.camera);
+      return;
+    }
+
+    // --- COIN ROTATION, BOBBING & PICKUP CHECK ---
+    const activePos = this.isRiding ? this.scooter.position : this.player.position;
+    this.coins.forEach((coin, idx) => {
+      if (!coin.userData.isCollected) {
+        coin.rotation.y += delta * 2.8;
+        coin.position.y = coin.userData.initialY + Math.sin(time * 5 + idx) * 0.08;
+
+        const dist = activePos.distanceTo(coin.position);
+        if (dist < 1.6) {
+          coin.userData.isCollected = true;
+          coin.visible = false;
+          audio.playCoinChime();
+          this.addScore(50, 0);
+          this.spawnFloatingScore('+50 SWAG 🪙', coin.position);
+        }
+      }
+    });
 
     // --- 1. WALKING PLAYER PHYSICS & COLLISION ---
     if (!this.isRiding && this.stage < 4 && !this.isFalling) {
@@ -881,20 +1067,22 @@ class Game {
         if (onPlank) {
           // Sturdy on plank!
           this.player.position.y = 0.09;
-        } else {
-          // Fell into deep trench!
+        } else if (!this.isFalling) {
+          // Trigger downward fall into deep trench
           this.isFalling = true;
+          this.fallVelocity = 0;
           audio.playSplash();
           audio.playBrickThud();
           this.showDialogue('Chacha', 'Arey Baap Re! 2 meter gehre gaddhe me gir gaye! Phatte ke upar se chalo!');
           this.triggerJugaadToast('⚠️ SPLASH! GEHRE GADDHE ME GIR GAYE!');
-          this.player.position.y = -2.0;
 
           setTimeout(() => {
             this.player.position.set(7.5, 0, this.plankPlaced ? this.plankZ : 0);
             this.player.position.y = 0;
+            this.player.rotation.z = 0;
             this.isFalling = false;
-          }, 1600);
+            this.fallVelocity = 0;
+          }, 1800);
         }
       } else {
         if (!this.isFalling) this.player.position.y = 0;
@@ -907,23 +1095,49 @@ class Game {
       this.updatePrompt();
     }
 
-    // --- 2. COW BEHAVIOR ---
+    // Continuous downward gravity descent while falling into pit
+    if (this.isFalling && !this.isRiding) {
+      this.fallVelocity = (this.fallVelocity || 0) - 26 * delta;
+      this.player.position.y = Math.max(-2.15, this.player.position.y + this.fallVelocity * delta);
+      this.player.rotation.z = THREE.MathUtils.lerp(this.player.rotation.z, 0.45, 0.12);
+    }
+
+    // --- 2. GAU MATA BEHAVIOR: NATURAL ROTATION & FORWARD WALK TO GRASS ---
     if (this.cow.userData.isDistracted && this.cow.userData.state === 'moving') {
-      if (this.cow.position.z > -2.6) {
-        this.cow.position.z -= delta * 1.2;
-        this.cow.rotation.y = THREE.MathUtils.lerp(this.cow.rotation.y, 0, 0.06);
+      const targetX = 21.5;
+      const targetZ = -2.8;
+      const dx = targetX - this.cow.position.x;
+      const dz = targetZ - this.cow.position.z;
+      const distToGrass = Math.hypot(dx, dz);
+
+      // Calculate angle so cow faces grass head-first (+X local)
+      const targetAngle = Math.atan2(-dz, dx);
+      this.cow.rotation.y = THREE.MathUtils.lerp(this.cow.rotation.y, targetAngle, 0.08);
+
+      if (distToGrass > 0.85) {
+        const moveSpeed = 1.35 * delta;
+        this.cow.position.x += Math.cos(this.cow.rotation.y) * moveSpeed;
+        this.cow.position.z -= Math.sin(this.cow.rotation.y) * moveSpeed;
+        this.cow.position.y = Math.abs(Math.sin(time * 8)) * 0.04; // Gentle walking step
       } else {
         this.cow.userData.state = 'eating';
+        this.cow.position.y = 0;
         this.colliders = this.colliders.filter(c => c.name !== 'Cow');
+        if (this.cow.userData.headGroup) {
+          this.cow.userData.headGroup.rotation.x = 0.35; // Head lowered directly into grass
+        }
       }
     }
-    if (this.cow.userData.headGroup) {
+    if (this.cow.userData.state === 'eating' && this.cow.userData.headGroup) {
+      this.cow.userData.headGroup.rotation.x = 0.35 + Math.sin(time * 4) * 0.08; // Chewing grass
+      this.cow.userData.tailGroup.rotation.z = Math.sin(time * 6) * 0.28; // Happy tail wag
+    } else if (this.cow.userData.headGroup) {
       this.cow.userData.headGroup.rotation.x = Math.sin(time * 3) * 0.06;
       this.cow.userData.tailGroup.rotation.z = Math.sin(time * 5) * 0.22;
     }
 
     // --- 3. SCOOTER RIDING & SKILL-BASED TRENCH BRIDGE CROSSING ---
-    if (this.isRiding && this.stage === 3 && !this.isFalling) {
+    if (this.isRiding && this.stage >= 1 && this.stage <= 3 && !this.isFalling) {
       if (this.keys.right) {
         this.scooterSpeed = Math.min(this.maxSpeed, this.scooterSpeed + 9 * delta);
       } else if (this.keys.left) {
@@ -946,15 +1160,31 @@ class Game {
       // Gentle suspension bounce
       this.scooter.position.y = Math.abs(Math.sin(time * 16)) * 0.04;
 
+      // STAGE 1: Warning barrier slowdown before trench if plank is NOT placed
+      if (this.stage === 1 && !this.plankPlaced) {
+        if (this.scooter.position.x >= 7.6) {
+          if (this.scooter.position.x > 8.4) {
+            this.scooter.position.x = 8.4;
+            this.scooterSpeed = 0;
+          } else {
+            this.scooterSpeed = Math.min(1.5, this.scooterSpeed);
+          }
+          if (Math.abs(this.scooterSpeed) < 0.6) {
+            this.promptTip.innerHTML = '⚠️ Trench Ahead! Press <b>[E]</b> to Dismount & find timber plank!';
+          }
+        }
+      }
+
       // --- TRENCH CRASH CHECK FOR SCOOTER ---
       if (this.scooter.position.x >= 9.2 && this.scooter.position.x <= 12.8) {
         const onPlank = this.plankPlaced && Math.abs(this.scooter.position.z - this.plankZ) <= this.plankHalfWidth;
         if (onPlank) {
-          // Riding safely over the wooden timber bridge!
-          this.scooter.position.y = 0.09;
+          // Riding safely ON TOP of the wooden timber bridge without sinking into wood!
+          this.scooter.position.y = 0.18;
         } else {
           // CRASH! Drove into the open ditch!
           this.isFalling = true;
+          this.scooterFallVel = 0;
           this.scooterSpeed = 0;
           audio.stopScooterEngine();
           audio.playSplash();
@@ -962,19 +1192,53 @@ class Game {
           this.triggerJugaadToast('💥 CRASH! SCOOTER GEHRE GADDHE ME GIR GAYI!');
           this.showDialogue('Chacha', 'Arey miyaan! Dhyan se handle sambhalo, phatte ke side me gehre khadde me gira diya!');
 
-          // Dip deep into trench
-          this.scooter.position.y = -1.8;
-          this.scooter.rotation.z = -0.55;
-
           setTimeout(() => {
             // Respawn safely aligned with bridge!
             this.scooter.position.set(7.0, 0, this.plankZ);
             this.scooter.rotation.z = 0;
             this.scooter.position.y = 0;
             this.isFalling = false;
+            this.scooterFallVel = 0;
             audio.startScooterEngine();
           }, 1800);
         }
+      }
+
+      // Progress from Stage 1 to Stage 2 once trench is safely crossed!
+      if (this.stage === 1 && this.plankPlaced && this.scooter.position.x > 13.5) {
+        this.stage = 2;
+        this.triggerJugaadToast('✨ TRENCH CROSSED! KEEP GOING! ✨');
+        this.showDialogue('Chacha', 'Wah miyaan! Phatte ke upar se nikal gaye! Ab aage VIP road badho!');
+        this.questText.textContent = 'Aage sadak par dekhein! Gau Mata raste me aaram kar rahi hain!';
+      }
+
+      // STAGE 2: Cow Roadblock Slowdown before Cow if NOT distracted
+      if (this.stage === 2 && !this.cow.userData.isDistracted) {
+        if (this.scooter.position.x >= 17.2) {
+          if (this.scooter.position.x > 18.2) {
+            this.scooter.position.x = 18.2;
+            this.scooterSpeed = 0;
+          } else {
+            this.scooterSpeed = Math.min(1.8, this.scooterSpeed);
+          }
+          if (Math.abs(this.scooterSpeed) < 0.6) {
+            this.promptTip.innerHTML = '🐮 Gau Mata Roadblock! Press <b>[E]</b> to Dismount & fetch grass basket!';
+          }
+        }
+      }
+
+      // Progress from Stage 2 to Stage 3 once Cow roadblock is cleared!
+      if (this.stage === 2 && this.cow.userData.isDistracted && this.scooter.position.x > 23.0) {
+        this.stage = 3;
+        this.triggerJugaadToast('✨ ROAD CLEAR! FULL THROTTLE! ✨');
+        this.questText.textContent = 'Full throttle bhagao! Sheesh Mahal gate me entry maaro!';
+      }
+
+      // Continuous downward gravity descent for falling scooter
+      if (this.isFalling && this.isRiding) {
+        this.scooterFallVel = (this.scooterFallVel || 0) - 26 * delta;
+        this.scooter.position.y = Math.max(-2.0, this.scooter.position.y + this.scooterFallVel * delta);
+        this.scooter.rotation.z = THREE.MathUtils.lerp(this.scooter.rotation.z, -0.65, 0.12);
       }
 
       // --- COW ACCIDENT COLLISION CHECK ---
@@ -982,7 +1246,7 @@ class Game {
         this.scooter.position.x - this.cow.position.x,
         this.scooter.position.z - this.cow.position.z
       );
-      if (distToCow < 2.5 && !this.isAccident) {
+      if (distToCow < 2.5 && !this.isAccident && !this.cow.userData.isDistracted) {
         this.triggerCowAccident();
         return;
       }
@@ -999,8 +1263,8 @@ class Game {
       this.camera.position.z = THREE.MathUtils.lerp(this.camera.position.z, this.scooter.position.z + 8.8, 0.08);
       this.camera.lookAt(this.scooter.position.x + 2, 1.4, this.scooter.position.z);
 
-      // --- 4. GRAND FINISH LINE VICTORY CELEBRATION (x = 38) ---
-      if (this.scooter.position.x > 37.5) {
+      // --- 4. GRAND FINISH LINE VICTORY (TRIGGERS ONLY AFTER ENTERING INSIDE PALACE GATE at x >= 43.5) ---
+      if (this.scooter.position.x >= 43.5) {
         this.stage = 4;
         this.updateMeter(100);
         audio.stopScooterEngine();
@@ -1009,10 +1273,10 @@ class Game {
         this.burstConfetti(this.scooter.position);
         this.addScore(500, 1);
 
-        this.triggerJugaadToast('🏆 VICTORY: LEVEL 1 CLEARED! 🏆');
+        this.triggerJugaadToast('🏆 VICTORY: SHEESH MAHAL ARRIVED! 🏆');
         this.showDialogue(
           'Chacha',
-          'Wah Miyaan! Bada Talab VIP Road pahunch gaye! Bhopal me koi mushkil nahi jo Jugaad se na suljhe!'
+          'Wah Miyaan! Sheesh Mahal ke mandap me entry ho gayi! Guddu ka sehra aur Chacha ki izzat dono bach gayi!'
         );
         this.questText.textContent = '🌟 CONGRATULATIONS! You mastered the Bhopal Mohalla Jugaad!';
         this.promptTip.innerHTML = 'Wah Miyaan! 100% Desi Swag Champion! 🏆';
@@ -1084,9 +1348,9 @@ class Game {
         return;
       }
 
-      if (this.stage === 3) {
+      if (this.stage >= 1) {
         if (pPos.distanceTo(this.scooter.position) < 2.8) {
-          this.promptTip.innerHTML = '✨ Press <b>[E]</b> to Kickstart & Mount Scooter!';
+          this.promptTip.innerHTML = '✨ Press <b>[E]</b> to Kickstart & Mount Chetak Scooter!';
           return;
         }
       }

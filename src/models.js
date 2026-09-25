@@ -361,106 +361,241 @@ export class AssetFactory {
     return group;
   }
 
-  // 3. Vintage Classic Scooter (Matching Image 5) with Seated Rider Ready
+  // 3. Vintage Classic Scooter (Bajaj Chetak Style) with Real Fallen Pose & Detailed Wheels/Seat
   static createVintageScooter() {
     const group = new THREE.Group();
     group.name = "VintageScooter";
 
-    const paintMat = new THREE.MeshStandardMaterial({ color: 0x93c5fd, roughness: 0.3, metalness: 0.2 });
-    const chromeMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.1, metalness: 0.85 });
-    const rubberMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.85 });
-    const seatMat = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.65 });
+    const paintMat = new THREE.MeshStandardMaterial({ color: 0x60a5fa, roughness: 0.35, metalness: 0.2 });
+    const chromeMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.1, metalness: 0.9 });
+    const rubberMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.85 });
+    const rimMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.25, metalness: 0.85 });
+    const hubMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.4, metalness: 0.7 });
+    const seatLeatherMat = new THREE.MeshStandardMaterial({ color: 0x1c1917, roughness: 0.6 });
+    const seatTanMat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.65 });
+    const seamPipingMat = new THREE.MeshStandardMaterial({ color: 0xfef08a, roughness: 0.5 });
+    const brickMat = new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.9 });
 
-    // Floorboard
-    const floor = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.15, 0.75), paintMat);
+    // Floorboard & Chassis
+    const floor = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.14, 0.76), paintMat);
     floor.position.set(0, 0.35, 0);
     floor.castShadow = true;
     group.add(floor);
 
-    // Front Apron
-    const apron = new THREE.Mesh(new THREE.BoxGeometry(0.18, 1.25, 0.95), paintMat);
+    // Rubber Grip Strips on Floorboard
+    [-0.2, 0, 0.2].forEach(fz => {
+      const strip = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.03, 0.05), rubberMat);
+      strip.position.set(0.1, 0.43, fz);
+      group.add(strip);
+    });
+
+    // Front Apron / Legshield
+    const apron = new THREE.Mesh(new THREE.BoxGeometry(0.18, 1.28, 0.98), paintMat);
     apron.position.set(0.85, 0.95, 0);
     apron.rotation.z = -0.14;
     apron.castShadow = true;
     group.add(apron);
 
-    // Mudguard
-    const mud = new THREE.Mesh(new THREE.SphereGeometry(0.42, 16, 12, 0, Math.PI), paintMat);
+    // Front Mudguard
+    const mud = new THREE.Mesh(new THREE.SphereGeometry(0.44, 18, 14, 0, Math.PI), paintMat);
     mud.position.set(0.95, 0.55, 0);
     mud.rotation.x = Math.PI / 2;
     group.add(mud);
 
-    // Headlight & Mirrors
-    const headlight = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.18, 0.18, 0.18, 16),
-      new THREE.MeshStandardMaterial({ color: 0xfef08a, emissive: 0xfef08a, emissiveIntensity: 0.8 })
-    );
-    headlight.rotation.z = Math.PI / 2;
-    headlight.position.set(0.98, 1.55, 0);
-    group.add(headlight);
+    // Chrome Bezel Headlight
+    const headlightBezel = new THREE.Mesh(new THREE.CylinderGeometry(0.20, 0.20, 0.06, 20), chromeMat);
+    headlightBezel.rotation.z = Math.PI / 2;
+    headlightBezel.position.set(1.02, 1.55, 0);
+    group.add(headlightBezel);
 
-    [-0.38, 0.38].forEach(mZ => {
-      const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.35, 6), chromeMat);
+    const headlightLens = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.18, 0.18, 0.12, 20),
+      new THREE.MeshStandardMaterial({ color: 0xfef08a, emissive: 0xfef08a, emissiveIntensity: 0.85 })
+    );
+    headlightLens.rotation.z = Math.PI / 2;
+    headlightLens.position.set(1.04, 1.55, 0);
+    group.add(headlightLens);
+
+    // Rearview Mirrors
+    [-0.40, 0.40].forEach(mZ => {
+      const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.35, 8), chromeMat);
       rod.position.set(0.72, 1.75, mZ);
       rod.rotation.z = 0.2;
       group.add(rod);
 
-      const mirror = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.02, 12), chromeMat);
+      const mirror = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.02, 16), chromeMat);
       mirror.rotation.x = Math.PI / 2;
       mirror.position.set(0.75, 1.92, mZ);
       group.add(mirror);
     });
 
-    const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.15, 8), chromeMat);
+    // Handlebar & Grips
+    const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.18, 12), chromeMat);
     handle.rotation.x = Math.PI / 2;
     handle.position.set(0.75, 1.58, 0);
     group.add(handle);
 
-    // Bulbous Rear Cowl
-    const cowlGeo = new THREE.SphereGeometry(0.72, 24, 18);
-    cowlGeo.scale(1.5, 0.85, 0.82);
+    [-0.56, 0.56].forEach(gZ => {
+      const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.14, 12), rubberMat);
+      grip.rotation.x = Math.PI / 2;
+      grip.position.set(0.75, 1.58, gZ);
+      group.add(grip);
+    });
+
+    // --- REAR BODY COWL (Proper clearance: lowered and flattened so rear wheel is visible and seat is unclipped) ---
+    const cowlGeo = new THREE.SphereGeometry(0.58, 22, 18);
+    cowlGeo.scale(1.20, 0.54, 0.78);
     const cowl = new THREE.Mesh(cowlGeo, paintMat);
-    cowl.position.set(-0.55, 0.65, 0);
+    cowl.position.set(-0.40, 0.64, 0);
     cowl.castShadow = true;
     group.add(cowl);
 
-    // Seat
-    const seat = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.18, 0.58), seatMat);
-    seat.position.set(-0.25, 1.05, 0);
-    seat.castShadow = true;
-    group.add(seat);
+    // Rear curved inner mudguard arch
+    const rearFender = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 0.32, 16, 1, true, 0, Math.PI), paintMat);
+    rearFender.rotation.z = Math.PI / 2;
+    rearFender.rotation.y = Math.PI / 2;
+    rearFender.position.set(-0.76, 0.40, 0);
+    group.add(rearFender);
 
-    // Spare Wheel
-    const spare = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.12, 12, 24), rubberMat);
-    spare.position.set(-1.32, 0.85, 0);
-    spare.rotation.y = Math.PI / 2;
-    group.add(spare);
+    // --- CURVED BAJAJ CHETAK DUAL-TONE SEAT WITH PIPING (Elevated above cowl) ---
+    const seatGroup = new THREE.Group();
+    seatGroup.position.set(-0.20, 1.14, 0);
 
-    // Wheels
-    const wheelGeo = new THREE.TorusGeometry(0.34, 0.12, 16, 28);
-    const rimGeo = new THREE.CylinderGeometry(0.26, 0.26, 0.12, 16);
-    
-    const fw = new THREE.Group();
-    fw.add(new THREE.Mesh(wheelGeo, rubberMat));
-    const fwRim = new THREE.Mesh(rimGeo, chromeMat);
-    fwRim.rotation.x = Math.PI / 2;
-    fw.add(fwRim);
-    fw.position.set(0.95, 0.35, 0);
+    // Main contoured cushion
+    const seatBase = new THREE.Mesh(new THREE.BoxGeometry(1.22, 0.18, 0.56), seatLeatherMat);
+    seatBase.castShadow = true;
+    seatGroup.add(seatBase);
+
+    // Raised pillion contour at back
+    const seatBack = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.10, 0.52), seatTanMat);
+    seatBack.position.set(-0.28, 0.10, 0);
+    seatGroup.add(seatBack);
+
+    // Golden Piping Seam Edge around seat
+    const piping = new THREE.Mesh(new THREE.BoxGeometry(1.24, 0.025, 0.58), seamPipingMat);
+    piping.position.y = 0.02;
+    seatGroup.add(piping);
+
+    // Chrome Pillion Grab-Rail (Iconic Chetak handle firmly attached with solid mounting posts)
+    const grabRail = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.022, 8, 16, Math.PI), chromeMat);
+    grabRail.rotation.y = Math.PI / 2;
+    grabRail.rotation.x = -Math.PI / 6;
+    grabRail.position.set(-0.66, 0.16, 0);
+    seatGroup.add(grabRail);
+
+    // Solid vertical mounting posts connecting grab rail into seat base
+    [-0.14, 0.14].forEach(gz => {
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.16, 8), chromeMat);
+      post.position.set(-0.66, 0.06, gz);
+      seatGroup.add(post);
+    });
+
+    group.add(seatGroup);
+
+    // --- WHEEL FACTORY (PREVENT TYRE SINKING: Bottom of tyre touches y = 0.00 exactly) ---
+    // Outer radius = 0.24 + 0.10 = 0.34m, so wheel center y = 0.34m -> tyre bottom = 0.00m!
+    const createVisibleWheel = (xPos) => {
+      const wGroup = new THREE.Group();
+      wGroup.position.set(xPos, 0.34, 0);
+
+      // Deep Black Rubber Tyre
+      const tyre = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.10, 16, 28), rubberMat);
+      wGroup.add(tyre);
+
+      // Metallic Split Alloy Rim
+      const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.20, 0.20, 0.14, 18), rimMat);
+      rim.rotation.x = Math.PI / 2;
+      wGroup.add(rim);
+
+      // Center Chrome Hubcap
+      const hubL = new THREE.Mesh(new THREE.SphereGeometry(0.09, 14, 10, 0, Math.PI), chromeMat);
+      hubL.rotation.y = Math.PI / 2;
+      hubL.position.z = 0.07;
+      wGroup.add(hubL);
+
+      const hubR = new THREE.Mesh(new THREE.SphereGeometry(0.09, 14, 10, 0, Math.PI), chromeMat);
+      hubR.rotation.y = -Math.PI / 2;
+      hubR.position.z = -0.07;
+      wGroup.add(hubR);
+
+      // Orange Brake Drum Accent
+      const brakeDrum = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.15, 12), hubMat);
+      brakeDrum.rotation.x = Math.PI / 2;
+      wGroup.add(brakeDrum);
+
+      return wGroup;
+    };
+
+    // FRONT WHEEL: at x = 0.95
+    const fw = createVisibleWheel(0.95);
     group.add(fw);
 
-    const rw = new THREE.Group();
-    rw.add(new THREE.Mesh(wheelGeo, rubberMat));
-    const rwRim = new THREE.Mesh(rimGeo, chromeMat);
-    rwRim.rotation.x = Math.PI / 2;
-    rw.add(rwRim);
-    rw.position.set(-0.65, 0.35, 0);
+    // REAR WHEEL: perfectly centered on rear axle at x = -0.76 (CLEARLY VISIBLE OUTSIDE BODY)
+    const rw = createVisibleWheel(-0.76);
     group.add(rw);
 
-    // Exhaust
-    const exhaust = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.9, 8), chromeMat);
+    // --- EXTERNAL REAR TAIL RACK & STEPNEY (SPARE WHEEL) ---
+    // Mounted completely externally behind the rear body shell on a chrome tubular carrier
+    const rackGroup = new THREE.Group();
+    rackGroup.position.set(-1.08, 0.68, 0);
+
+    // Chrome Carrier Bars extending from chassis to spare wheel
+    [-0.12, 0.12].forEach(rz => {
+      const rackBar = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.30, 8), chromeMat);
+      rackBar.rotation.z = Math.PI / 3;
+      rackBar.position.set(-0.06, 0.04, rz);
+      rackGroup.add(rackBar);
+    });
+
+    // Stepney / Spare Wheel mounted externally on carrier
+    const spareTyre = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.09, 14, 24), rubberMat);
+    spareTyre.rotation.y = Math.PI / 2;
+    spareTyre.position.set(-0.20, 0.06, 0);
+    rackGroup.add(spareTyre);
+
+    const spareRim = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.10, 16), rimMat);
+    spareRim.rotation.z = Math.PI / 2;
+    spareRim.position.set(-0.20, 0.06, 0);
+    rackGroup.add(spareRim);
+
+    group.add(rackGroup);
+
+    // Chrome Exhaust Pipe (Tucked neatly below engine on right side)
+    const exhaust = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.85, 10), chromeMat);
     exhaust.rotation.z = Math.PI / 2;
-    exhaust.position.set(-1.15, 0.28, -0.32);
+    exhaust.position.set(-1.05, 0.22, -0.32);
     group.add(exhaust);
+
+    // --- BROKEN KICKSTAND VISUAL DETAIL ---
+    const standGroup = new THREE.Group();
+    standGroup.name = "BrokenKickstand";
+    standGroup.position.set(-0.05, 0.26, 0);
+
+    // Mount bracket
+    const bracket = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.06, 0.28), chromeMat);
+    standGroup.add(bracket);
+
+    // Broken dangling stand rod (snapped off at jagged angle)
+    const danglingRod = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.22, 8), chromeMat);
+    danglingRod.rotation.z = 0.7;
+    danglingRod.rotation.x = 0.4;
+    danglingRod.position.set(-0.04, -0.10, -0.10);
+    standGroup.add(danglingRod);
+
+    // Exposed fractured red metal tip
+    const fractureTip = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.025, 0.025), new THREE.MeshBasicMaterial({ color: 0xef4444 }));
+    fractureTip.position.set(-0.12, -0.18, -0.15);
+    standGroup.add(fractureTip);
+
+    group.add(standGroup);
+
+    // --- BRICK JUGAAD PROP MESH (Visible when stand is fixed with brick) ---
+    const brickSupport = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.34, 0.34), brickMat);
+    brickSupport.name = "BrickPropSupport";
+    brickSupport.position.set(-0.42, 0.17, -0.42);
+    brickSupport.rotation.y = 0.25;
+    brickSupport.visible = false; // Initially hidden, turns true when Jugaad applied
+    group.add(brickSupport);
 
     // ATTACH SEATED PIXAR RIDER (Hidden when not riding)
     const rider = AssetFactory.createSeatedRider();
@@ -468,141 +603,177 @@ export class AssetFactory {
     rider.visible = false;
     group.add(rider);
 
+    // Method to apply authentic ground fallen pose vs upright driving pose
+    const setFallenState = (isFallen) => {
+      if (isFallen) {
+        // Naturally resting on road asphalt on its side cowl
+        group.position.y = 0.22;
+        group.rotation.set(0.18, 0, -1.35);
+        brickSupport.visible = false;
+        rider.visible = false;
+      } else {
+        // Upright supported by brick / kickstand
+        group.position.y = 0;
+        group.rotation.set(0, 0, 0);
+        brickSupport.visible = true;
+      }
+    };
+
     group.userData = {
       frontWheel: fw,
       rearWheel: rw,
       riderMesh: rider,
-      exhaustPos: new THREE.Vector3(-1.45, 0.28, -0.32),
+      brickSupport,
+      standGroup,
+      setFallenState,
+      exhaustPos: new THREE.Vector3(-1.48, 0.28, -0.32),
       radius: 1.2
     };
 
     return group;
   }
 
-  // 4. Cute Cartoon Cow (Matching Image 4)
+  // 4. Cute Cartoon Cow (Gau Mata) with Connected Leg Joints & Expressive Face
   static createCartoonCow() {
     const cowGroup = new THREE.Group();
     cowGroup.name = "CartoonCow";
 
-    const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.65 });
-    const spotMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.8 });
-    const pinkMat = new THREE.MeshStandardMaterial({ color: 0xfbcfe8, roughness: 0.55 });
-    const hornMat = new THREE.MeshStandardMaterial({ color: 0xfef08a, roughness: 0.4 });
-    const collarMat = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.6 });
-    const bellMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.7, roughness: 0.2 });
-    const hoofMat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.7 });
+    const whiteMat = new THREE.MeshStandardMaterial({ color: 0xfafaf9, roughness: 0.7 });
+    const spotMat = new THREE.MeshStandardMaterial({ color: 0x27272a, roughness: 0.85 });
+    const pinkMat = new THREE.MeshStandardMaterial({ color: 0xf472b6, roughness: 0.55 });
+    const hornMat = new THREE.MeshStandardMaterial({ color: 0xfbbf24, roughness: 0.35, metalness: 0.2 });
+    const collarMat = new THREE.MeshStandardMaterial({ color: 0xe11d48, roughness: 0.6 });
+    const bellMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.75, roughness: 0.2 });
+    const hoofMat = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.75 });
 
-    const bodyGeo = new THREE.SphereGeometry(0.7, 24, 20);
-    bodyGeo.scale(1.4, 1.05, 1.05);
+    // Main Body
+    const bodyGeo = new THREE.SphereGeometry(0.72, 24, 20);
+    bodyGeo.scale(1.42, 1.05, 1.05);
     const body = new THREE.Mesh(bodyGeo, whiteMat);
-    body.position.set(0, 0.85, 0);
+    body.position.set(0, 0.90, 0);
     body.castShadow = true;
     cowGroup.add(body);
 
-    const s1 = new THREE.Mesh(new THREE.SphereGeometry(0.35, 12, 12), spotMat);
+    // Natural Cow Patches / Spots
+    const s1 = new THREE.Mesh(new THREE.SphereGeometry(0.38, 12, 12), spotMat);
     s1.scale.set(1.2, 0.8, 0.2);
-    s1.position.set(-0.3, 1.1, 0.65);
+    s1.position.set(-0.35, 1.15, 0.65);
     cowGroup.add(s1);
 
-    const s2 = new THREE.Mesh(new THREE.SphereGeometry(0.4, 12, 12), spotMat);
+    const s2 = new THREE.Mesh(new THREE.SphereGeometry(0.42, 12, 12), spotMat);
     s2.scale.set(1.1, 0.9, 0.2);
-    s2.position.set(0.35, 0.85, -0.65);
+    s2.position.set(0.30, 0.90, -0.65);
     cowGroup.add(s2);
 
-    const collar = new THREE.Mesh(new THREE.TorusGeometry(0.45, 0.06, 8, 20), collarMat);
-    collar.position.set(0.68, 1.1, 0);
+    // Auspicious Red Ribbon Collar with Golden Brass Bell
+    const collar = new THREE.Mesh(new THREE.TorusGeometry(0.46, 0.06, 8, 20), collarMat);
+    collar.position.set(0.70, 1.12, 0);
     collar.rotation.y = Math.PI / 2;
     cowGroup.add(collar);
 
-    const bell = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 0.16, 12), bellMat);
-    bell.position.set(0.72, 0.75, 0);
+    const bell = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.13, 0.16, 12), bellMat);
+    bell.position.set(0.74, 0.74, 0);
     cowGroup.add(bell);
 
+    // Head Group facing forward (+X)
     const headGroup = new THREE.Group();
-    headGroup.position.set(1.0, 1.35, 0);
+    headGroup.position.set(1.02, 1.35, 0);
 
-    const headGeo = new THREE.SphereGeometry(0.48, 20, 20);
-    headGeo.scale(1.0, 1.15, 0.95);
-    const head = new THREE.Mesh(headGeo, whiteMat);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.46, 22, 22), whiteMat);
+    head.scale.set(1.05, 1.10, 0.95);
     head.castShadow = true;
     headGroup.add(head);
 
-    const headSpot = new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 12), spotMat);
-    headSpot.scale.set(0.8, 1.0, 0.5);
-    headSpot.position.set(-0.05, 0.2, 0.32);
-    headGroup.add(headSpot);
+    // Cute Dark Patch on one eye
+    const eyePatch = new THREE.Mesh(new THREE.SphereGeometry(0.24, 12, 12), spotMat);
+    eyePatch.scale.set(0.8, 1.0, 0.4);
+    eyePatch.position.set(0.12, 0.18, 0.30);
+    headGroup.add(eyePatch);
 
-    [-0.2, 0.2].forEach(eyeZ => {
-      const eyeGeo = new THREE.SphereGeometry(0.12, 14, 14);
-      eyeGeo.scale(0.5, 1.1, 1.0);
-      const sclera = new THREE.Mesh(eyeGeo, new THREE.MeshBasicMaterial({ color: 0xffffff }));
-      sclera.position.set(0.25, 0.16, eyeZ);
+    // Big Cute Cartoon Eyes
+    [-0.20, 0.20].forEach(eyeZ => {
+      const sclera = new THREE.Mesh(new THREE.SphereGeometry(0.10, 14, 14), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+      sclera.position.set(0.28, 0.14, eyeZ);
       headGroup.add(sclera);
 
-      const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.065, 10, 10), new THREE.MeshBasicMaterial({ color: 0x18181b }));
-      pupil.position.set(0.31, 0.16, eyeZ);
+      const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.055, 10, 10), new THREE.MeshBasicMaterial({ color: 0x1c1917 }));
+      pupil.position.set(0.34, 0.14, eyeZ);
       headGroup.add(pupil);
 
-      const eyeHl = new THREE.Mesh(new THREE.SphereGeometry(0.025, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-      eyeHl.position.set(0.34, 0.19, eyeZ + 0.02);
-      headGroup.add(eyeHl);
+      const glint = new THREE.Mesh(new THREE.SphereGeometry(0.022, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+      glint.position.set(0.36, 0.16, eyeZ + 0.02);
+      headGroup.add(glint);
     });
 
-    const muzzle = new THREE.Mesh(new THREE.SphereGeometry(0.34, 18, 16), pinkMat);
-    muzzle.scale.set(1.1, 0.75, 1.15);
-    muzzle.position.set(0.38, -0.12, 0);
+    // Friendly Pink Muzzle / Snout
+    const muzzle = new THREE.Mesh(new THREE.SphereGeometry(0.32, 18, 16), pinkMat);
+    muzzle.scale.set(1.15, 0.72, 1.12);
+    muzzle.position.set(0.42, -0.14, 0);
     headGroup.add(muzzle);
 
-    [-0.12, 0.12].forEach(nZ => {
-      const nostril = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 8), new THREE.MeshBasicMaterial({ color: 0x475569 }));
-      nostril.position.set(0.68, -0.08, nZ);
+    // Dark Nostrils
+    [-0.10, 0.10].forEach(nZ => {
+      const nostril = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), new THREE.MeshBasicMaterial({ color: 0x374151 }));
+      nostril.position.set(0.72, -0.10, nZ);
       headGroup.add(nostril);
     });
 
-    const smile = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.025, 6, 12, Math.PI), new THREE.MeshBasicMaterial({ color: 0x831843 }));
-    smile.position.set(0.42, -0.25, 0);
-    smile.rotation.y = Math.PI / 2;
-    headGroup.add(smile);
-
+    // Golden Curved Horns
     [-0.24, 0.24].forEach((hZ, i) => {
-      const horn = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.35, 10), hornMat);
-      horn.position.set(-0.06, 0.52, hZ);
-      horn.rotation.z = -0.3;
-      horn.rotation.x = i === 0 ? -0.4 : 0.4;
+      const horn = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.32, 10), hornMat);
+      horn.position.set(-0.06, 0.50, hZ);
+      horn.rotation.z = -0.35;
+      horn.rotation.x = i === 0 ? -0.35 : 0.35;
       headGroup.add(horn);
 
-      const ear = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.4, 8), whiteMat);
-      ear.scale.set(1.2, 1, 0.4);
-      ear.position.set(-0.16, 0.25, hZ * 1.5);
-      ear.rotation.set(i === 0 ? -1.2 : 1.2, 0, -0.3);
+      // Drooping Cute Ears
+      const ear = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.38, 8), whiteMat);
+      ear.scale.set(1.1, 1, 0.4);
+      ear.position.set(-0.14, 0.22, hZ * 1.4);
+      ear.rotation.set(i === 0 ? -1.1 : 1.1, 0, -0.3);
       headGroup.add(ear);
     });
 
     cowGroup.add(headGroup);
 
+    // --- 4 SOLID LEGS WITH INTEGRATED SHOULDER/HIP JOINTS (NO FLOATING STICKS) ---
     [
-      [0.6, 0.25, 0.55],
-      [0.6, 0.25, -0.55],
-      [-0.6, 0.25, 0.55],
-      [-0.6, 0.25, -0.55]
-    ].forEach(pos => {
-      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.16, 0.55, 12), whiteMat);
-      leg.position.set(pos[0], pos[1], pos[2]);
-      cowGroup.add(leg);
+      [0.62, 0.54],   // Front Right
+      [0.62, -0.54],  // Front Left
+      [-0.62, 0.54],  // Rear Right
+      [-0.62, -0.54]  // Rear Left
+    ].forEach(([lx, lz]) => {
+      const legGroup = new THREE.Group();
+      legGroup.position.set(lx, 0, lz);
 
-      const hoof = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.18, 12), hoofMat);
-      hoof.position.set(pos[0], pos[1] - 0.2, pos[2]);
-      cowGroup.add(hoof);
+      // Anatomical rounded shoulder/hip joint connecting leg seamlessly into body
+      const joint = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 10), whiteMat);
+      joint.position.y = 0.65;
+      legGroup.add(joint);
+
+      // Main upper leg
+      const legMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.11, 0.48, 12), whiteMat);
+      legMesh.position.y = 0.38;
+      legMesh.castShadow = true;
+      legGroup.add(legMesh);
+
+      // Dark brown hoof resting firmly on ground (y = 0.0)
+      const hoof = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.14, 12), hoofMat);
+      hoof.position.y = 0.07;
+      legGroup.add(hoof);
+
+      cowGroup.add(legGroup);
     });
 
+    // Animated Wagging Tail
     const tailGroup = new THREE.Group();
-    tailGroup.position.set(-1.0, 0.8, 0);
-    const tailMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.75, 8), whiteMat);
-    tailMesh.position.y = -0.35;
-    tailMesh.rotation.z = 0.25;
+    tailGroup.position.set(-1.0, 0.85, 0);
+    const tailMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.72, 8), whiteMat);
+    tailMesh.position.y = -0.32;
+    tailMesh.rotation.z = 0.22;
     tailGroup.add(tailMesh);
-    const tuft = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.25, 8), spotMat);
-    tuft.position.set(0.15, -0.75, 0);
+    const tuft = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.24, 8), spotMat);
+    tuft.position.set(0.14, -0.70, 0);
     tailGroup.add(tuft);
     cowGroup.add(tailGroup);
 
@@ -679,39 +850,36 @@ export class AssetFactory {
         chunk.rotation.y = (Math.random() - 0.5) * 0.2;
         chunk.castShadow = true;
         trenchGroup.add(chunk);
-
-        // Exposed rusty iron rebar wire jutting out of broken concrete
-        if (Math.random() > 0.4) {
-          const rebar = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.45, 6), rebarMat);
-          rebar.rotation.z = Math.PI / 2 + (Math.random() - 0.5) * 0.3;
-          rebar.rotation.y = (Math.random() - 0.5) * 0.4;
-          rebar.position.set(wallX - side * 0.25, -0.12, z);
-          trenchGroup.add(rebar);
-        }
       }
     });
 
-    // --- D. UNDERGROUND UTILITY PIPES (Bhopal Jal Nigam Water Main Pipe) ---
-    // Large 0.65m diameter pipe spanning across chasm at y = -1.5m
-    const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 7.2, 18), pipeMat);
-    pipe.position.set(0.35, -1.5, 0);
-    pipe.castShadow = true;
-    pipe.receiveShadow = true;
-    trenchGroup.add(pipe);
+    // --- D. NORTH & SOUTH PIT RETAINING WALLS (Seals pit so no yellow background shines through) ---
+    const sideWallN = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.4, 0.3), earthWallMat);
+    sideWallN.position.set(0, -1.2, -3.55);
+    sideWallN.receiveShadow = true;
+    trenchGroup.add(sideWallN);
 
-    // Pipe joint rings
-    for (let pz = -2.8; pz <= 2.8; pz += 1.8) {
-      const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 0.18, 18), pipeBandMat);
-      ring.position.set(0.35, -1.5, pz);
-      trenchGroup.add(ring);
-    }
+    const sideWallS = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.4, 0.3), earthWallMat);
+    sideWallS.position.set(0, -1.2, 3.55);
+    sideWallS.receiveShadow = true;
+    trenchGroup.add(sideWallS);
 
-    // Secondary Electrical Cable Conduit (Black corrugated pipe)
-    const cable = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 7.2, 12), new THREE.MeshStandardMaterial({ color: 0x09090b }));
-    cable.position.set(-1.45, -0.9, 0);
-    trenchGroup.add(cable);
+    // --- E. REAL BLUE WATER SURFACE AT ACTUAL PIT BOTTOM (y = -2.18) ---
+    const waterGeo = new THREE.PlaneGeometry(3.55, 6.95);
+    const waterMat = new THREE.MeshStandardMaterial({
+      color: 0x0284c7,
+      roughness: 0.12,
+      metalness: 0.45,
+      transparent: true,
+      opacity: 0.82
+    });
+    const water = new THREE.Mesh(waterGeo, waterMat);
+    water.rotation.x = -Math.PI / 2;
+    water.position.set(0, -2.18, 0);
+    water.receiveShadow = true;
+    trenchGroup.add(water);
 
-    // --- E. RUBBLE HEAPS, CONCRETE BLOCKS & STONES IN PIT BOTTOM ---
+    // --- F. RUBBLE HEAPS, CONCRETE BLOCKS & STONES IN PIT BOTTOM ---
     for (let i = 0; i < 35; i++) {
       const gX = (Math.random() - 0.5) * 3.0;
       const gZ = (Math.random() - 0.5) * 6.5;
@@ -782,15 +950,39 @@ export class AssetFactory {
   static createBroom() {
     const group = new THREE.Group();
     group.name = "Item_Broom";
-    const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.1, 8), new THREE.MeshStandardMaterial({ color: 0xa16207 }));
-    handle.rotation.z = Math.PI / 2.5;
-    handle.position.set(0, 0.1, 0);
+
+    const woodMat = new THREE.MeshStandardMaterial({ color: 0xa16207, roughness: 0.8 });
+    const strawMat = new THREE.MeshStandardMaterial({ color: 0xca8a04, roughness: 0.95 });
+    const wireMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.8, roughness: 0.3 });
+
+    // Straight Bamboo Handle lying along X-axis
+    const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 1.05, 8), woodMat);
+    handle.rotation.z = Math.PI / 2;
+    handle.position.set(-0.15, 0.06, 0);
+    handle.castShadow = true;
     group.add(handle);
-    const bristles = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.45, 8), new THREE.MeshStandardMaterial({ color: 0xca8a04, roughness: 0.9 }));
-    bristles.position.set(0.5, 0.1, 0);
+
+    // Natural bound straw bristles bundle extending from the handle along X-axis
+    const bristles = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.48, 12), strawMat);
     bristles.rotation.z = -Math.PI / 2;
+    bristles.position.set(0.54, 0.06, 0);
+    bristles.castShadow = true;
     group.add(bristles);
-    group.userData = { type: 'broom', isCorrect: false, title: 'Purani Jhadu (Broom)', rejectMsg: 'Arre miyaan, jhadu se scooter khadi karoge toh toot jayegi! Koi bhari eent chahiye!' };
+
+    // Metal / Twine binding collars wrapping around the straw base
+    [-0.04, 0.04].forEach(offX => {
+      const binding = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.04, 12), wireMat);
+      binding.rotation.z = Math.PI / 2;
+      binding.position.set(0.34 + offX, 0.06, 0);
+      group.add(binding);
+    });
+
+    group.userData = {
+      type: 'broom',
+      isCorrect: false,
+      title: 'Purani Jhadu (Broom)',
+      rejectMsg: '⚠️ CRACK! Jhadu toot gayi — Scooter ka wazan nahi sambhal payi!'
+    };
     return group;
   }
 
@@ -942,7 +1134,7 @@ export class AssetFactory {
       envGroup.add(balc);
     }
 
-    // Chai Stall
+    // Chai Stall (with authentic 4 support pillars holding up the blue canopy roof)
     const stallGroup = new THREE.Group();
     stallGroup.position.set(2, 0.2, -4.0);
     const stall = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1.1, 1.4), new THREE.MeshStandardMaterial({ color: 0x9a3412 }));
@@ -952,6 +1144,20 @@ export class AssetFactory {
     const kettle = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.26, 0.45, 14), new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.75, roughness: 0.2 }));
     kettle.position.set(0.6, 1.32, 0);
     stallGroup.add(kettle);
+
+    // 4 Solid Bamboo / Timber Support Pillars holding up the roof
+    const poleMat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.8 });
+    [
+      [-1.25, -0.60],
+      [1.25, -0.60],
+      [-1.25, 0.60],
+      [1.25, 0.60]
+    ].forEach(([px, pz]) => {
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 2.5, 8), poleMat);
+      pole.position.set(px, 1.25, pz);
+      pole.castShadow = true;
+      stallGroup.add(pole);
+    });
 
     const roof = new THREE.Mesh(new THREE.ConeGeometry(2.2, 0.7, 4), new THREE.MeshStandardMaterial({ color: 0x2563eb }));
     roof.position.set(0, 2.6, 0);
@@ -974,73 +1180,276 @@ export class AssetFactory {
       envGroup.add(light);
     }
 
-    // --- GRAND FINISH ARCHWAY & CHECKERED LINE (x = 38) ---
-    const finishArch = new THREE.Group();
-    finishArch.position.set(38, 0, 0);
+    // --- SHEESH MAHAL: COMPACT ROYAL PALACE WEDDING FACADE (x = 42.0, Height = 3.8m) ---
+    const sheeshMahal = new THREE.Group();
+    sheeshMahal.name = "SheeshMahalWeddingVenue";
+    sheeshMahal.position.set(42.0, 0, 0);
 
-    // Checkered Finish Strip across road
-    for (let cz = -3.2; cz <= 3.2; cz += 0.8) {
-      for (let cx = -0.4; cx <= 0.4; cx += 0.4) {
-        const isBlack = (Math.round(cx * 10) + Math.round(cz * 10)) % 2 === 0;
-        const square = new THREE.Mesh(
-          new THREE.PlaneGeometry(0.4, 0.8),
-          new THREE.MeshBasicMaterial({ color: isBlack ? 0x09090b : 0xf8fafc })
-        );
-        square.rotation.x = -Math.PI / 2;
-        square.position.set(cx, 0.015, cz);
-        finishArch.add(square);
-      }
+    const stoneMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.65, metalness: 0.15 });
+    const trimGoldMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.35, metalness: 0.6 });
+    const royalRedMat = new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.6 });
+    const carpetMat = new THREE.MeshStandardMaterial({ color: 0x881337, roughness: 0.8 });
+
+    // 1. Red Carpet centered on road leading straight through the gate
+    const redCarpet = new THREE.Mesh(new THREE.PlaneGeometry(6.5, 2.8), carpetMat);
+    redCarpet.rotation.x = -Math.PI / 2;
+    redCarpet.position.set(-0.2, 0.015, 0);
+    redCarpet.receiveShadow = true;
+    sheeshMahal.add(redCarpet);
+
+    [-1.4, 1.4].forEach(cz => {
+      const border = new THREE.Mesh(new THREE.PlaneGeometry(6.5, 0.14), trimGoldMat);
+      border.rotation.x = -Math.PI / 2;
+      border.position.set(-0.2, 0.02, cz);
+      sheeshMahal.add(border);
+    });
+
+    // 2. Palace Sandstone Facade Wall (Height: 3.8m, Width: 8.6m)
+    // Left Wing Wall (z: -4.3 to -1.45)
+    const wallLeft = new THREE.Mesh(new THREE.BoxGeometry(0.38, 3.8, 2.85), stoneMat);
+    wallLeft.position.set(0, 1.90, -2.88);
+    wallLeft.castShadow = true;
+    sheeshMahal.add(wallLeft);
+
+    // Right Wing Wall (z: 1.45 to 4.3)
+    const wallRight = new THREE.Mesh(new THREE.BoxGeometry(0.38, 3.8, 2.85), stoneMat);
+    wallRight.position.set(0, 1.90, 2.88);
+    wallRight.castShadow = true;
+    sheeshMahal.add(wallRight);
+
+    // Top Arch Lintel above central gate (connecting the two walls at y: 3.0 to 3.8m)
+    const archLintel = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.80, 2.9), stoneMat);
+    archLintel.position.set(0, 3.40, 0);
+    archLintel.castShadow = true;
+    sheeshMahal.add(archLintel);
+
+    // Ornamental Palace Cornice / Parapet along the top of wall (y = 3.85m)
+    const parapet = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.22, 8.8), trimGoldMat);
+    parapet.position.set(0, 3.91, 0);
+    sheeshMahal.add(parapet);
+
+    // 3. Decorative Gate Pillars framing the 2.8m central opening
+    [-1.45, 1.45].forEach(pz => {
+      const pCol = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.20, 3.8, 14), trimGoldMat);
+      pCol.position.set(0.04, 1.90, pz);
+      pCol.castShadow = true;
+      sheeshMahal.add(pCol);
+
+      // Miniature corner decorative chhatri / dome at y = 4.15m
+      const chhatri = new THREE.Mesh(new THREE.SphereGeometry(0.26, 12, 12, 0, Math.PI * 2, 0, Math.PI * 0.7), trimGoldMat);
+      chhatri.position.set(0, 4.15, pz);
+      sheeshMahal.add(chhatri);
+    });
+
+    // 4. Tasteful Marigold Flower Garlands (Genda Phool) framing the central gate
+    const orangeMat = new THREE.MeshStandardMaterial({ color: 0xea580c, roughness: 0.8 });
+    const yellowMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.8 });
+
+    // Horizontal garland across the gate top
+    for (let gz = -1.35; gz <= 1.35; gz += 0.22) {
+      const bead = new THREE.Mesh(new THREE.SphereGeometry(0.075, 6, 6), Math.round(gz * 10) % 2 === 0 ? orangeMat : yellowMat);
+      bead.position.set(-0.24, 2.95, gz);
+      sheeshMahal.add(bead);
     }
+    // Vertical hanging garland strings along both sides of gate
+    [-1.42, 1.42].forEach(gz => {
+      for (let gy = 0.6; gy <= 2.9; gy += 0.26) {
+        const bead = new THREE.Mesh(new THREE.SphereGeometry(0.07, 6, 6), Math.round(gy * 10) % 2 === 0 ? orangeMat : yellowMat);
+        bead.position.set(-0.24, gy, gz);
+        sheeshMahal.add(bead);
+      }
+    });
 
-    // Two Golden Arch Pillars
-    const archPillarMat = new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.6, roughness: 0.3 });
-    const p1 = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.22, 6.0, 12), archPillarMat);
-    p1.position.set(0, 3.0, -3.6);
-    finishArch.add(p1);
+    // 5. Wedding Shamiana Canopy behind the gate (x = 1.6, y = 4.1)
+    const canopyRoof = new THREE.Mesh(new THREE.ConeGeometry(2.8, 1.1, 4), royalRedMat);
+    canopyRoof.position.set(1.6, 4.35, 0);
+    canopyRoof.rotation.y = Math.PI / 4;
+    sheeshMahal.add(canopyRoof);
 
-    const p2 = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.22, 6.0, 12), archPillarMat);
-    p2.position.set(0, 3.0, 3.6);
-    finishArch.add(p2);
+    // Warm Festive Fairy Lights
+    const fairyLight = new THREE.PointLight(0xfef08a, 1.8, 9.0);
+    fairyLight.position.set(-0.2, 3.2, 0);
+    sheeshMahal.add(fairyLight);
 
-    // Glowing Arch Header Board
-    const board = new THREE.Mesh(
-      new THREE.BoxGeometry(0.4, 1.6, 7.6),
-      new THREE.MeshStandardMaterial({ color: 0x047857, emissive: 0x065f46, emissiveIntensity: 0.4 })
-    );
-    board.position.set(0, 5.2, 0);
-    finishArch.add(board);
-
-    // Canvas Texture for Finish Line Text
+    // 6. High-Contrast Readable Wedding Signboard (Angled for camera visibility)
     const canvas = document.createElement('canvas');
     canvas.width = 1024;
     canvas.height = 256;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#065f46';
+    ctx.fillStyle = '#4a0418';
     ctx.fillRect(0, 0, 1024, 256);
-    ctx.strokeStyle = '#fbbf24';
-    ctx.lineWidth = 12;
-    ctx.strokeRect(10, 10, 1004, 236);
+    ctx.strokeStyle = '#facc15';
+    ctx.lineWidth = 16;
+    ctx.strokeRect(8, 8, 1008, 240);
 
-    ctx.fillStyle = '#fef08a';
-    ctx.font = 'bold 72px sans-serif';
+    ctx.fillStyle = '#fde047';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 6;
+    ctx.font = 'bold 62px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('🏁 FINISH: VIP ROAD BHOPAL 🏁', 512, 105);
+    ctx.strokeText('🌸 SHEESH MAHAL: GUDDU KI BAARAAT 🌸', 512, 102);
+    ctx.fillText('🌸 SHEESH MAHAL: GUDDU KI BAARAAT 🌸', 512, 102);
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 44px sans-serif';
-    ctx.fillText('★ MP GAME UDAAN 2026 - JUGAAD SAFAR ★', 512, 185);
+    ctx.strokeText('★ DULHE KA SEHRA MANDAP ★', 512, 185);
+    ctx.fillText('★ DULHE KA SEHRA MANDAP ★', 512, 185);
 
     const textTex = new THREE.CanvasTexture(canvas);
     const signPlane = new THREE.Mesh(
-      new THREE.PlaneGeometry(7.4, 1.4),
+      new THREE.PlaneGeometry(3.2, 0.85),
       new THREE.MeshBasicMaterial({ map: textTex, transparent: true })
     );
-    signPlane.rotation.y = -Math.PI / 2;
-    signPlane.position.set(-0.21, 5.2, 0);
-    finishArch.add(signPlane);
+    // Angled slightly toward camera (+Z) for clear diagonal reading!
+    signPlane.rotation.y = -Math.PI / 2 + 0.35;
+    signPlane.position.set(-0.25, 3.38, 0.15);
+    sheeshMahal.add(signPlane);
 
-    envGroup.add(finishArch);
+    envGroup.add(sheeshMahal);
 
     return envGroup;
+  }
+
+  // 13. Shiny Golden Desi Rupee Coin (Collectible with '₹' symbol)
+  static createDesiCoin() {
+    const coinGroup = new THREE.Group();
+    coinGroup.name = "DesiCoin";
+
+    // Create Canvas Texture with gold rim and Indian Rupee Symbol
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+
+    // Shiny gold circle background
+    const grad = ctx.createRadialGradient(128, 128, 20, 128, 128, 120);
+    grad.addColorStop(0, '#fef08a');
+    grad.addColorStop(0.5, '#f59e0b');
+    grad.addColorStop(1, '#b45309');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(128, 128, 120, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Concentric gold border
+    ctx.strokeStyle = '#78350f';
+    ctx.lineWidth = 10;
+    ctx.beginPath();
+    ctx.arc(128, 128, 108, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Embossed '₹' text
+    ctx.font = 'bold 120px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#78350f';
+    ctx.fillText('₹', 130, 132);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('₹', 126, 126);
+
+    const coinTex = new THREE.CanvasTexture(canvas);
+
+    const coinMat = new THREE.MeshStandardMaterial({
+      color: 0xfbbf24,
+      metalness: 0.85,
+      roughness: 0.25,
+      map: coinTex
+    });
+    const edgeMat = new THREE.MeshStandardMaterial({
+      color: 0xd97706,
+      metalness: 0.9,
+      roughness: 0.3
+    });
+
+    // Cylinder with custom face materials
+    const coinMesh = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.28, 0.28, 0.06, 24),
+      [edgeMat, coinMat, coinMat]
+    );
+    coinMesh.rotation.x = Math.PI / 2;
+    coinMesh.castShadow = true;
+    coinGroup.add(coinMesh);
+
+    // Subtle gentle golden glow pointlight
+    const glow = new THREE.PointLight(0xfef08a, 0.8, 2.2);
+    glow.position.set(0, 0, 0);
+    coinGroup.add(glow);
+
+    coinGroup.userData = {
+      isCollected: false,
+      initialY: 0.65,
+      rotSpeed: 2.8
+    };
+    coinGroup.position.y = 0.65;
+
+    return coinGroup;
+  }
+
+  // 14. Road Excavation Warning Barrier ("SAVDHAN! AAGE GADDHA HAI")
+  static createWarningBarrier() {
+    const barrier = new THREE.Group();
+    barrier.name = "WarningBarrier";
+
+    const postMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6 });
+    const coneOrangeMat = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.5 });
+    const whiteStripeMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.4 });
+
+    // 2 Striped Road Cones
+    [-1.6, 1.6].forEach(cz => {
+      const cone = new THREE.Group();
+      cone.position.set(0, 0, cz);
+
+      const base = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.05, 0.42), postMat);
+      base.position.y = 0.025;
+      cone.add(base);
+
+      const coneMesh = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.65, 14), coneOrangeMat);
+      coneMesh.position.y = 0.35;
+      cone.add(coneMesh);
+
+      const stripe = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.16, 14), whiteStripeMat);
+      stripe.position.y = 0.34;
+      cone.add(stripe);
+
+      barrier.add(cone);
+    });
+
+    // Warning Signboard Banner across road
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+
+    // Yellow / Black warning diagonal background
+    ctx.fillStyle = '#facc15';
+    ctx.fillRect(0, 0, 512, 128);
+    ctx.fillStyle = '#111827';
+    ctx.fillRect(10, 10, 492, 108);
+
+    ctx.fillStyle = '#fde047';
+    ctx.font = 'bold 36px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('⚠️ SAVDHAN! AAGE GADDHA HAI ⚠️', 256, 44);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillText('ROAD WORK IN PROGRESS (JUGAAD REQUIRED)', 256, 88);
+
+    const signTex = new THREE.CanvasTexture(canvas);
+    const signBoard = new THREE.Mesh(
+      new THREE.BoxGeometry(0.08, 0.55, 2.8),
+      new THREE.MeshStandardMaterial({ map: signTex, roughness: 0.5 })
+    );
+    signBoard.position.set(0, 0.72, 0);
+    barrier.add(signBoard);
+
+    // Two support legs
+    [-1.25, 1.25].forEach(lz => {
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.75, 8), postMat);
+      leg.position.set(0, 0.375, lz);
+      barrier.add(leg);
+    });
+
+    return barrier;
   }
 }

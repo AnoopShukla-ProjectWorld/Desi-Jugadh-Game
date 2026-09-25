@@ -481,6 +481,134 @@
     }
 
     /* ========================================================
+       CINEMATIC CUTSCENE OVERLAY
+       ======================================================== */
+    #cutscene-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1500;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: opacity 0.5s ease;
+    }
+    .cinema-bar-top, .cinema-bar-bottom {
+      width: 100%;
+      height: 70px;
+      background: #000000;
+      box-shadow: 0 0 20px rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      pointer-events: auto;
+    }
+    .cutscene-title-tag {
+      color: #f59e0b;
+      font-weight: 800;
+      letter-spacing: 2px;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-skip-cutscene {
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid #f59e0b;
+      color: #fef08a;
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .btn-skip-cutscene:hover {
+      background: #f59e0b;
+      color: #111;
+      transform: scale(1.04);
+    }
+    .cutscene-dialogue-card {
+      align-self: center;
+      max-width: 680px;
+      width: 90%;
+      background: rgba(15, 15, 22, 0.94);
+      border: 2px solid #f59e0b;
+      border-radius: 18px;
+      padding: 16px 24px;
+      color: #fff;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.8);
+      backdrop-filter: blur(12px);
+      margin-bottom: 24px;
+      pointer-events: auto;
+      animation: cutsceneCardPop 0.4s ease-out;
+    }
+    @keyframes cutsceneCardPop {
+      0% { transform: translateY(20px) scale(0.96); opacity: 0; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .cutscene-caller-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      border-bottom: 1px solid rgba(245, 158, 11, 0.3);
+      padding-bottom: 6px;
+    }
+    .cutscene-caller-name {
+      color: #facc15;
+      font-weight: 800;
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .cutscene-pulse-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ef4444;
+      box-shadow: 0 0 10px #ef4444;
+      animation: callPulse 1s infinite alternate;
+    }
+    @keyframes callPulse {
+      0% { opacity: 0.4; transform: scale(0.8); }
+      100% { opacity: 1; transform: scale(1.2); }
+    }
+    .cutscene-dialogue-text {
+      font-size: 1.15rem;
+      line-height: 1.45;
+      color: #f3f4f6;
+      font-style: italic;
+    }
+
+    /* Floating Score Popup Particles */
+    .floating-score {
+      position: absolute;
+      color: #fde047;
+      font-size: 1.4rem;
+      font-weight: 900;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.8), 0 0 12px #f59e0b;
+      pointer-events: none;
+      z-index: 1200;
+      animation: floatUpFade 1.1s forwards cubic-bezier(0.1, 0.8, 0.3, 1);
+    }
+    @keyframes floatUpFade {
+      0% { transform: translate(-50%, 0) scale(0.7); opacity: 0; }
+      20% { transform: translate(-50%, -15px) scale(1.2); opacity: 1; }
+      100% { transform: translate(-50%, -60px) scale(1); opacity: 0; }
+    }
+
+    /* ========================================================
        HUD OVERLAY (DURING GAMEPLAY)
        ======================================================== */
     #ui-overlay {
@@ -958,9 +1086,40 @@
   </div>
 
   <!-- ========================================================
+       4.5 CINEMATIC OPENING CUTSCENE OVERLAY
+       ======================================================== -->
+  <div id="cutscene-overlay">
+    <div class="cinema-bar-top">
+      <div class="cutscene-title-tag">
+        <span>🎬</span> BHOPAL SAFAR — KAHANI SHURU HOTI HAI...
+      </div>
+      <button id="btn-skip-cutscene" class="btn-skip-cutscene" title="Skip to Gameplay">
+        Skip Cutscene [Space] ⏩
+      </button>
+    </div>
+
+    <div id="cutscene-card" class="cutscene-dialogue-card">
+      <div class="cutscene-caller-header">
+        <div id="cutscene-caller-name" class="cutscene-caller-name">
+          <span>📞</span> <span id="cutscene-speaker-title">👰 Chachi (Sheesh Mahal Mandap)</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px; font-size:0.8rem; color:#ef4444; font-weight:bold;">
+          <span class="cutscene-pulse-indicator"></span> URGENT CALL
+        </div>
+      </div>
+      <div id="cutscene-text" class="cutscene-dialogue-text">
+        "Arey suno! Baaraat dwar par khadi hai! Pandit ji gusse me hain! Guddu ka dulha sehra leke turant aao!"
+      </div>
+    </div>
+
+    <div class="cinema-bar-bottom"></div>
+  </div>
+
+  <!-- ========================================================
        5. IN-GAME HUD & CONTROLS
        ======================================================== -->
   <div id="ui-overlay">
+    <div id="floating-score-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
     <div class="hud-top">
       <div class="title-card">
         <h1>🛵 Bhopali Safar <span>— The Great Desi Jugaad</span></h1>
