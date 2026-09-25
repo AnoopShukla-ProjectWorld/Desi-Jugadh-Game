@@ -1516,7 +1516,7 @@ export class AssetFactory {
       type: 'short_plank',
       isCorrect: false,
       title: 'Chhota Phatta (Short Plank - 2.2m)',
-      rejectMsg: 'Yeh phatta sirf 2.2 meter ka hai miyaan! Gaddha 3.6 meter lamba hai, dono side tikega hi nahi! Deewal se lamba phatta uthao!'
+      rejectMsg: 'Yeh phatta sirf 2.2 meter ka hai miyaan! Gaddha 3.6 meter lamba hai, dono side tikega hi nahi! Chai ki dukaan ke paas grey deewal se lamba phatta uthao!'
     };
     return group;
   }

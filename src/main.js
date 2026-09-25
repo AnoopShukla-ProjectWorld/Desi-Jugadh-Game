@@ -139,19 +139,19 @@ class Game {
     this.junkPile.position.set(-9.2, 0.32, -2.8);
     this.scene.add(this.junkPile);
 
-    // Level 2 Plank 1: Short Plank Distractor (2.2m) leaning against Grey Building Wall (x = 4.6)
-    const shortPlank = AssetFactory.createShortPlank();
-    shortPlank.position.set(4.6, 1.05, -5.0);
-    shortPlank.rotation.set(-0.14, Math.PI / 2, Math.PI / 2);
-    this.scene.add(shortPlank);
-    this.items.push(shortPlank);
-
-    // Level 2 Plank 2: Long Sturdy Timber Bridge (4.2m) leaning against Green Building Wall (x = 8.0)
+    // Level 2 Plank 1: Long Sturdy Timber Bridge (4.2m) leaning against Grey Building Wall near Chai Stall (x = 4.6)
     const plank = AssetFactory.createTimberPlank();
-    plank.position.set(8.0, 2.05, -5.0);
+    plank.position.set(4.6, 2.05, -5.0);
     plank.rotation.set(-0.14, Math.PI / 2, Math.PI / 2);
     this.scene.add(plank);
     this.items.push(plank);
+
+    // Level 2 Plank 2: Short Plank Distractor (2.2m) leaning against Green Building Wall near Trench (x = 8.0)
+    const shortPlank = AssetFactory.createShortPlank();
+    shortPlank.position.set(8.0, 1.05, -5.0);
+    shortPlank.rotation.set(-0.14, Math.PI / 2, Math.PI / 2);
+    this.scene.add(shortPlank);
+    this.items.push(shortPlank);
 
     // Level 3 Grass Item (Cow feed)
     const grass = AssetFactory.createGrassRotiBasket();
