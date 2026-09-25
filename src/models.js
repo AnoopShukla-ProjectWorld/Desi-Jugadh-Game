@@ -1168,7 +1168,7 @@ export class AssetFactory {
       type: 'rope',
       isCorrect: false,
       title: 'Bhari Jute Ki Rassi',
-      rejectMsg: 'Itni moti rassi se mobile baandhoge toh jeb me kaise ghusega? Koi patli rubber band dhundo!'
+      rejectMsg: 'Miyaan! Itni moti rassi se mobile baandhoge toh jeb me kaise ghusega? Koi patli rubber band dhundo!'
     };
     return group;
   }
@@ -1481,7 +1481,7 @@ export class AssetFactory {
     group.userData = {
       type: 'plank',
       isCorrect: true,
-      title: 'Bhari Lakdi ka Phatta (Timber Plank Bridge - 4.2m)',
+      title: 'Lakdi ka Phatta',
       widthZ: 1.8,
       lengthX: 4.2
     };
@@ -1515,8 +1515,8 @@ export class AssetFactory {
     group.userData = {
       type: 'short_plank',
       isCorrect: false,
-      title: 'Chhota Phatta (Short Plank - 2.2m)',
-      rejectMsg: 'Yeh phatta sirf 2.2 meter ka hai! Gaddha 3.6 meter lamba hai, aadhe raste me hi khatam ho jayega! Chai stall ke paas grey deewal se 4.2m lamba phatta uthao!'
+      title: 'Lakdi ka Phatta',
+      rejectMsg: 'Yeh phatta gaddhe se chhota pad gaya! Dono kinaron par tik hi nahi paya!'
     };
     return group;
   }
@@ -1557,99 +1557,7 @@ export class AssetFactory {
     tyre.rotation.x = Math.PI / 2;
     tyre.position.y = 0.12;
     group.add(tyre);
-    group.userData = { type: 'tyre', isCorrect: false, title: 'Purana Cycle Tyre', rejectMsg: 'Gau Mata tyre dekh kar nahi hatengi! Unko taazi ghaas ya roti khilao!' };
-    return group;
-  }
-
-  // Authentic Desi Petrol Can (Jerrycan) collectible
-  static createPetrolCan() {
-    const group = new THREE.Group();
-    group.name = "Item_PetrolCan";
-
-    const canMat = new THREE.MeshStandardMaterial({ color: 0x16a34a, roughness: 0.45, metalness: 0.3 });
-    const capMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.3, metalness: 0.7 });
-
-    const body = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.52, 0.22), canMat);
-    body.position.y = 0.26;
-    body.castShadow = true;
-    group.add(body);
-
-    const handle = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.08, 0.18), canMat);
-    handle.position.set(0, 0.55, 0);
-    group.add(handle);
-
-    const spout = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.05, 0.12, 10), capMat);
-    spout.position.set(0.14, 0.55, 0);
-    group.add(spout);
-
-    // Glowing aura
-    const light = new THREE.PointLight(0x22c55e, 0.8, 2.5);
-    light.position.set(0, 0.35, 0);
-    group.add(light);
-
-    group.userData = {
-      type: 'petrol_can',
-      title: '⛽ Chetak Desi Petrol Can (+30% Fuel)',
-      isCorrect: false
-    };
-    return group;
-  }
-
-  // Excavation Rubble & Construction Debris Pile blocking the Sidewalk beside the Trench
-  static createExcavationRubblePile() {
-    const group = new THREE.Group();
-    group.name = "ExcavationRubblePile";
-
-    const mudMat = new THREE.MeshStandardMaterial({ color: 0x5a3416, roughness: 0.95 });
-    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.85 });
-    const pipeMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.5, metalness: 0.2 });
-    const barricadeMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.6 });
-
-    // Excavated Earth Mounds on Sidewalk
-    const mound1 = new THREE.Mesh(new THREE.DodecahedronGeometry(1.2, 1), mudMat);
-    mound1.scale.set(1.4, 0.65, 1.1);
-    mound1.position.set(-0.6, 0.35, 0);
-    mound1.castShadow = true;
-    group.add(mound1);
-
-    const mound2 = new THREE.Mesh(new THREE.DodecahedronGeometry(1.0, 1), mudMat);
-    mound2.scale.set(1.3, 0.6, 1.0);
-    mound2.position.set(0.7, 0.3, 0.2);
-    mound2.castShadow = true;
-    group.add(mound2);
-
-    // Broken Concrete Chunks
-    [
-      [-0.9, 0.25, 0.5, 0.4, 0.3, 0.5],
-      [0.2, 0.4, -0.3, 0.5, 0.35, 0.4],
-      [1.1, 0.2, 0.4, 0.45, 0.28, 0.35]
-    ].forEach(([px, py, pz, sx, sy, sz]) => {
-      const stone = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), stoneMat);
-      stone.position.set(px, py, pz);
-      stone.rotation.set(0.3, 0.5, -0.2);
-      stone.castShadow = true;
-      group.add(stone);
-    });
-
-    // Dug-up PVC Blue Pipeline Segment
-    const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 2.6, 12), pipeMat);
-    pipe.rotation.set(0.1, 0.2, Math.PI / 2);
-    pipe.position.set(0, 0.35, -0.4);
-    pipe.castShadow = true;
-    group.add(pipe);
-
-    // Caution Warning Strip / Barricade Board
-    const post1 = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.2, 8), stoneMat);
-    post1.position.set(-1.2, 0.6, 0.7);
-    group.add(post1);
-    const post2 = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.2, 8), stoneMat);
-    post2.position.set(1.2, 0.6, 0.7);
-    group.add(post2);
-
-    const board = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.22, 0.04), barricadeMat);
-    board.position.set(0, 0.95, 0.7);
-    group.add(board);
-
+    group.userData = { type: 'tyre', isCorrect: false, title: 'Purana Cycle Tyre', rejectMsg: 'Gau Mata tyre dekh kar nahi hilengi miyaan! Unko taazi ghaas ya roti do!' };
     return group;
   }
 
