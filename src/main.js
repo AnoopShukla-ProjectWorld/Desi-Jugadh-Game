@@ -14,6 +14,8 @@ class Game {
     this.plankPlaced = false;
     this.plankZ = 0;
     this.plankHalfWidth = 0.95; // Sturdy bridge width
+    this.placedPlankType = null;
+    this.placedPlankMesh = null;
 
     // Opening Cutscene State
     this.isCutscene = false;
@@ -815,14 +817,16 @@ class Game {
         this.smashedPhoneMesh = null;
       }
 
-      // Respawn 2 phone pieces at smashPos (not teleporting back to distant verandah!)
-      this.phoneCurrentPos = smashPos.clone();
-      this.phoneScreenItem.position.set(smashPos.x, 0.32, smashPos.z);
+      // Respawn 2 phone pieces slightly into the open sidewalk area (not overlapping Kabaad Dher corner)
+      const respawnX = smashPos.x < -8.0 ? smashPos.x + 0.8 : smashPos.x;
+      const respawnZ = smashPos.z < -2.4 ? smashPos.z + 0.7 : smashPos.z;
+      this.phoneCurrentPos = new THREE.Vector3(respawnX, 0.32, respawnZ);
+      this.phoneScreenItem.position.set(respawnX, 0.32, respawnZ);
       this.phoneScreenItem.visible = true;
       this.scene.add(this.phoneScreenItem);
       this.items.push(this.phoneScreenItem);
 
-      this.phoneBackItem.position.set(smashPos.x - 0.25, 0.32, smashPos.z + 0.15);
+      this.phoneBackItem.position.set(respawnX - 0.25, 0.32, respawnZ + 0.15);
       this.phoneBackItem.visible = true;
       this.scene.add(this.phoneBackItem);
 
@@ -1297,19 +1301,11 @@ class Game {
     if (this.isFalling) return;
     const pPos = this.player.position;
 
-    // 0. Near Kabaad ka Dher (Tools & Scrap Corner at left sidewalk corner x = -9.2, z = -2.8)
-    const distToJunk = pPos.distanceTo(new THREE.Vector3(-9.2, 0.32, -2.8));
-    if (distToJunk < 1.8) {
-      this.openRadialWheel();
-      return;
-    }
-
-    // 1. Not carrying: Pick up broken phone, or other items
-    if (!this.inventory) {
-      // Check if near broken phone (verandah or respawned smash location)
+    // 0. Priority: Broken Phone on ground takes precedence over Kabaad Dher wheel!
+    if (!this.inventory && this.stage === 0) {
       const phoneTargetPos = this.phoneCurrentPos || new THREE.Vector3(-5.8, 0.32, -3.4);
       const distToPhone = pPos.distanceTo(phoneTargetPos);
-      if (this.stage === 0 && distToPhone < 2.5) {
+      if (distToPhone < 2.5) {
         this.inventory = this.phoneScreenItem;
         this.scene.remove(this.phoneScreenItem);
         this.items = this.items.filter(it => it !== this.phoneScreenItem);
@@ -1328,6 +1324,39 @@ class Game {
         this.promptTip.innerHTML = 'Toota Phone haath me hai! Kabaad Dher se tool chuno!';
         return;
       }
+    }
+
+    // 1. Near Kabaad ka Dher (Tools & Scrap Corner at left sidewalk corner x = -9.2, z = -2.8)
+    const distToJunk = pPos.distanceTo(new THREE.Vector3(-9.2, 0.32, -2.8));
+    if (distToJunk < 1.8) {
+      this.openRadialWheel();
+      return;
+    }
+
+    // 2. Pick up an already placed plank from trench to swap or test
+    if (!this.inventory && this.plankPlaced && this.placedPlankMesh && this.stage === 1) {
+      const distToPlaced = Math.hypot(pPos.x - this.placedPlankMesh.position.x, pPos.z - this.placedPlankMesh.position.z);
+      if (distToPlaced < 2.5) {
+        this.inventory = this.placedPlankMesh;
+        this.scene.remove(this.placedPlankMesh);
+        this.player.add(this.inventory);
+        this.inventory.position.set(0, 1.28, 0.56);
+        this.inventory.rotation.set(0.35, 0, 0);
+        this.plankPlaced = false;
+        this.placedPlankType = null;
+        this.placedPlankMesh = null;
+        if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
+          this.player.userData.leftArmPivot.rotation.set(-1.25, -0.15, -0.22);
+          this.player.userData.rightArmPivot.rotation.set(-1.25, 0.15, 0.22);
+        }
+        audio.playBrickThud();
+        this.promptTip.innerHTML = `Carrying: <b>${this.inventory.userData.title}</b>. Press [E] to place or drop!`;
+        return;
+      }
+    }
+
+    // 3. Not carrying: Pick up other items
+    if (!this.inventory) {
 
       let nearestItem = null;
       let minDist = 2.8;
@@ -1466,7 +1495,16 @@ class Game {
       const distToTrench = pPos.distanceTo(this.trench.position);
       if (this.stage === 1 && distToTrench < 3.8) {
         if (carried.userData.type === 'plank') {
-          // Snap plank across trench spanning from Platform 1 (x=9.2) to Platform 2 (x=12.8)!
+          // If a short plank was already placed, restore it back to wall
+          if (this.placedPlankMesh && this.placedPlankMesh !== carried) {
+            this.scene.remove(this.placedPlankMesh);
+            this.placedPlankMesh.position.set(8.0, 1.05, -5.0);
+            this.placedPlankMesh.rotation.set(-0.14, Math.PI / 2, Math.PI / 2);
+            this.scene.add(this.placedPlankMesh);
+            if (!this.items.includes(this.placedPlankMesh)) this.items.push(this.placedPlankMesh);
+          }
+
+          // Snap long plank (4.2m) across trench spanning from Platform 1 (x=9.2) to Platform 2 (x=12.8)!
           this.player.remove(carried);
           this.scene.add(carried);
           
@@ -1475,6 +1513,8 @@ class Game {
           carried.rotation.set(0, 0, 0);
 
           this.plankPlaced = true;
+          this.placedPlankType = 'plank';
+          this.placedPlankMesh = carried;
           this.inventory = null;
           if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
             this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
@@ -1485,10 +1525,43 @@ class Game {
           this.triggerJugaadToast('🎉 JUGAAD 2: TIMBER BRIDGE READY! (+25%)');
           this.showDialogue(
             'Chacha',
-            'Bhari lakdi ka phatta lag gaya! Bridge taiyaar hai! Ab vaapis scooter pe baitho [E] aur sambhalke bridge cross karo!'
+            'Phatta lag gaya! Bridge taiyaar hai! Ab Chetak par baitho [E] aur sambhalke bridge cross karo!'
           );
           this.questText.textContent = 'Scooter par baitho [E] aur dhyan se lakdi ke phatte ke upar se drive karo!';
           this.promptTip.innerHTML = 'Press <b>[E]</b> near scooter to mount | Drive across plank carefully!';
+          return;
+        } else if (carried.userData.type === 'short_plank') {
+          // If another plank was already placed, restore it back to wall
+          if (this.placedPlankMesh && this.placedPlankMesh !== carried) {
+            this.scene.remove(this.placedPlankMesh);
+            this.placedPlankMesh.position.set(5.8, 2.05, -5.0);
+            this.placedPlankMesh.rotation.set(-0.14, Math.PI / 2, Math.PI / 2);
+            this.scene.add(this.placedPlankMesh);
+            if (!this.items.includes(this.placedPlankMesh)) this.items.push(this.placedPlankMesh);
+          }
+
+          // Place 2.2m short plank (spans halfway: x=9.2 to 11.4)
+          this.player.remove(carried);
+          this.scene.add(carried);
+          
+          this.plankZ = Math.max(-2.2, Math.min(2.2, pPos.z));
+          carried.position.set(10.3, 0.09, this.plankZ);
+          carried.rotation.set(0, 0, 0);
+
+          this.plankPlaced = true;
+          this.placedPlankType = 'short_plank';
+          this.placedPlankMesh = carried;
+          this.inventory = null;
+          if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
+            this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
+            this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
+          }
+          audio.playPlankSnap();
+          this.showDialogue(
+            'Chacha',
+            'Yeh phatta gaddhe se chhota pad gaya! Dono kinaron par tik hi nahi paya!'
+          );
+          this.promptTip.innerHTML = 'Phatta aadhe gaddhe par tika hai! Dhyan se dekhein!';
           return;
         } else {
           this.showDialogue('Chacha', carried.userData.rejectMsg || 'Isse bridge nahi banega!');
@@ -1979,7 +2052,18 @@ class Game {
 
       // --- TRENCH CROSSING LOGIC FOR WALKING CHACHA ---
       if (this.player.position.x >= 9.2 && this.player.position.x <= 12.8) {
-        const onPlank = this.plankPlaced && Math.abs(this.player.position.z - this.plankZ) <= this.plankHalfWidth;
+        let onPlank = false;
+        if (this.plankPlaced && Math.abs(this.player.position.z - this.plankZ) <= this.plankHalfWidth) {
+          if (this.placedPlankType === 'short_plank') {
+            // Short plank (2.2m) only extends up to x = 11.4!
+            if (this.player.position.x <= 11.4) {
+              onPlank = true;
+            }
+          } else {
+            // Long plank (4.2m) safely spans full 3.6m gap!
+            onPlank = true;
+          }
+        }
         if (onPlank) {
           if (!this.isFalling) this.player.position.y = 0.09;
         } else if (!this.isFalling) {
@@ -2112,7 +2196,18 @@ class Game {
 
       // --- TRENCH CRASH CHECK FOR SCOOTER ---
       if (this.scooter.position.x >= 9.2 && this.scooter.position.x <= 12.8) {
-        const onPlank = this.plankPlaced && Math.abs(this.scooter.position.z - this.plankZ) <= this.plankHalfWidth;
+        let onPlank = false;
+        if (this.plankPlaced && Math.abs(this.scooter.position.z - this.plankZ) <= this.plankHalfWidth) {
+          if (this.placedPlankType === 'short_plank') {
+            // Short plank (2.2m) only extends up to x = 11.4!
+            if (this.scooter.position.x <= 11.4) {
+              onPlank = true;
+            }
+          } else {
+            // Long plank (4.2m) safely spans full 3.6m gap!
+            onPlank = true;
+          }
+        }
         if (onPlank) {
           if (!this.isFalling) this.scooter.position.y = 0.18;
         } else if (!this.isFalling) {
@@ -2326,6 +2421,16 @@ class Game {
   updatePrompt() {
     const pPos = this.player.position;
 
+    // Check broken phone pieces first (takes precedence over Kabaad Dher prompt)
+    if (!this.inventory && this.stage === 0) {
+      const phonePos = this.phoneCurrentPos || new THREE.Vector3(-5.8, 0.32, -3.4);
+      const distToPhone = pPos.distanceTo(phonePos);
+      if (distToPhone < 2.5) {
+        this.promptTip.innerHTML = '✨ Press <b>[E]</b> to Pick up Broken Phone Pieces!';
+        return;
+      }
+    }
+
     // Check distance to Kabaad Dher (strict proximity at junk pile x = -9.2, z = -2.8)
     const distToJunk = pPos.distanceTo(new THREE.Vector3(-9.2, 0.32, -2.8));
     if (this.stage === 0 && distToJunk < 1.8) {
@@ -2333,15 +2438,16 @@ class Game {
       return;
     }
 
-    if (!this.inventory) {
-      if (this.stage === 0) {
-        const phonePos = this.phoneCurrentPos || new THREE.Vector3(-5.8, 0.32, -3.4);
-        const distToPhone = pPos.distanceTo(phonePos);
-        if (distToPhone < 2.5) {
-          this.promptTip.innerHTML = '✨ Press <b>[E]</b> to Pick up Broken Phone Pieces!';
-          return;
-        }
+    // Check proximity to an already placed plank at trench
+    if (!this.inventory && this.plankPlaced && this.placedPlankMesh && this.stage === 1) {
+      const distToPlaced = Math.hypot(pPos.x - this.placedPlankMesh.position.x, pPos.z - this.placedPlankMesh.position.z);
+      if (distToPlaced < 2.5) {
+        this.promptTip.innerHTML = '✨ Press <b>[E]</b> to Pick up Placed Phatta';
+        return;
       }
+    }
+
+    if (!this.inventory) {
 
       let nearestItem = null;
       let minDist = 2.8;
