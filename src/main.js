@@ -139,9 +139,17 @@ class Game {
     this.junkPile.position.set(-9.2, 0.32, -2.8);
     this.scene.add(this.junkPile);
 
-    // Level 2 Plank Item (Road trench bridge)
+    // Level 2 Plank 1: Short Plank Distractor (2.2m) leaning against Grey Building Wall (x = 4.6)
+    const shortPlank = AssetFactory.createShortPlank();
+    shortPlank.position.set(4.6, 1.05, -5.0);
+    shortPlank.rotation.set(-0.14, Math.PI / 2, Math.PI / 2);
+    this.scene.add(shortPlank);
+    this.items.push(shortPlank);
+
+    // Level 2 Plank 2: Long Sturdy Timber Bridge (4.2m) leaning against Green Building Wall (x = 8.0)
     const plank = AssetFactory.createTimberPlank();
-    plank.position.set(6.8, 0, -2.8);
+    plank.position.set(8.0, 2.05, -5.0);
+    plank.rotation.set(-0.14, Math.PI / 2, Math.PI / 2);
     this.scene.add(plank);
     this.items.push(plank);
 
@@ -1916,26 +1924,26 @@ class Game {
         while (diff > Math.PI) diff -= Math.PI * 2;
         this.player.rotation.y += diff * 0.22;
 
-        // Natural Desi Walk Cycle (Calibrated stride frequency, relaxed leg/arm swing & gentle weight-shift)
-        this.player.userData.walkPhase += moveLen * 1.55;
-        const swing = Math.sin(this.player.userData.walkPhase) * 0.48;
+        // Natural Desi Walk Cycle (Calibrated stride frequency with delta time, relaxed leg/arm swing & gentle weight-shift)
+        this.player.userData.walkPhase += 7.5 * delta;
+        const swing = Math.sin(this.player.userData.walkPhase) * 0.42;
         this.player.userData.leftLegPivot.rotation.x = swing;
         this.player.userData.rightLegPivot.rotation.x = -swing;
 
         // Subtle side-to-side weight transfer when walking
-        this.player.userData.torsoGroup.rotation.z = Math.sin(this.player.userData.walkPhase) * 0.035;
+        this.player.userData.torsoGroup.rotation.z = Math.sin(this.player.userData.walkPhase) * 0.025;
 
         if (this.inventory) {
           // TWO-HANDED CARRY ANIMATION: Arms stay raised forward holding object with subtle walking bob
-          const holdBob = Math.sin(this.player.userData.walkPhase * 2) * 0.025;
+          const holdBob = Math.sin(this.player.userData.walkPhase * 2) * 0.02;
           this.player.userData.leftArmPivot.rotation.set(-1.25 + holdBob, -0.15, -0.22);
           this.player.userData.rightArmPivot.rotation.set(-1.25 - holdBob, 0.15, 0.22);
         } else {
           // Relaxed arm swing counter to leg movement
-          this.player.userData.leftArmPivot.rotation.set(-swing * 0.70, 0, -0.06);
-          this.player.userData.rightArmPivot.rotation.set(swing * 0.70, 0, 0.06);
+          this.player.userData.leftArmPivot.rotation.set(-swing * 0.65, 0, -0.06);
+          this.player.userData.rightArmPivot.rotation.set(swing * 0.65, 0, 0.06);
         }
-        this.player.userData.torsoGroup.position.y = 1.25 + Math.abs(Math.sin(this.player.userData.walkPhase * 2)) * 0.025;
+        this.player.userData.torsoGroup.position.y = 1.25 + Math.abs(Math.sin(this.player.userData.walkPhase * 2)) * 0.02;
       } else {
         this.player.userData.leftLegPivot.rotation.x *= 0.8;
         this.player.userData.rightLegPivot.rotation.x *= 0.8;

@@ -1481,9 +1481,42 @@ export class AssetFactory {
     group.userData = {
       type: 'plank',
       isCorrect: true,
-      title: 'Bhari Lakdi ka Phatta (Timber Plank Bridge)',
+      title: 'Bhari Lakdi ka Phatta (Timber Plank Bridge - 4.2m)',
       widthZ: 1.8,
       lengthX: 4.2
+    };
+    return group;
+  }
+
+  // 2.2m Short Timber Plank (Distractor leaning against Grey Wall)
+  static createShortPlank() {
+    const group = new THREE.Group();
+    group.name = "Item_ShortPlank";
+
+    const woodMat = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.85 });
+    const steelMat = new THREE.MeshStandardMaterial({ color: 0x52525b, metalness: 0.7, roughness: 0.4 });
+
+    // 3 timber balks side-by-side (Length: 2.2m, Width: 1.26m, Thickness: 0.16m)
+    for (let i = 0; i < 3; i++) {
+      const balkZ = -0.42 + i * 0.42;
+      const balk = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.16, 0.38), woodMat);
+      balk.position.set(0, 0.08, balkZ);
+      balk.castShadow = true;
+      balk.receiveShadow = true;
+      group.add(balk);
+    }
+
+    [-0.95, 0.95].forEach(bx => {
+      const tiePlate = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.18, 1.30), steelMat);
+      tiePlate.position.set(bx, 0.085, 0);
+      group.add(tiePlate);
+    });
+
+    group.userData = {
+      type: 'short_plank',
+      isCorrect: false,
+      title: 'Chhota Phatta (Short Plank - 2.2m)',
+      rejectMsg: 'Yeh phatta sirf 2.2 meter ka hai miyaan! Gaddha 3.6 meter lamba hai, dono side tikega hi nahi! Deewal se lamba phatta uthao!'
     };
     return group;
   }
