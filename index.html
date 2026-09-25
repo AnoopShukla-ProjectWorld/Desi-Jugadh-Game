@@ -1325,6 +1325,16 @@
         </div>
         <button id="btn-back-home" class="btn-hud-home" title="Return to Title / Landing Screen">🏠 Home</button>
       </div>
+      <div class="hud-center-stats" style="display: flex; align-items: center; gap: 12px;">
+        <div id="lives-display-badge" class="hud-stat-pill" title="Chances Left" style="background: rgba(15, 23, 42, 0.88); border: 1.5px solid #ef4444; border-radius: 14px; padding: 6px 14px; font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.35);">
+          <span style="font-size: 0.85rem; color: #fca5a5;">CHANCES:</span>
+          <span id="lives-display">❤️❤️❤️</span>
+        </div>
+        <div id="timer-display-badge" class="hud-stat-pill" title="Wedding Muhurat Timer" style="background: rgba(15, 23, 42, 0.88); border: 1.5px solid #f59e0b; border-radius: 14px; padding: 6px 14px; font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; color: #fef08a; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35);">
+          <span>⏳</span>
+          <span id="timer-display">03:30</span>
+        </div>
+      </div>
       <div class="jugaad-meter-container">
         <div class="jugaad-meter-label">
           <span>DESI JUGAAD METER</span>
@@ -1337,12 +1347,13 @@
     </div>
 
     <div id="quest-banner" class="quest-banner">
-      <span>🎯 Mission:</span> <span id="quest-text">Scooter khadi nahi ho rahi! Paas se laal eent (brick) dhundo aur stand banao!</span>
+      <span>🎯 Mission:</span> <span id="quest-text">Zameen se toota phone uthao [E] aur baayin taraf Kabaad Dher se tool chuno!</span>
     </div>
 
     <div id="dialogue-box" class="dialogue-box">
       <div class="dialogue-speaker" id="dialogue-speaker">🗣️ Chacha</div>
-      <div class="dialogue-text" id="dialogue-text">"Arre miyaan, stand toot gaya! Par Bhopal me aaye ho, koi na koi jugad to nikal hi lenge!"</div>
+      <div class="dialogue-text" id="dialogue-text">"He Bhagwan! Phone gir ke do tukde ho gaya! Mandap me lagan ka muhurat nikla jaa raha hai!"</div>
+    </div>
     </div>
 
     <div id="prompt-tip" class="prompt-tip">
@@ -1421,6 +1432,20 @@
       </div>
     </div>
 
+    <!-- Game Over Modal (3 Mistakes or Muhurat Timeout) -->
+    <div id="game-over-modal" class="game-over-modal" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.94); backdrop-filter: blur(12px); z-index: 1002; align-items: center; justify-content: center; pointer-events: auto;">
+      <div class="game-over-card" style="background: linear-gradient(145deg, #450a0a, #1c1917); border: 3px solid #ef4444; border-radius: 24px; padding: 34px 40px; text-align: center; color: #fff; max-width: 520px; box-shadow: 0 20px 60px rgba(239, 68, 68, 0.6); animation: modalPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+        <div style="font-size: 3.5rem; margin-bottom: 6px;">💀</div>
+        <h2 style="font-size: 2.1rem; color: #fca5a5; margin-bottom: 8px;">KHEL KHATAM! (GAME OVER)</h2>
+        <p id="game-over-reason" style="font-size: 1.15rem; color: #fef08a; margin: 12px 0; font-weight: bold;">Guddu ka sehra Chacha raste me hi chhod baithe!</p>
+        <p style="font-size: 0.95rem; color: #fca5a5; margin-bottom: 22px;">Shaadi ka shubh muhurat nikal gaya aur 3 galtiyan ho gayin!</p>
+        <div style="display: flex; gap: 14px; justify-content: center;">
+          <button id="btn-restart-game" class="btn-respawn" style="background: linear-gradient(135deg, #10b981, #047857); border: 2px solid #a7f3d0; margin-top: 0;">🔄 Phir Se Koshish Karo</button>
+          <button id="btn-game-over-home" class="btn-respawn" style="background: linear-gradient(135deg, #64748b, #334155); border: 2px solid #cbd5e1; margin-top: 0;">🏠 Main Menu</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Accident / Crash Overlay -->
     <div id="accident-modal" class="accident-modal">
       <div class="accident-card">
@@ -1433,7 +1458,7 @@
     <!-- Victory Celebration Overlay -->
     <div id="victory-modal" class="victory-modal">
       <div class="victory-card">
-        <h2>🏆 SHABASH MIYAAN! 🏆</h2>
+        <h2>🏆 SHABASH CHACHA! 🏆</h2>
         <h3>LEVEL 1 COMPLETED: BHOPAL SAFAR</h3>
         <p>Aapne purani scooter, gaddha aur Gau Mata teeno ko 100% Desi Jugaad se paar kar liya!</p>
 
