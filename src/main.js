@@ -217,7 +217,54 @@ class Game {
     this.shakeDuration = 0;
 
     this.initExhaustParticles();
+    this.initSplashParticles();
     this.initConfetti();
+  }
+
+  initSplashParticles() {
+    this.splashParticles = [];
+    const pGeo = new THREE.DodecahedronGeometry(0.12, 0);
+    const splashColors = [0x38bdf8, 0x0284c7, 0x7dd3fc, 0x78350f, 0x451a03];
+    for (let i = 0; i < 40; i++) {
+      const mat = new THREE.MeshBasicMaterial({
+        color: splashColors[i % splashColors.length],
+        transparent: true,
+        opacity: 0.85
+      });
+      const mesh = new THREE.Mesh(pGeo, mat);
+      mesh.visible = false;
+      this.scene.add(mesh);
+      this.splashParticles.push({
+        mesh,
+        life: 0,
+        maxLife: 1.0,
+        vel: new THREE.Vector3()
+      });
+    }
+  }
+
+  emitWaterSplash(pos) {
+    if (!this.splashParticles) return;
+    for (let i = 0; i < 35; i++) {
+      const p = this.splashParticles.find(pt => !pt.mesh.visible);
+      if (!p) break;
+      p.mesh.position.set(
+        pos.x + (Math.random() - 0.5) * 1.2,
+        pos.y + 0.15,
+        pos.z + (Math.random() - 0.5) * 1.2
+      );
+      p.mesh.visible = true;
+      p.life = 0;
+      p.maxLife = 0.8 + Math.random() * 0.6;
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 2.2 + Math.random() * 4.5;
+      p.vel.set(
+        Math.cos(angle) * speed * 0.6,
+        3.8 + Math.random() * 4.2, // Upward splash fountain
+        Math.sin(angle) * speed * 0.6
+      );
+      p.mesh.scale.setScalar(0.7 + Math.random() * 0.8);
+    }
   }
 
   initExhaustParticles() {
@@ -454,6 +501,75 @@ class Game {
     this.promptTip.innerHTML = 'Toota Phone uthayein ya Kabaad Dher ke paas jayein!';
   }
 
+  setStage(newStage) {
+    this.stage = newStage;
+    try {
+      sessionStorage.setItem('bhopali_stage', newStage.toString());
+    } catch (e) {}
+  }
+
+  resumeInGameSession() {
+    const savedStage = parseInt(sessionStorage.getItem('bhopali_stage') || '0', 10);
+    this.stage = savedStage;
+    this.isCutscene = false;
+
+    const uiOverlay = document.getElementById('ui-overlay');
+    if (uiOverlay) uiOverlay.style.display = 'flex';
+
+    const cutOverlay = document.getElementById('cutscene-overlay');
+    if (cutOverlay) cutOverlay.style.display = 'none';
+
+    audio.init();
+    if (!audio.musicPlaying) audio.startDesiBGM();
+
+    if (savedStage === 0) {
+      if (this.chachaHome) this.chachaHome.userData.openDoors();
+      this.player.position.set(-5.8, 0.32, -3.0);
+      this.player.rotation.set(0, 0.2, 0);
+      this.player.visible = true;
+      if (this.player.userData.setPhoneCallPose) this.player.userData.setPhoneCallPose(false);
+
+      if (this.phoneScreenItem) this.phoneScreenItem.visible = true;
+      if (this.phoneBackItem) this.phoneBackItem.visible = true;
+      if (this.fallingPhoneMesh) this.fallingPhoneMesh.visible = false;
+
+      this.camera.position.set(-3.2, 2.1, 0.2);
+      this.camera.lookAt(-6.0, 1.25, -3.4);
+
+      this.questText.textContent = 'Level 1: Toota phone theek karo! Kabaad Dher se tool chuno ya toota phone uthao!';
+      this.promptTip.innerHTML = '✨ Toota Phone uthayein [E] ya baayin taraf Kabaad Dher se tool chunein!';
+      this.showDialogue('Chacha', 'Phone to toot gaya miyaan! Pehle phone uthao ya Kabaad Dher se jugaad tool chuno!');
+    } else if (savedStage === 1) {
+      if (this.chachaHome) this.chachaHome.userData.openDoors();
+      this.player.position.set(-1.5, 0, 0.5);
+      this.player.visible = true;
+      this.scooter.userData.riderMesh.visible = false;
+      this.camera.position.set(1.5, 2.4, 7.5);
+      this.camera.lookAt(0, 1.3, 0);
+      this.questText.textContent = 'Crisis 2: Sadak par gehra gaddha khuda hai! Phatta dhundo aur pull banao!';
+      this.promptTip.innerHTML = '✨ Press <b>[E]</b> to Kickstart & Mount Chetak Scooter!';
+      this.showDialogue('Chacha', 'Phone to jeb me rakh liya! Ab Chetak par baitho aur VIP road niklo!');
+    } else {
+      this.player.position.set(15.0, 0, 0.5);
+      this.player.visible = true;
+      this.questText.textContent = 'Aage sadak par badhein!';
+      this.promptTip.innerHTML = 'W/A/S/D to move | [E] to interact';
+    }
+  }
+
+  triggerTrenchFall(isRiding) {
+    if (this.isFalling) return;
+    this.isFalling = true;
+    this.trenchLanded = false;
+    this.trenchFallVel = -1.2;
+    this.trenchTargetX = 11.0;
+
+    if (isRiding) {
+      this.scooterSpeed = 0;
+      audio.stopScooterEngine();
+    }
+  }
+
   // --- CIRCULAR RADIAL SELECTION WHEEL (GTA/RPG STYLE) ---
   initRadialWheel() {
     this.radialWheelModal = document.getElementById('radial-wheel-modal');
@@ -544,7 +660,7 @@ class Game {
           this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
         }
 
-        this.stage = 1;
+        this.setStage(1);
         this.updateMeter(25);
         this.addScore(300, 3);
         audio.playPhoneRebootSound();
@@ -566,7 +682,7 @@ class Game {
           this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
         }
 
-        this.stage = 1;
+        this.setStage(1);
         this.updateMeter(25);
         this.addScore(100, 1);
         audio.playTapeSound();
@@ -856,10 +972,15 @@ class Game {
     // Initialize persistent Stars & Desi Swag Score
     this.initStats();
 
+    // Check if player was already playing in-game (session persistence on F5 reload)
+    const wasInGame = sessionStorage.getItem('bhopali_in_game') === 'true';
+
     // 1. Supersonic Paper Plane Intro Launch Screen (Constant-Speed Arc-Length Flight)
     const introScreen = document.getElementById('intro-screen');
     const plane = document.getElementById('flying-plane');
-    if (introScreen && plane) {
+    if (wasInGame) {
+      if (introScreen) introScreen.style.display = 'none';
+    } else if (introScreen && plane) {
       // Cubic Bezier curve control points matching user's exact red marker trajectory
       const p0 = { x: -0.22, y: 0.26 }; // Enter offscreen left at y=26%
       const p1 = { x: 0.22, y: 0.64 };  // Control point pulling down into the scoop
@@ -1006,13 +1127,36 @@ class Game {
     const levelMapScreen = document.getElementById('level-map-screen');
     const settingsModal = document.getElementById('settings-modal');
 
+    if (wasInGame) {
+      if (landingScreen) landingScreen.style.display = 'none';
+      if (levelMapScreen) levelMapScreen.style.display = 'none';
+      this.resumeInGameSession();
+    }
+
     const startGame = () => {
+      sessionStorage.setItem('bhopali_in_game', 'true');
+      this.setStage(0);
       if (landingScreen) landingScreen.style.display = 'none';
       if (levelMapScreen) levelMapScreen.style.display = 'none';
       audio.init();
       if (!audio.musicPlaying) audio.startDesiBGM();
       this.startCutscene();
     };
+
+    const btnBackHome = document.getElementById('btn-back-home');
+    if (btnBackHome) {
+      btnBackHome.addEventListener('click', () => {
+        sessionStorage.removeItem('bhopali_in_game');
+        if (landingScreen) landingScreen.style.display = 'flex';
+        audio.stopScooterEngine();
+        if (this.isRiding) {
+          this.isRiding = false;
+          this.scooterSpeed = 0;
+          this.player.visible = true;
+          this.scooter.userData.riderMesh.visible = false;
+        }
+      });
+    }
 
     const btnStart = document.getElementById('btn-start-game');
     if (btnStart) btnStart.addEventListener('click', startGame);
@@ -1235,7 +1379,7 @@ class Game {
             this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
           }
 
-          this.stage = 1;
+          this.setStage(1);
           this.updateMeter(25);
           this.addScore(300, 3);
           audio.playPhoneRebootSound();
@@ -1267,7 +1411,7 @@ class Game {
             this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
           }
 
-          this.stage = 1;
+          this.setStage(1);
           this.updateMeter(25);
           this.addScore(100, 1);
           audio.playTapeSound();
@@ -1339,7 +1483,7 @@ class Game {
             this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
             this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
           }
-          this.stage = 3;
+          this.setStage(3);
           this.updateMeter(75);
 
           this.cow.userData.isDistracted = true;
@@ -1373,7 +1517,7 @@ class Game {
             this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
           }
 
-          this.stage = 5;
+          this.setStage(5);
           this.updateMeter(100);
           audio.playBrickThud();
           audio.playJugaadSuccess();
@@ -1808,24 +1952,9 @@ class Game {
       if (this.player.position.x >= 9.2 && this.player.position.x <= 12.8) {
         const onPlank = this.plankPlaced && Math.abs(this.player.position.z - this.plankZ) <= this.plankHalfWidth;
         if (onPlank) {
-          // Sturdy on plank!
-          this.player.position.y = 0.09;
+          if (!this.isFalling) this.player.position.y = 0.09;
         } else if (!this.isFalling) {
-          // Trigger downward fall into deep trench
-          this.isFalling = true;
-          this.fallVelocity = 0;
-          audio.playSplash();
-          audio.playBrickThud();
-          this.showDialogue('Chacha', 'Arey Baap Re! 2 meter gehre gaddhe me gir gaye! Phatte ke upar se chalo!');
-          this.triggerJugaadToast('⚠️ SPLASH! GEHRE GADDHE ME GIR GAYE!');
-
-          setTimeout(() => {
-            this.player.position.set(7.5, 0, this.plankPlaced ? this.plankZ : 0);
-            this.player.position.y = 0;
-            this.player.rotation.z = 0;
-            this.isFalling = false;
-            this.fallVelocity = 0;
-          }, 1800);
+          this.triggerTrenchFall(false);
         }
       } else {
         if (!this.isFalling) this.player.position.y = 0;
@@ -1833,7 +1962,8 @@ class Game {
 
       this.camera.position.x = THREE.MathUtils.lerp(this.camera.position.x, this.player.position.x + 3.2, 0.06);
       this.camera.position.z = THREE.MathUtils.lerp(this.camera.position.z, this.player.position.z + 8.8, 0.06);
-      this.camera.lookAt(this.player.position.x + 1, 1.3, this.player.position.z);
+      const camTargetY = this.isFalling ? THREE.MathUtils.lerp(1.3, -1.6, Math.min(1, Math.max(0, -this.player.position.y / 2.15))) : 1.3;
+      this.camera.lookAt(this.player.position.x + 1, camTargetY, this.player.position.z);
 
       this.updatePrompt();
 
@@ -1868,12 +1998,7 @@ class Game {
       }
     }
 
-    // Continuous downward gravity descent while falling into pit
-    if (this.isFalling && !this.isRiding) {
-      this.fallVelocity = (this.fallVelocity || 0) - 26 * delta;
-      this.player.position.y = Math.max(-2.15, this.player.position.y + this.fallVelocity * delta);
-      this.player.rotation.z = THREE.MathUtils.lerp(this.player.rotation.z, 0.45, 0.12);
-    }
+
 
     // --- 2. GAU MATA BEHAVIOR: NATURAL ROTATION & FORWARD WALK TO GRASS ---
     if (this.cow.userData.isDistracted && this.cow.userData.state === 'moving') {
@@ -1949,34 +2074,15 @@ class Game {
       if (this.scooter.position.x >= 9.2 && this.scooter.position.x <= 12.8) {
         const onPlank = this.plankPlaced && Math.abs(this.scooter.position.z - this.plankZ) <= this.plankHalfWidth;
         if (onPlank) {
-          // Riding safely ON TOP of the wooden timber bridge without sinking into wood!
-          this.scooter.position.y = 0.18;
-        } else {
-          // CRASH! Drove directly into the open ditch!
-          this.isFalling = true;
-          this.scooterFallVel = 0;
-          this.scooterSpeed = 0;
-          audio.stopScooterEngine();
-          audio.playSplash();
-          audio.playBrickThud();
-          this.triggerJugaadToast('💥 CRASH! SCOOTER GEHRE GADDHE ME GIR GAYI!');
-          this.showDialogue('Chacha', 'Arey miyaan! Dhyan se handle sambhalo, phatte ke side me gehre khadde me gira diya!');
-
-          setTimeout(() => {
-            // Respawn safely aligned before bridge!
-            this.scooter.position.set(7.0, 0, this.plankPlaced ? this.plankZ : 0);
-            this.scooter.rotation.z = 0;
-            this.scooter.position.y = 0;
-            this.isFalling = false;
-            this.scooterFallVel = 0;
-            audio.startScooterEngine();
-          }, 1800);
+          if (!this.isFalling) this.scooter.position.y = 0.18;
+        } else if (!this.isFalling) {
+          this.triggerTrenchFall(true);
         }
       }
 
       // Progress from Stage 1 to Stage 2 once trench is safely crossed!
       if (this.stage === 1 && this.plankPlaced && this.scooter.position.x > 13.5) {
-        this.stage = 2;
+        this.setStage(2);
         this.triggerJugaadToast('✨ TRENCH CROSSED! KEEP GOING! ✨');
         this.showDialogue('Chacha', 'Wah miyaan! Phatte ke upar se nikal gaye! Ab aage VIP road badho!');
         this.questText.textContent = 'Aage sadak par dekhein! Gau Mata raste me aaram kar rahi hain!';
@@ -1999,16 +2105,9 @@ class Game {
 
       // Progress from Stage 2 to Stage 3 once Cow roadblock is cleared!
       if (this.stage === 2 && this.cow.userData.isDistracted && this.scooter.position.x > 23.0) {
-        this.stage = 3;
+        this.setStage(3);
         this.triggerJugaadToast('✨ ROAD CLEAR! FULL THROTTLE! ✨');
         this.questText.textContent = 'Full throttle bhagao! Sheesh Mahal gate me entry maaro!';
-      }
-
-      // Continuous downward gravity descent for falling scooter
-      if (this.isFalling && this.isRiding) {
-        this.scooterFallVel = (this.scooterFallVel || 0) - 26 * delta;
-        this.scooter.position.y = Math.max(-2.0, this.scooter.position.y + this.scooterFallVel * delta);
-        this.scooter.rotation.z = THREE.MathUtils.lerp(this.scooter.rotation.z, -0.65, 0.12);
       }
 
       // --- COW ACCIDENT COLLISION CHECK ---
@@ -2031,11 +2130,12 @@ class Game {
 
       this.camera.position.x = THREE.MathUtils.lerp(this.camera.position.x, this.scooter.position.x + 4.5, 0.08);
       this.camera.position.z = THREE.MathUtils.lerp(this.camera.position.z, this.scooter.position.z + 8.8, 0.08);
-      this.camera.lookAt(this.scooter.position.x + 2, 1.4, this.scooter.position.z);
+      const camTargetY = this.isFalling ? THREE.MathUtils.lerp(1.4, -1.6, Math.min(1, Math.max(0, -this.scooter.position.y / 2.15))) : 1.4;
+      this.camera.lookAt(this.scooter.position.x + 2, camTargetY, this.scooter.position.z);
 
       // --- 4. DESTINATION ARRIVAL CLIMAX: KICKSTAND SNAPS AT SHEESH MAHAL GATE! (x >= 37.0) ---
       if (this.stage === 3 && this.scooter.position.x >= 37.0) {
-        this.stage = 4;
+        this.setStage(4);
         this.isRiding = false;
         this.scooterSpeed = 0;
         audio.stopScooterEngine();
@@ -2085,6 +2185,89 @@ class Game {
         if (p.life >= p.maxLife) p.mesh.visible = false;
       }
     });
+
+    // --- TRENCH DEEP PIT FALL PHYSICS (CARRIES TO CENTER x = 11.0, LANDS ON PIT BED y = -2.15m ON WATER & STONES) ---
+    if (this.isFalling) {
+      const activeObj = this.isRiding ? this.scooter : this.player;
+
+      if (!this.trenchLanded) {
+        this.trenchFallVel = (this.trenchFallVel || -1.5) - 22.0 * delta;
+        activeObj.position.y += this.trenchFallVel * delta;
+
+        // Horizontally carry into the trench center (x = 11.0)
+        activeObj.position.x = THREE.MathUtils.lerp(activeObj.position.x, this.trenchTargetX, 0.08);
+
+        // Angled tumble / nose-dive
+        if (this.isRiding) {
+          this.scooter.rotation.z = THREE.MathUtils.lerp(this.scooter.rotation.z, -0.75, 0.15);
+        } else {
+          this.player.rotation.z = THREE.MathUtils.lerp(this.player.rotation.z, 0.65, 0.15);
+        }
+
+        // Check impact at bottom pit floor (water and stone bed at y <= -2.10m)
+        if (activeObj.position.y <= -2.10) {
+          this.trenchLanded = true;
+          activeObj.position.y = -2.15;
+          this.trenchFallVel = 0;
+
+          if (this.isRiding) {
+            this.scooter.rotation.z = -1.15; // Tilted on stones
+            this.scooter.rotation.x = 0.25;
+          }
+
+          // 1. Water Splash & Mud Debris particle explosion!
+          this.emitWaterSplash(activeObj.position);
+
+          // 2. Audio impacts
+          audio.playSplash();
+          audio.playBrickThud();
+          if (this.isRiding) audio.playHorn();
+
+          // 3. Screen Impact Shake
+          this.shakeDuration = 0.45;
+
+          // 4. Toast & Dialogue
+          this.triggerJugaadToast('💥 CHHAPAAK! GADDHE KE PAANI AUR PATTHARON MEIN GIRE!');
+          this.showDialogue(
+            'Chacha',
+            'Arey Baap Re! 2 meter gehre gaddhe ke paani aur pattharon par dharraam se gire! Phatte ke upar se nikalna tha!'
+          );
+
+          // 5. Allow player to clearly see Chacha/scooter down in the pit for 1.8 seconds, then safely respawn
+          setTimeout(() => {
+            if (this.isRiding) {
+              this.scooter.position.set(7.0, 0, this.plankPlaced ? this.plankZ : 0);
+              this.scooter.rotation.set(0, 0, 0);
+              this.scooter.position.y = 0;
+              this.isFalling = false;
+              this.trenchLanded = false;
+              audio.startScooterEngine();
+            } else {
+              this.player.position.set(7.5, 0, this.plankPlaced ? this.plankZ : 0);
+              this.player.rotation.set(0, 0, 0);
+              this.player.position.y = 0;
+              this.isFalling = false;
+              this.trenchLanded = false;
+            }
+          }, 1800);
+        }
+      }
+    }
+
+    // --- WATER SPLASH PARTICLES ---
+    if (this.splashParticles) {
+      this.splashParticles.forEach(p => {
+        if (p.mesh.visible) {
+          p.life += delta;
+          p.mesh.position.addScaledVector(p.vel, delta);
+          p.vel.y -= 14.0 * delta; // Gravity
+          p.mesh.scale.setScalar(Math.max(0.05, (1 - p.life / p.maxLife) * 1.2));
+          if (p.life >= p.maxLife || p.mesh.position.y < -2.25) {
+            p.mesh.visible = false;
+          }
+        }
+      });
+    }
 
     // --- 7. ACCIDENT CAMERA SHAKE & SPINNING STARS ---
     if (this.dazedGuy && this.dazedGuy.visible && this.dazedGuy.userData.starsOrbit) {

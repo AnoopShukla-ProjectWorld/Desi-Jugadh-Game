@@ -1572,10 +1572,44 @@ export class AssetFactory {
     walk.receiveShadow = true;
     envGroup.add(walk);
 
-    // Railing
-    const rail = new THREE.Mesh(new THREE.BoxGeometry(65, 0.3, 0.4), new THREE.MeshStandardMaterial({ color: 0x475569 }));
-    rail.position.set(15, 0.1, 3.6);
-    envGroup.add(rail);
+    // Front Street Curb / Railing (BROKEN & OPEN at Excavated Trench between x = 9.2 and 12.8)
+    const railMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.85 });
+    const brokenCurbMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.95 });
+
+    // Curb Section 1 (Approach Road: x = -16.0 to 9.2)
+    const rail1 = new THREE.Mesh(new THREE.BoxGeometry(25.2, 0.3, 0.4), railMat);
+    rail1.position.set(-3.4, 0.1, 3.6);
+    rail1.receiveShadow = true;
+    envGroup.add(rail1);
+
+    // Broken / Jagged cracked curb end on left trench lip (x = 9.2)
+    const breakLeft = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.28, 0.42), brokenCurbMat);
+    breakLeft.position.set(9.25, 0.04, 3.6);
+    breakLeft.rotation.z = -0.35; // Drooping down into pit
+    envGroup.add(breakLeft);
+
+    // Curb Section 2 (Destination Road: x = 12.8 to 46.0)
+    const rail2 = new THREE.Mesh(new THREE.BoxGeometry(33.2, 0.3, 0.4), railMat);
+    rail2.position.set(29.4, 0.1, 3.6);
+    rail2.receiveShadow = true;
+    envGroup.add(rail2);
+
+    // Broken / Jagged cracked curb end on right trench lip (x = 12.8)
+    const breakRight = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.28, 0.42), brokenCurbMat);
+    breakRight.position.set(12.75, 0.04, 3.6);
+    breakRight.rotation.z = 0.35; // Drooping down into pit
+    envGroup.add(breakRight);
+
+    // Fallen shattered curb chunks in the trench bottom at z = 3.4
+    const fallenChunk1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.25, 0.35), brokenCurbMat);
+    fallenChunk1.position.set(10.2, -2.12, 3.4);
+    fallenChunk1.rotation.set(0.4, 0.3, -0.6);
+    envGroup.add(fallenChunk1);
+
+    const fallenChunk2 = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.22, 0.3), brokenCurbMat);
+    fallenChunk2.position.set(11.8, -2.14, 3.3);
+    fallenChunk2.rotation.set(-0.3, 0.6, 0.4);
+    envGroup.add(fallenChunk2);
 
     // Buildings along the street
     const bColors = [0xfef08a, 0xfca5a5, 0x93c5fd, 0x86efac, 0xfde047, 0xf9a8d4];
