@@ -1365,10 +1365,43 @@ class Game {
   // Handle Pick, Place, Inspect, and Mount
   handleAction() {
     if (this.isFalling) return;
+
+    // 0. IF RIDING: Instant Dismount (No speed restrictions, no horn!)
+    if (this.isRiding) {
+      this.isRiding = false;
+      this.scooterSpeed = 0;
+      this.player.position.set(this.scooter.position.x, 0, this.scooter.position.z + 1.1);
+      this.player.visible = true;
+      this.scooter.userData.riderMesh.visible = false;
+      audio.stopScooterEngine();
+      this.promptTip.textContent = 'Dismounted scooter. Press [E] near scooter to mount again.';
+      return;
+    }
+
     const pPos = this.player.position;
     const distToScooter = pPos.distanceTo(this.scooter.position);
 
-    // 0. Priority: Broken Phone on ground takes precedence over Kabaad Dher wheel!
+    // 1. MOUNT SCOOTER (Priority when standing near Chetak with empty hands)
+    if (!this.inventory && this.stage < 4 && distToScooter < 3.2) {
+      if (this.stage === 0) {
+        audio.playBrickThud();
+        this.triggerJugaadToast('🔒 Chetak Locked: Pehle toota phone repair karein!');
+        return;
+      }
+      this.isRiding = true;
+      this.player.visible = false;
+      this.scooter.userData.riderMesh.visible = true;
+      audio.startScooterEngine();
+      this.showDialogue(
+        'Chacha',
+        'Dhup-dhup-dhup! Scooter start! Ab steering sambhalo, aur dhyan se sadak par aage badho!'
+      );
+      this.questText.textContent = 'Dhyan se chalayein! Sadak par aage badhein!';
+      this.promptTip.innerHTML = 'Drive [W/S/A/D] | [H/Space] Honk | [E] Dismount';
+      return;
+    }
+
+    // 2. Priority: Broken Phone on ground takes precedence over Kabaad Dher wheel!
     if (!this.inventory && this.stage === 0) {
       const phoneTargetPos = this.phoneCurrentPos || new THREE.Vector3(-5.8, 0.32, -3.4);
       const distToPhone = pPos.distanceTo(phoneTargetPos);
@@ -1720,45 +1753,6 @@ class Game {
       }
       this.promptTip.textContent = `Dropped ${carried.userData.title}.`;
       return;
-    }
-
-    // 3. Mount Scooter (Requires phone fixed!)
-    if (this.stage < 4 && !this.isRiding) {
-      if (distToScooter < 2.8) {
-        if (this.stage === 0) {
-          audio.playBrickThud();
-          this.triggerJugaadToast('🔒 Chetak Locked: Pehle toota phone repair karein!');
-          return;
-        }
-
-        this.isRiding = true;
-        this.player.visible = false;
-        this.scooter.userData.riderMesh.visible = true;
-        audio.startScooterEngine();
-        audio.playHorn();
-        this.showDialogue(
-          'Chacha',
-          'Dhup-dhup-dhup! Scooter start! Ab steering sambhalo, aur dhyan se sadak par aage badho!'
-        );
-        this.questText.textContent = 'Dhyan se chalayein! Sadak par aage badhein!';
-        this.promptTip.innerHTML = 'Drive [W/S/A/D] | [Space] Honk | [E] Stop & Dismount';
-        return;
-      }
-    }
-
-    if (this.isRiding) {
-      if (Math.abs(this.scooterSpeed) < 1.0) {
-        // Stop and Dismount
-        this.isRiding = false;
-        this.player.position.set(this.scooter.position.x, 0, this.scooter.position.z + 1.1);
-        this.player.visible = true;
-        this.scooter.userData.riderMesh.visible = false;
-        audio.stopScooterEngine();
-        this.promptTip.textContent = 'Dismounted scooter. Press [E] near scooter to mount again.';
-        return;
-      } else {
-        audio.playHorn();
-      }
     }
   }
 
@@ -2288,18 +2282,10 @@ class Game {
         this.questText.textContent = 'Aage sadak par dekhein! Gau Mata raste me aaram kar rahi hain!';
       }
 
-      // STAGE 2: Cow Roadblock Slowdown before Cow if NOT distracted
+      // STAGE 2: Cow Roadblock Warning & Prompt before Cow if NOT distracted
       if (this.stage === 2 && !this.cow.userData.isDistracted) {
-        if (this.scooter.position.x >= 57.5) {
-          if (this.scooter.position.x > 58.5) {
-            this.scooter.position.x = 58.5;
-            this.scooterSpeed = 0;
-          } else {
-            this.scooterSpeed = Math.min(1.8, this.scooterSpeed);
-          }
-          if (Math.abs(this.scooterSpeed) < 0.6) {
-            this.promptTip.innerHTML = '🐮 Gau Mata Roadblock! Press <b>[E]</b> to Dismount & fetch grass basket!';
-          }
+        if (this.scooter.position.x >= 53.0 && this.scooter.position.x < 59.5) {
+          this.promptTip.innerHTML = '🐮 Gau Mata sadak par baithi hain! Press <b>[E]</b> to Dismount & Taazi Ghaas khilayein!';
         }
       }
 
@@ -2315,7 +2301,7 @@ class Game {
         this.scooter.position.x - this.cow.position.x,
         this.scooter.position.z - this.cow.position.z
       );
-      if (distToCow < 2.5 && !this.isAccident && !this.cow.userData.isDistracted) {
+      if (distToCow < 2.6 && !this.isAccident && !this.cow.userData.isDistracted) {
         this.triggerCowAccident();
         return;
       }
@@ -2573,6 +2559,14 @@ class Game {
     }
 
     if (!this.inventory) {
+      if (this.stage < 4 && pPos.distanceTo(this.scooter.position) < 3.2) {
+        if (this.stage === 0) {
+          this.promptTip.innerHTML = '🔒 <b>Chetak Locked</b>: Pehle toota phone repair karein!';
+          return;
+        }
+        this.promptTip.innerHTML = '✨ Press <b>[E]</b> to Kickstart & Mount Chetak Scooter!';
+        return;
+      }
 
       let nearestItem = null;
       let minDist = 2.8;
@@ -2596,15 +2590,6 @@ class Game {
           return;
         }
         this.promptTip.innerHTML = `✨ Press <b>[E]</b> to Inspect / Pick up <b>${nearestItem.userData.title}</b>`;
-        return;
-      }
-
-      if (pPos.distanceTo(this.scooter.position) < 2.8) {
-        if (this.stage === 0) {
-          this.promptTip.innerHTML = '🔒 <b>Chetak Locked</b>: Pehle toota phone repair karein!';
-          return;
-        }
-        this.promptTip.innerHTML = '✨ Press <b>[E]</b> to Kickstart & Mount Chetak Scooter!';
         return;
       }
 
