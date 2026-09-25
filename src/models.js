@@ -136,45 +136,76 @@ export class AssetFactory {
     rightArmPivot.add(handR);
     torsoGroup.add(rightArmPivot);
 
-    // 2. Dedicated Phone-to-Ear Arm (Exactly like Chachi: elbow bent up, phone pressed to right ear)
+    // 2. Dedicated Continuous Phone-to-Ear Arm (Seamless bent elbow, zero gaps, smartphone pressed to ear)
     const phoneArmGroup = new THREE.Group();
     phoneArmGroup.name = "PhoneArmGroup";
     phoneArmGroup.position.set(-0.36, 0.25, 0);
     phoneArmGroup.visible = false;
 
-    // Bicep / Shirt sleeve angling down from shoulder
-    const phoneArmUpper = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.065, 0.32, 10), blueShirtMat);
-    phoneArmUpper.position.set(-0.02, -0.15, 0.04);
-    phoneArmUpper.rotation.set(0.2, 0, -0.15);
-    phoneArmGroup.add(phoneArmUpper);
+    // Helper to generate a seamless continuous cylinder segment between two 3D vector points
+    const createBoneSegment = (pA, pB, rTop, rBot, mat) => {
+      const dir = new THREE.Vector3().subVectors(pB, pA);
+      const len = dir.length();
+      const geo = new THREE.CylinderGeometry(rBot, rTop, len, 14);
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.copy(pA).addScaledVector(dir, 0.5);
+      const up = new THREE.Vector3(0, 1, 0);
+      const quat = new THREE.Quaternion().setFromUnitVectors(up, dir.normalize());
+      mesh.quaternion.copy(quat);
+      mesh.castShadow = true;
+      return mesh;
+    };
 
-    // Forearm bent sharply upwards bringing phone right to the ear
-    const phoneForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.052, 0.36, 10), skinMat);
-    phoneForearm.position.set(0.01, 0.16, 0.10);
-    phoneForearm.rotation.set(-1.75, 0.32, -0.35);
-    phoneArmGroup.add(phoneForearm);
+    const pShoulder = new THREE.Vector3(0, 0, 0);
+    const pElbow = new THREE.Vector3(-0.08, -0.16, 0.18);
+    const pWrist = new THREE.Vector3(0.01, 0.42, 0.06);
+    const pHand = new THREE.Vector3(0.01, 0.47, 0.03);
+    const pPhone = new THREE.Vector3(0.02, 0.49, 0.01);
 
-    // Hand cradling phone
-    const phoneHand = new THREE.Mesh(new THREE.SphereGeometry(0.075, 10, 10), skinMat);
-    phoneHand.position.set(0.03, 0.42, 0.10);
+    // Shoulder cap
+    const shoulderCap = new THREE.Mesh(new THREE.SphereGeometry(0.076, 12, 12), blueShirtMat);
+    shoulderCap.position.copy(pShoulder);
+    phoneArmGroup.add(shoulderCap);
+
+    // Upper arm (Sleeve) connecting shoulder to elbow
+    const upperArm = createBoneSegment(pShoulder, pElbow, 0.076, 0.066, blueShirtMat);
+    phoneArmGroup.add(upperArm);
+
+    // Solid seamless elbow joint bridging upper arm and forearm
+    const elbowJoint = new THREE.Mesh(new THREE.SphereGeometry(0.066, 14, 14), skinMat);
+    elbowJoint.position.copy(pElbow);
+    phoneArmGroup.add(elbowJoint);
+
+    // Forearm connecting elbow up to wrist
+    const forearm = createBoneSegment(pElbow, pWrist, 0.065, 0.055, skinMat);
+    phoneArmGroup.add(forearm);
+
+    // Wrist joint
+    const wristJoint = new THREE.Mesh(new THREE.SphereGeometry(0.058, 12, 12), skinMat);
+    wristJoint.position.copy(pWrist);
+    phoneArmGroup.add(wristJoint);
+
+    // Hand holding phone
+    const phoneHand = new THREE.Mesh(new THREE.SphereGeometry(0.075, 12, 12), skinMat);
+    phoneHand.position.copy(pHand);
     phoneArmGroup.add(phoneHand);
 
-    // Smartphone pressed to right ear
+    // Smartphone pressed flush to right ear
     const phoneMesh = new THREE.Mesh(
-      new THREE.BoxGeometry(0.08, 0.16, 0.02),
+      new THREE.BoxGeometry(0.075, 0.15, 0.02),
       new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.85, roughness: 0.2 })
     );
-    phoneMesh.position.set(0.01, 0.47, 0.10);
-    phoneMesh.rotation.set(-0.15, 0.35, 0.08);
+    phoneMesh.position.copy(pPhone);
+    phoneMesh.rotation.set(-0.10, 0.25, 0.05);
     phoneArmGroup.add(phoneMesh);
 
     // Smartphone Glowing Screen
     const phoneScreen = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.068, 0.135),
+      new THREE.PlaneGeometry(0.065, 0.13),
       new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
     );
-    phoneScreen.position.set(0.01, 0.47, 0.111);
-    phoneScreen.rotation.set(-0.15, 0.35, 0.08);
+    phoneScreen.position.set(pPhone.x, pPhone.y, pPhone.z + 0.011);
+    phoneScreen.rotation.set(-0.10, 0.25, 0.05);
     phoneArmGroup.add(phoneScreen);
 
     torsoGroup.add(phoneArmGroup);
@@ -1644,41 +1675,81 @@ export class AssetFactory {
     leftArmPivot.add(handL);
     torsoGroup.add(leftArmPivot);
 
-    // RIGHT ARM: BENT HOLDING PHONE TO EAR (Talking on phone!)
+    // RIGHT ARM: CONTINUOUS BENT ARM HOLDING PHONE TO EAR (Seamless curved elbow, zero cuts)
     const phoneArmPivot = new THREE.Group();
+    phoneArmPivot.name = "PhoneArmPivot";
     phoneArmPivot.position.set(-0.32, 0.22, 0);
 
-    const armUpperR = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.055, 0.32, 10), blouseMat);
-    armUpperR.position.y = -0.16;
-    phoneArmPivot.add(armUpperR);
+    const createChachiBone = (pA, pB, rTop, rBot, mat) => {
+      const dir = new THREE.Vector3().subVectors(pB, pA);
+      const len = dir.length();
+      const geo = new THREE.CylinderGeometry(rBot, rTop, len, 14);
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.copy(pA).addScaledVector(dir, 0.5);
+      const up = new THREE.Vector3(0, 1, 0);
+      const quat = new THREE.Quaternion().setFromUnitVectors(up, dir.normalize());
+      mesh.quaternion.copy(quat);
+      mesh.castShadow = true;
+      return mesh;
+    };
 
-    // Forearm bent up bringing phone to ear
-    const forearmR = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.05, 0.34, 10), skinMat);
-    forearmR.position.set(0.12, 0.14, 0.12);
-    forearmR.rotation.set(-1.6, 0.3, -0.4);
-    phoneArmPivot.add(forearmR);
+    const pShoulderC = new THREE.Vector3(0, 0, 0);
+    const pElbowC = new THREE.Vector3(-0.06, -0.14, 0.16);
+    const pWristC = new THREE.Vector3(0.01, 0.36, 0.05);
+    const pHandC = new THREE.Vector3(0.01, 0.40, 0.02);
+    const pPhoneC = new THREE.Vector3(0.02, 0.43, 0.01);
 
-    // Gold Bangles on right wrist
-    const banglesR = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.015, 6, 12), zariGoldMat);
-    banglesR.position.set(0.10, 0.32, 0.15);
-    banglesR.rotation.x = Math.PI / 2;
-    phoneArmPivot.add(banglesR);
+    // Shoulder cap
+    const shoulderCapC = new THREE.Mesh(new THREE.SphereGeometry(0.068, 12, 12), blouseMat);
+    shoulderCapC.position.copy(pShoulderC);
+    phoneArmPivot.add(shoulderCapC);
 
-    // Right Hand holding phone
-    const handR = new THREE.Mesh(new THREE.SphereGeometry(0.065, 8, 8), skinMat);
-    handR.position.set(0.08, 0.38, 0.18);
-    phoneArmPivot.add(handR);
+    // Blouse upper sleeve connecting shoulder to elbow
+    const upperArmC = createChachiBone(pShoulderC, pElbowC, 0.068, 0.058, blouseMat);
+    phoneArmPivot.add(upperArmC);
 
-    // Smartphone
-    const phone = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.16, 0.02), phoneMat);
-    phone.position.set(0.06, 0.40, 0.22);
-    phone.rotation.set(-0.2, 0.4, 0.1);
-    phoneArmPivot.add(phone);
+    // Smooth seamless elbow joint bridging upper arm and forearm
+    const elbowJointC = new THREE.Mesh(new THREE.SphereGeometry(0.058, 14, 14), skinMat);
+    elbowJointC.position.copy(pElbowC);
+    phoneArmPivot.add(elbowJointC);
 
-    const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.065, 0.13), screenMat);
-    screen.position.set(0.06, 0.40, 0.231);
-    screen.rotation.set(-0.2, 0.4, 0.1);
-    phoneArmPivot.add(screen);
+    // Forearm connecting elbow up to wrist
+    const forearmC = createChachiBone(pElbowC, pWristC, 0.057, 0.048, skinMat);
+    phoneArmPivot.add(forearmC);
+
+    // Wrist joint
+    const wristJointC = new THREE.Mesh(new THREE.SphereGeometry(0.050, 12, 12), skinMat);
+    wristJointC.position.copy(pWristC);
+    phoneArmPivot.add(wristJointC);
+
+    // Traditional Gold Bangles at wrist
+    const banglesC = new THREE.Mesh(new THREE.TorusGeometry(0.058, 0.015, 6, 14), zariGoldMat);
+    banglesC.position.copy(pWristC);
+    banglesC.rotation.x = Math.PI / 2;
+    phoneArmPivot.add(banglesC);
+
+    // Hand holding phone
+    const handMeshC = new THREE.Mesh(new THREE.SphereGeometry(0.065, 12, 12), skinMat);
+    handMeshC.position.copy(pHandC);
+    phoneArmPivot.add(handMeshC);
+
+    // Smartphone pressed flush to right ear
+    const phoneC = new THREE.Mesh(
+      new THREE.BoxGeometry(0.075, 0.15, 0.02),
+      new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.85, roughness: 0.2 })
+    );
+    phoneC.position.copy(pPhoneC);
+    phoneC.rotation.set(-0.10, 0.25, 0.05);
+    phoneArmPivot.add(phoneC);
+
+    // Smartphone screen
+    const screenC = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.065, 0.13),
+      new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+    );
+    screenC.position.set(pPhoneC.x, pPhoneC.y, pPhoneC.z + 0.011);
+    screenC.rotation.set(-0.10, 0.25, 0.05);
+    phoneArmPivot.add(screenC);
 
     torsoGroup.add(phoneArmPivot);
     chachi.add(torsoGroup);
