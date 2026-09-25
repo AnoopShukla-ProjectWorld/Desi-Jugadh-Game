@@ -1228,7 +1228,244 @@ export class AssetFactory {
       group.add(band);
     });
 
-    group.userData = { type: 'fixed_phone', title: 'Rubber Band Se Juda Naya Phone' };
+    group.userData = { type: 'fixed_phone', title: 'Rubber Band Se Juda Naya Phone', score: 300 };
+    return group;
+  }
+
+  // 1. Heavy Desi Cast-Iron Hammer (Disaster tool if used on phone!)
+  static createHammerItem() {
+    const group = new THREE.Group();
+    group.name = "Item_Hammer";
+
+    const woodMat = new THREE.MeshStandardMaterial({ color: 0xa16207, roughness: 0.75 });
+    const ironMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.88, roughness: 0.25 });
+
+    // Wooden handle
+    const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.026, 0.42, 10), woodMat);
+    handle.position.y = 0.16;
+    handle.castShadow = true;
+    group.add(handle);
+
+    // Cast iron rectangular hammer head
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.085, 0.085), ironMat);
+    head.position.set(0, 0.35, 0);
+    head.castShadow = true;
+    group.add(head);
+
+    // Striking face bevels
+    const face1 = new THREE.Mesh(new THREE.BoxGeometry(0.015, 0.075, 0.075), ironMat);
+    face1.position.set(0.075, 0.35, 0);
+    group.add(face1);
+
+    const face2 = new THREE.Mesh(new THREE.BoxGeometry(0.015, 0.075, 0.075), ironMat);
+    face2.position.set(-0.075, 0.35, 0);
+    group.add(face2);
+
+    group.userData = {
+      type: 'hammer',
+      isCorrect: false,
+      isDisaster: true,
+      title: 'Bhari Desi Hathoda',
+      desc: 'Heavy cast-iron hammer'
+    };
+    return group;
+  }
+
+  // 2. Chupkaoo Cello Tape (Alternative Jugaad: works, but lower score!)
+  static createCelloTapeItem() {
+    const group = new THREE.Group();
+    group.name = "Item_CelloTape";
+
+    const tapeMat = new THREE.MeshStandardMaterial({
+      color: 0xfef08a,
+      roughness: 0.3,
+      metalness: 0.1,
+      transparent: true,
+      opacity: 0.85
+    });
+    const coreMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.9 });
+
+    // Inner cardboard spool core
+    const core = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.048, 16), coreMat);
+    core.rotation.x = Math.PI / 2;
+    core.position.y = 0.035;
+    group.add(core);
+
+    // Outer wound tape ring
+    const tapeRing = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.024, 10, 24), tapeMat);
+    tapeRing.rotation.x = Math.PI / 2;
+    tapeRing.position.y = 0.035;
+    tapeRing.castShadow = true;
+    group.add(tapeRing);
+
+    group.userData = {
+      type: 'cello_tape',
+      isCorrect: true,
+      isLowScore: true,
+      title: 'Chupkaoo Cello Tape',
+      score: 100
+    };
+    return group;
+  }
+
+  // 3. Reassembled Phone Wrapped in Criss-Cross Cello Tape (Alternative OK Jugaad)
+  static createFixedTapePhone() {
+    const group = new THREE.Group();
+    group.name = "Item_FixedTapePhone";
+
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.03, 0.35), new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3 }));
+    body.position.y = 0.015;
+    group.add(body);
+
+    // Active glowing screen
+    const canvas = document.createElement('canvas');
+    canvas.width = 256; canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#065f46';
+    ctx.fillRect(0, 0, 256, 512);
+    ctx.fillStyle = '#34d399';
+    ctx.font = 'bold 34px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🩹 TAPE JUGAAD', 128, 140);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillText('Screen Thodi Dhundhli', 128, 220);
+    ctx.fillText('📍 GPS: Sheesh Mahal', 128, 280);
+    ctx.fillStyle = '#facc15';
+    ctx.fillText('Kam Score (+100 Pts)', 128, 380);
+
+    const tex = new THREE.CanvasTexture(canvas);
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.17, 0.32), new THREE.MeshBasicMaterial({ map: tex }));
+    screen.rotation.x = -Math.PI / 2;
+    screen.position.set(0, 0.032, 0);
+    group.add(screen);
+
+    // Translucent criss-cross tape strips wrapping across the phone
+    const tapeMat = new THREE.MeshStandardMaterial({ color: 0xfef08a, transparent: true, opacity: 0.65, roughness: 0.2 });
+    [-0.07, 0.0, 0.07].forEach((tz, idx) => {
+      const strip = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.034, 0.038), tapeMat);
+      strip.position.set(0, 0.016, tz);
+      strip.rotation.y = (idx - 1) * 0.15;
+      group.add(strip);
+    });
+
+    group.userData = { type: 'fixed_tape_phone', title: 'Cello Tape Se Juda Phone', score: 100 };
+    return group;
+  }
+
+  // 4. Crushed & Pulverized Smashed Phone (Spawned after Hammer strike!)
+  static createSmashedPhoneDebris() {
+    const group = new THREE.Group();
+    group.name = "Item_SmashedPhone";
+
+    const ironMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.95 });
+    const glassShardMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.1, transparent: true, opacity: 0.75 });
+
+    // Crushed flattened pancake chassis
+    const flatChassis = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.006, 0.42), ironMat);
+    flatChassis.position.y = 0.003;
+    flatChassis.rotation.y = 0.25;
+    group.add(flatChassis);
+
+    // Shattered glass pieces radiating outward
+    for (let i = 0; i < 14; i++) {
+      const angle = (i / 14) * Math.PI * 2;
+      const dist = 0.12 + Math.random() * 0.18;
+      const shard = new THREE.Mesh(new THREE.ConeGeometry(0.02 + Math.random() * 0.02, 0.04, 3), glassShardMat);
+      shard.position.set(Math.cos(angle) * dist, 0.005, Math.sin(angle) * dist);
+      shard.rotation.set(Math.random() * 2, Math.random() * 2, Math.random() * 2);
+      group.add(shard);
+    }
+
+    group.userData = { type: 'smashed_debris', title: 'Puri Tarah Pista Hua Phone' };
+    return group;
+  }
+
+  // 5. Authentic Desi Kabaad ka Dher (Junk / Tool Corner on Verandah next to House Wall)
+  static createJunkToolCorner() {
+    const group = new THREE.Group();
+    group.name = "JunkToolCorner";
+
+    const woodMat = new THREE.MeshStandardMaterial({ color: 0x573919, roughness: 0.9 });
+    const rustyMat = new THREE.MeshStandardMaterial({ color: 0x78350f, metalness: 0.6, roughness: 0.7 });
+    const steelMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.85, roughness: 0.3 });
+
+    // Weathered wooden kabaad crate
+    const crate = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.42, 0.55), woodMat);
+    crate.position.set(0, 0.21, 0);
+    crate.castShadow = true;
+    crate.receiveShadow = true;
+    group.add(crate);
+
+    // Small metal scrap box stacked on crate
+    const scrapBox = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.18, 0.28), rustyMat);
+    scrapBox.position.set(-0.16, 0.51, 0.05);
+    scrapBox.rotation.y = 0.15;
+    group.add(scrapBox);
+
+    // Old vintage oil can
+    const oilCan = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.09, 0.24, 10), rustyMat);
+    oilCan.position.set(0.24, 0.54, 0.08);
+    group.add(oilCan);
+
+    // Desi Hathoda propped up on the crate
+    const hammerHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.02, 0.38, 8), woodMat);
+    hammerHandle.position.set(0.38, 0.22, 0.26);
+    hammerHandle.rotation.set(0.4, 0.2, 0.5);
+    group.add(hammerHandle);
+    const hammerHead = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.07, 0.07), steelMat);
+    hammerHead.position.set(0.48, 0.38, 0.32);
+    hammerHead.rotation.set(0.4, 0.2, 0.5);
+    group.add(hammerHead);
+
+    // Bright yellow rubber band bundle on crate
+    const bandMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.5 });
+    const rubberRings = new THREE.Mesh(new THREE.TorusGeometry(0.065, 0.015, 8, 16), bandMat);
+    rubberRings.rotation.x = Math.PI / 2;
+    rubberRings.position.set(-0.25, 0.43, -0.12);
+    group.add(rubberRings);
+
+    // Roll of Cello Tape on crate
+    const tapeMat = new THREE.MeshStandardMaterial({ color: 0xfef08a, transparent: true, opacity: 0.85 });
+    const tapeMesh = new THREE.Mesh(new THREE.TorusGeometry(0.055, 0.018, 8, 16), tapeMat);
+    tapeMesh.rotation.x = Math.PI / 2;
+    tapeMesh.position.set(0.12, 0.43, -0.10);
+    group.add(tapeMesh);
+
+    // Coiled Jute Rope resting at base of crate
+    const ropeMat = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.95 });
+    const ropeCoil = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.038, 8, 20), ropeMat);
+    ropeCoil.rotation.x = Math.PI / 2;
+    ropeCoil.position.set(0.36, 0.04, -0.22);
+    group.add(ropeCoil);
+
+    // Pulsing 3D Ground Hologram / Marker: "📦 KABAAD KA DHER [E]"
+    const canvas = document.createElement('canvas');
+    canvas.width = 256; canvas.height = 128;
+    const cctx = canvas.getContext('2d');
+    cctx.fillStyle = '#f59e0b';
+    cctx.font = 'bold 26px sans-serif';
+    cctx.textAlign = 'center';
+    cctx.fillText('📦 KABAAD DHER', 128, 50);
+    cctx.fillStyle = '#ffffff';
+    cctx.font = 'bold 22px sans-serif';
+    cctx.fillText('Press [E] for Tools', 128, 90);
+
+    const labelTex = new THREE.CanvasTexture(canvas);
+    const labelMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.9, 0.45),
+      new THREE.MeshBasicMaterial({ map: labelTex, transparent: true, opacity: 0.95, side: THREE.DoubleSide })
+    );
+    labelMesh.position.set(0, 0.82, 0);
+    group.add(labelMesh);
+
+    group.userData = {
+      type: 'junk_pile',
+      title: 'Kabaad Ka Dher (Tools & Scrap)',
+      isJunkPile: true,
+      labelMesh
+    };
+
     return group;
   }
 

@@ -575,6 +575,90 @@ class DesiAudioEngine {
     });
   }
 
+  // Catastrophic Hammer Smash on Smartphone (Heavy clang + glass shatter + comic thud)
+  playHammerSmashPhone() {
+    this.init();
+    if (this.isMuted) return;
+    const t = this.ctx.currentTime;
+
+    // 1. Heavy bass impact thump
+    const sub = this.ctx.createOscillator();
+    const subGain = this.ctx.createGain();
+    sub.type = 'triangle';
+    sub.frequency.setValueAtTime(180, t);
+    sub.frequency.exponentialRampToValueAtTime(28, t + 0.45);
+    subGain.gain.setValueAtTime(0.85, t);
+    subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+    sub.connect(subGain);
+    subGain.connect(this.ctx.destination);
+    sub.start(t);
+    sub.stop(t + 0.5);
+
+    // 2. Heavy iron hammer metal clang
+    const clang = this.ctx.createOscillator();
+    const clangGain = this.ctx.createGain();
+    const clangFilter = this.ctx.createBiquadFilter();
+    clang.type = 'sawtooth';
+    clang.frequency.setValueAtTime(1250, t);
+    clang.frequency.exponentialRampToValueAtTime(260, t + 0.35);
+    clangFilter.type = 'bandpass';
+    clangFilter.frequency.setValueAtTime(1100, t);
+    clangFilter.Q.setValueAtTime(5.5, t);
+    clangGain.gain.setValueAtTime(0.7, t);
+    clangGain.gain.exponentialRampToValueAtTime(0.001, t + 0.38);
+    clang.connect(clangFilter);
+    clangFilter.connect(clangGain);
+    clangGain.connect(this.ctx.destination);
+    clang.start(t);
+    clang.stop(t + 0.38);
+
+    // 3. Gorilla glass shattering & pulverizing crunch
+    [2400, 3100, 1850, 950].forEach((freq, i) => {
+      const gOsc = this.ctx.createOscillator();
+      const gGain = this.ctx.createGain();
+      gOsc.type = 'square';
+      gOsc.frequency.setValueAtTime(freq, t + i * 0.04);
+      gOsc.frequency.exponentialRampToValueAtTime(freq * 0.4, t + i * 0.04 + 0.14);
+      gGain.gain.setValueAtTime(0.001, t + i * 0.04);
+      gGain.gain.linearRampToValueAtTime(0.35, t + i * 0.04 + 0.01);
+      gGain.gain.exponentialRampToValueAtTime(0.001, t + i * 0.04 + 0.15);
+      gOsc.connect(gGain);
+      gGain.connect(this.ctx.destination);
+      gOsc.start(t + i * 0.04);
+      gOsc.stop(t + i * 0.04 + 0.15);
+    });
+  }
+
+  // Crisp Cello Tape Peeling & Sticking Sound
+  playTapeSound() {
+    this.init();
+    if (this.isMuted) return;
+    const t = this.ctx.currentTime;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    const filter = this.ctx.createBiquadFilter();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(800, t);
+    osc.frequency.linearRampToValueAtTime(1600, t + 0.1);
+    osc.frequency.linearRampToValueAtTime(500, t + 0.22);
+
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1200, t);
+    filter.Q.setValueAtTime(2.2, t);
+
+    gain.gain.setValueAtTime(0.01, t);
+    gain.gain.linearRampToValueAtTime(0.3, t + 0.04);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.24);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.24);
+  }
+
   speak(text, speaker = 'Chacha') {
     // Human voice completely disabled - dialogues appear cleanly in comic text box
     if ('speechSynthesis' in window) {

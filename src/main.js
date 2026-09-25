@@ -129,6 +129,7 @@ class Game {
     // Broken Phone Pieces (Initially spawned during cutscene on the verandah floor)
     this.phoneScreenItem = AssetFactory.createBrokenPhoneScreen();
     this.phoneScreenItem.position.set(-5.8, 0.32, -3.4);
+    this.phoneScreenItem.userData = { type: 'broken_phone', title: 'Toota Hua Phone', isPhone: true };
     this.phoneScreenItem.visible = false;
     this.scene.add(this.phoneScreenItem);
     this.items.push(this.phoneScreenItem);
@@ -145,17 +146,10 @@ class Game {
     this.scene.add(this.phoneBatteryItem);
     this.items.push(this.phoneBatteryItem);
 
-    // Correct Jugaad Item for Level 1: Yellow Mithai Rubber Band (on verandah plinth)
-    const rubberBand = AssetFactory.createMithaiRubberBand();
-    rubberBand.position.set(-4.5, 0.32, -3.6);
-    this.scene.add(rubberBand);
-    this.items.push(rubberBand);
-
-    // Distractor Item: Thick Jute Rope
-    const rope = AssetFactory.createThickRope();
-    rope.position.set(-4.8, 0.32, -2.5);
-    this.scene.add(rope);
-    this.items.push(rope);
+    // Kabaad Ka Dher (Tools & Scrap Corner on Verandah next to House Wall)
+    this.junkPile = AssetFactory.createJunkToolCorner();
+    this.junkPile.position.set(-7.6, 0.32, -3.4);
+    this.scene.add(this.junkPile);
 
     // Level 2 Plank Item (Road trench bridge)
     const plank = AssetFactory.createTimberPlank();
@@ -206,12 +200,11 @@ class Game {
 
     // Universal Static Colliders (Permanent Structures in Bhopal Mohalla)
     this.staticColliders = [
-      // 1. Chacha's Home main back wall and verandah flanks
-      { type: 'box', minX: -9.5, maxX: -2.5, minZ: -10.0, maxZ: -4.7, name: 'HomeBackWall' },
-      { type: 'box', minX: -9.5, maxX: -7.0, minZ: -4.7, maxZ: -2.6, name: 'OotlaLeftFlank' },
-      { type: 'box', minX: -5.0, maxX: -2.5, minZ: -4.7, maxZ: -2.6, name: 'OotlaRightFlank' },
-      { type: 'circle', x: -3.6, z: -3.4, radius: 0.5, name: 'TulsiPot' },
-      { type: 'box', minX: -8.5, maxX: -7.6, minZ: -3.8, maxZ: -3.2, name: 'AtlasBicycle' },
+      // 1. Chacha's Home main back wall and verandah props (Verandah surface is 100% walkable!)
+      { type: 'box', minX: -9.5, maxX: -2.5, minZ: -10.0, maxZ: -4.8, name: 'HomeBackWall' },
+      { type: 'circle', x: -3.6, z: -3.4, radius: 0.45, name: 'TulsiPot' },
+      { type: 'box', minX: -8.5, maxX: -7.7, minZ: -3.8, maxZ: -3.0, name: 'AtlasBicycle' },
+      { type: 'box', minX: -8.1, maxX: -7.1, minZ: -3.7, maxZ: -3.1, name: 'JunkPile' },
 
       // 2. Chai Tapri (x = 2.0, z = -4.0)
       { type: 'box', minX: 0.5, maxX: 3.5, minZ: -4.8, maxZ: -3.2, name: 'ChaiStall' },
@@ -361,6 +354,7 @@ class Game {
       'Arre bhagyawan ka urgent phone aa raha hai Sheesh Mahal se!'
     );
     if (this.questText) this.questText.textContent = '📞 Chachi ka urgent call suniye...';
+    this.initRadialWheel();
   }
 
   showDialogue(speaker, text) {
@@ -468,16 +462,267 @@ class Game {
       }, 400);
     }
 
-    // Return camera smoothly framing Chacha and the broken phone on the verandah
-    this.camera.position.set(-4.2, 3.2, 0.8);
-    this.camera.lookAt(-5.8, 0.5, -3.2);
+    // Return camera smoothly framing Chacha and the verandah
+    this.camera.position.set(-3.2, 2.1, 0.2);
+    this.camera.lookAt(-6.0, 1.25, -3.4);
 
     this.showDialogue(
       'Chacha',
-      'Arre miyaan! Screen aur battery dono nikal gayi! Chachi ki location dekhne ke liye pehle phone jodhna padega! Verandah par pili rubber band dhundo!'
+      'Arre miyaan! Screen aur battery dono nikal gayi! Pehle toota phone uthao ya deewal ke paas Kabaad Dher [E] se jugaad tool chuno!'
     );
-    this.questText.textContent = 'Level 1: Toota hua phone theek karo! Verandah par pili rubber band dhundo aur [E] se phone jodo!';
-    this.promptTip.innerHTML = 'Walk to Mithai Rubber Band [E] | Wrap broken phone pieces on verandah!';
+    this.questText.textContent = 'Level 1: Toota phone theek karo! Kabaad Dher [E] se tool chuno ya toota phone uthao!';
+    this.promptTip.innerHTML = 'Kabaad Dher [E] par Radial Wheel kholein | Toota Phone theek karein!';
+  }
+
+  // --- CIRCULAR RADIAL SELECTION WHEEL (GTA/RPG STYLE) ---
+  initRadialWheel() {
+    this.radialWheelModal = document.getElementById('radial-wheel-modal');
+    const hubIcon = document.getElementById('radial-hub-icon');
+    const hubName = document.getElementById('radial-hub-name');
+    const hubScore = document.getElementById('radial-hub-score');
+
+    const toolsInfo = {
+      rubber: { icon: '🟡', name: 'Mithai Rubber Band', score: '⭐ 100% Best Jugaad (+300 Swag Score)' },
+      hammer: { icon: '🔨', name: 'Bhari Desi Hathoda', score: '⚠️ High Risk! Phone Chur-Chur (-200)' },
+      rope: { icon: '🪢', name: 'Moti Jute Ki Rassi', score: '❌ Too Thick! Jeb me nahi aayegi' },
+      tape: { icon: '🩹', name: 'Chupkaoo Cello Tape', score: '⭐ OK Jugaad (+100 Swag / Kam Score)' }
+    };
+
+    const setupBtn = (btnId, type) => {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+      btn.addEventListener('mouseenter', () => {
+        const info = toolsInfo[type];
+        if (hubIcon) hubIcon.textContent = info.icon;
+        if (hubName) hubName.textContent = info.name;
+        if (hubScore) hubScore.textContent = info.score;
+      });
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.selectJunkTool(type);
+      });
+    };
+
+    setupBtn('btn-radial-rubber', 'rubber');
+    setupBtn('btn-radial-hammer', 'hammer');
+    setupBtn('btn-radial-rope', 'rope');
+    setupBtn('btn-radial-tape', 'tape');
+
+    const btnClose = document.getElementById('btn-close-wheel');
+    if (btnClose) {
+      btnClose.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.closeRadialWheel();
+      });
+    }
+
+    // Keyboard shortcut handler for radial wheel (1-4, Esc)
+    window.addEventListener('keydown', (e) => {
+      if (this.radialWheelModal && this.radialWheelModal.style.display === 'flex') {
+        if (e.key === '1') { this.selectJunkTool('rubber'); }
+        else if (e.key === '2') { this.selectJunkTool('hammer'); }
+        else if (e.key === '3') { this.selectJunkTool('rope'); }
+        else if (e.key === '4') { this.selectJunkTool('tape'); }
+        else if (e.key === 'Escape') { this.closeRadialWheel(); }
+      }
+    });
+  }
+
+  openRadialWheel() {
+    if (this.radialWheelModal) {
+      this.radialWheelModal.style.display = 'flex';
+      audio.init();
+    }
+  }
+
+  closeRadialWheel() {
+    if (this.radialWheelModal) {
+      this.radialWheelModal.style.display = 'none';
+    }
+  }
+
+  selectJunkTool(toolType) {
+    this.closeRadialWheel();
+    audio.init();
+
+    // WORKFLOW 1: Player ALREADY CARRIES Broken Phone in hands!
+    if (this.inventory && this.inventory.userData.isPhone) {
+      if (toolType === 'rubber') {
+        // High Score Best Jugaad!
+        this.player.remove(this.inventory);
+        this.fixedPhone = AssetFactory.createFixedRubberBandPhone();
+        this.fixedPhone.position.set(0, 0.88, 0.48);
+        this.player.add(this.fixedPhone);
+        this.inventory = this.fixedPhone;
+
+        this.stage = 1;
+        this.updateMeter(25);
+        this.addScore(300, 3);
+        audio.playPhoneRebootSound();
+        audio.playJugaadSuccess();
+        this.triggerJugaadToast('🎉 JUGAAD 1: RUBBER BAND SE PHONE REPAIRED! (+300 PTS)');
+        this.showDialogue(
+          'Chacha',
+          'Wah miyaan! Ek number jugaad! Mithai wali rubber band se phone ekdum mast jud gaya! Screen on ho gayi aur GPS map chal raha hai! Ab driveway me Chetak scooter par baitho [E]!'
+        );
+        this.questText.textContent = 'Chetak Scooter par baitho [E] aur VIP Road Sheesh Mahal ki taraf nikal pado!';
+        this.promptTip.innerHTML = 'Press <b>[E]</b> near Chetak Scooter to Kickstart & Mount!';
+        return;
+      } else if (toolType === 'tape') {
+        // Alternative OK Jugaad (Lower Score)
+        this.player.remove(this.inventory);
+        this.fixedPhone = AssetFactory.createFixedTapePhone();
+        this.fixedPhone.position.set(0, 0.88, 0.48);
+        this.player.add(this.fixedPhone);
+        this.inventory = this.fixedPhone;
+
+        this.stage = 1;
+        this.updateMeter(25);
+        this.addScore(100, 1);
+        audio.playTapeSound();
+        audio.playPhoneRebootSound();
+        audio.playJugaadSuccess();
+        this.triggerJugaadToast('🩹 JUGAAD 1: TAPE SE PHONE JUD GAYA! (+100 PTS)');
+        this.showDialogue(
+          'Chacha',
+          'Chalo kaam chal gaya! Tape se phone jud toh gaya par screen thodi dhundhli ho gayi (+100 Swag Score). Ab jaldi Chetak scooter par baitho [E]!'
+        );
+        this.questText.textContent = 'Chetak Scooter par baitho [E] aur VIP Road Sheesh Mahal ki taraf nikal pado!';
+        this.promptTip.innerHTML = 'Press <b>[E]</b> near Chetak Scooter to Kickstart & Mount!';
+        return;
+      } else if (toolType === 'rope') {
+        audio.playBrickThud();
+        this.showDialogue(
+          'Chacha',
+          'Miyaan! Itni moti rassi se mobile baandhoge toh jeb me kaise ghusega? Kabaad se koi patli cheez chuno!'
+        );
+        return;
+      } else if (toolType === 'hammer') {
+        // CATASTROPHIC DISASTER!
+        this.triggerHammerDisaster();
+        return;
+      }
+    }
+
+    // WORKFLOW 2: Player selects Tool first (Chacha carries the tool in hands)
+    if (this.inventory) {
+      this.player.remove(this.inventory);
+      this.inventory = null;
+    }
+
+    let toolMesh = null;
+    if (toolType === 'rubber') {
+      toolMesh = AssetFactory.createMithaiRubberBand();
+    } else if (toolType === 'hammer') {
+      toolMesh = AssetFactory.createHammerItem();
+    } else if (toolType === 'rope') {
+      toolMesh = AssetFactory.createThickRope();
+    } else if (toolType === 'tape') {
+      toolMesh = AssetFactory.createCelloTapeItem();
+    }
+
+    if (toolMesh) {
+      this.inventory = toolMesh;
+      this.player.add(toolMesh);
+      toolMesh.position.set(0, 0.88, 0.48);
+      toolMesh.rotation.set(0, 0, 0);
+
+      if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
+        this.player.userData.leftArmPivot.rotation.set(-1.25, -0.15, -0.22);
+        this.player.userData.rightArmPivot.rotation.set(-1.25, 0.15, 0.22);
+      }
+
+      audio.playBrickThud();
+      if (toolType === 'hammer') {
+        this.showDialogue('Chacha', 'Hathoda utha toh liya miyaan, par phone par galti se bhi mat chala dena!');
+      } else if (toolType === 'rubber') {
+        this.showDialogue('Chacha', 'Shabash! Pili rubber band le li, ab zameen par pade toote phone ke paas jaakar [E] dabao!');
+      } else if (toolType === 'tape') {
+        this.showDialogue('Chacha', 'Cello tape le li, ab zameen par pade toote phone ke paas jaakar [E] dabao!');
+      }
+
+      this.promptTip.innerHTML = `Carrying: <b>${toolMesh.userData.title}</b>. Toota Phone ke paas jakar [E] dabayein!`;
+    }
+  }
+
+  // --- CATASTROPHIC HAMMER DISASTER EVENT ---
+  triggerHammerDisaster() {
+    audio.playHammerSmashPhone();
+    this.shakeDuration = 0.65;
+
+    // Remove phone if carried
+    if (this.inventory && this.inventory.userData.isPhone) {
+      this.player.remove(this.inventory);
+      this.inventory = null;
+    }
+    // Remove broken phone pieces from verandah floor
+    [this.phoneScreenItem, this.phoneBackItem, this.phoneBatteryItem].forEach(item => {
+      if (item) {
+        this.scene.remove(item);
+        this.items = this.items.filter(it => it !== item);
+      }
+    });
+
+    // Spawn crushed flat smashed phone debris on verandah
+    if (this.smashedPhoneMesh) this.scene.remove(this.smashedPhoneMesh);
+    this.smashedPhoneMesh = AssetFactory.createSmashedPhoneDebris();
+    this.smashedPhoneMesh.position.set(-5.9, 0.32, -3.2);
+    this.scene.add(this.smashedPhoneMesh);
+
+    // Score Penalty: -200 Swag Score!
+    this.addScore(-200, 0);
+    this.spawnFloatingScore('💥 -200 SWAG POINTS! PHONE CHUR-CHUR!', new THREE.Vector3(-5.9, 1.2, -3.2));
+    this.triggerJugaadToast('💥 DISASTER! PHONE PAR HATHODA MAAR DIYA! (-200 PTS)');
+
+    this.showDialogue(
+      'Chacha',
+      'ARRE MIYAAN! Pagla gaye ho kya?! Mobile par hathoda kaun maarta hai?! Poora kachumar nikal gaya!'
+    );
+
+    // Comic shock animation for Chacha
+    if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
+      this.player.userData.leftArmPivot.rotation.set(-2.2, 0.35, -0.65);
+      this.player.userData.rightArmPivot.rotation.set(-2.2, -0.35, 0.65);
+    }
+    if (this.player.userData.headGroup) {
+      this.player.userData.headGroup.rotation.x = 0.3;
+    }
+
+    // Auto-Recovery after 2.8 seconds
+    setTimeout(() => {
+      if (this.smashedPhoneMesh) {
+        this.scene.remove(this.smashedPhoneMesh);
+        this.smashedPhoneMesh = null;
+      }
+
+      // Respawn phone pieces
+      this.phoneScreenItem.position.set(-5.8, 0.32, -3.4);
+      this.phoneScreenItem.visible = true;
+      this.scene.add(this.phoneScreenItem);
+      this.items.push(this.phoneScreenItem);
+
+      this.phoneBackItem.position.set(-6.1, 0.32, -3.2);
+      this.phoneBackItem.visible = true;
+      this.scene.add(this.phoneBackItem);
+
+      this.phoneBatteryItem.position.set(-5.9, 0.32, -3.0);
+      this.phoneBatteryItem.visible = true;
+      this.scene.add(this.phoneBatteryItem);
+
+      if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
+        this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
+        this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
+      }
+      if (this.player.userData.headGroup) {
+        this.player.userData.headGroup.rotation.set(0, 0, 0);
+      }
+
+      this.showDialogue(
+        'Chacha',
+        'Shukr hai bhagwan ka, battery aur circuit bach gaya! Ab hathoda chhod kar Kabaad Dher se dhang ka jugaad chuno!'
+      );
+      this.promptTip.innerHTML = 'Kabaad Dher [E] se Rubber Band ya Cello Tape chuno!';
+    }, 2800);
   }
 
   // 2. Floating 3D -> Screen Score FX
@@ -588,9 +833,11 @@ class Game {
       const landing = document.getElementById('landing-screen');
       const intro = document.getElementById('intro-screen');
       const map = document.getElementById('level-map-screen');
+      const radial = document.getElementById('radial-wheel-modal');
       if ((landing && landing.style.display !== 'none') ||
           (intro && intro.style.display !== 'none') ||
-          (map && map.style.display === 'flex')) {
+          (map && map.style.display === 'flex') ||
+          (radial && radial.style.display === 'flex')) {
         return;
       }
       audio.init();
@@ -905,8 +1152,38 @@ class Game {
     if (this.isFalling) return;
     const pPos = this.player.position;
 
-    // 1. Not carrying: Pick up nearest item
+    // 0. Near Kabaad ka Dher (Tools & Scrap Corner at x = -7.6, z = -3.4)
+    const distToJunk = pPos.distanceTo(new THREE.Vector3(-7.6, 0.32, -3.4));
+    if (distToJunk < 2.5) {
+      this.openRadialWheel();
+      return;
+    }
+
+    // 1. Not carrying: Pick up broken phone on verandah, or other items
     if (!this.inventory) {
+      // Check if near broken phone on verandah
+      const distToPhone = pPos.distanceTo(new THREE.Vector3(-5.8, 0.32, -3.4));
+      if (this.stage === 0 && distToPhone < 2.5) {
+        this.inventory = this.phoneScreenItem;
+        this.scene.remove(this.phoneScreenItem);
+        this.items = this.items.filter(it => it !== this.phoneScreenItem);
+        if (this.phoneBackItem) this.phoneBackItem.visible = false;
+        if (this.phoneBatteryItem) this.phoneBatteryItem.visible = false;
+        this.player.add(this.inventory);
+        this.inventory.position.set(0, 0.88, 0.48);
+        this.inventory.rotation.set(0, 0, 0);
+
+        if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
+          this.player.userData.leftArmPivot.rotation.set(-1.25, -0.15, -0.22);
+          this.player.userData.rightArmPivot.rotation.set(-1.25, 0.15, 0.22);
+        }
+
+        audio.playBrickThud();
+        this.showDialogue('Chacha', 'Haan! Phone ke tukde samet liye! Ab deewal ke paas Kabaad Dher [E] se rubber band ya tape chuno!');
+        this.promptTip.innerHTML = 'Toota Phone haath me hai! Deewal ke paas Kabaad Dher [E] se tool chuno!';
+        return;
+      }
+
       let nearestItem = null;
       let minDist = 2.2;
 
@@ -944,9 +1221,9 @@ class Game {
     if (this.inventory) {
       const carried = this.inventory;
 
-      // CRISIS 1: Near Broken Phone on Verandah (x: -5.9, z: -3.2)
-      const distToPhone = pPos.distanceTo(new THREE.Vector3(-5.9, 0.32, -3.2));
-      if (this.stage === 0 && distToPhone < 3.2) {
+      // CRISIS 1: Near Broken Phone on Verandah (x: -5.8, z: -3.4)
+      const distToPhone = pPos.distanceTo(new THREE.Vector3(-5.8, 0.32, -3.4));
+      if (this.stage === 0 && distToPhone < 2.8) {
         if (carried.userData.type === 'rubber_band') {
           this.player.remove(carried);
           this.inventory = null;
@@ -961,7 +1238,7 @@ class Game {
 
           // Spawn assembled phone bound with yellow rubber bands!
           this.fixedPhone = AssetFactory.createFixedRubberBandPhone();
-          this.fixedPhone.position.set(-5.9, 0.32, -3.2);
+          this.fixedPhone.position.set(-5.8, 0.32, -3.4);
           this.scene.add(this.fixedPhone);
 
           if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
@@ -971,22 +1248,61 @@ class Game {
 
           this.stage = 1;
           this.updateMeter(25);
+          this.addScore(300, 3);
           audio.playPhoneRebootSound();
           audio.playJugaadSuccess();
-          this.triggerJugaadToast('🎉 JUGAAD 1: RUBBER BAND SE PHONE REPAIRED! (+25%)');
+          this.triggerJugaadToast('🎉 JUGAAD 1: RUBBER BAND SE PHONE REPAIRED! (+300 PTS)');
 
           this.showDialogue(
             'Chacha',
-            'Wah miyaan! Mithai wali rubber band se phone ekdum mast tightly jud gaya! Screen on ho gayi aur Sheesh Mahal ka rasta dikh raha hai! Ab jaldi se driveway me Chetak scooter par baitho [E]!'
+            'Wah miyaan! Ek number jugaad! Mithai wali rubber band se phone ekdum mast jud gaya! Screen on ho gayi aur GPS map chal raha hai! Ab driveway me Chetak scooter par baitho [E]!'
           );
           this.questText.textContent = 'Driveway me Chetak Scooter par baitho [E] aur Sheesh Mahal ki taraf nikal pado!';
           this.promptTip.innerHTML = 'Press <b>[E]</b> near Chetak Scooter to Kickstart & Mount!';
           return;
+        } else if (carried.userData.type === 'cello_tape') {
+          this.player.remove(carried);
+          this.inventory = null;
+
+          [this.phoneScreenItem, this.phoneBackItem, this.phoneBatteryItem].forEach(item => {
+            if (item) {
+              this.scene.remove(item);
+              this.items = this.items.filter(it => it !== item);
+            }
+          });
+
+          this.fixedPhone = AssetFactory.createFixedTapePhone();
+          this.fixedPhone.position.set(-5.8, 0.32, -3.4);
+          this.scene.add(this.fixedPhone);
+
+          if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
+            this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
+            this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
+          }
+
+          this.stage = 1;
+          this.updateMeter(25);
+          this.addScore(100, 1);
+          audio.playTapeSound();
+          audio.playPhoneRebootSound();
+          audio.playJugaadSuccess();
+          this.triggerJugaadToast('🩹 JUGAAD 1: TAPE SE PHONE JUD GAYA! (+100 PTS)');
+
+          this.showDialogue(
+            'Chacha',
+            'Chalo kaam chal gaya! Tape se phone jud toh gaya par screen thodi dhundhli ho gayi (+100 Swag Score). Ab jaldi Chetak scooter par baitho [E]!'
+          );
+          this.questText.textContent = 'Driveway me Chetak Scooter par baitho [E] aur Sheesh Mahal ki taraf nikal pado!';
+          this.promptTip.innerHTML = 'Press <b>[E]</b> near Chetak Scooter to Kickstart & Mount!';
+          return;
+        } else if (carried.userData.type === 'hammer') {
+          this.triggerHammerDisaster();
+          return;
         } else if (carried.userData.type === 'rope') {
-          this.showDialogue('Chacha', carried.userData.rejectMsg || 'Moti rassi se phone nahi bandhega!');
+          this.showDialogue('Chacha', 'Miyaan! Itni moti rassi se mobile baandhoge toh jeb me kaise ghusega? Kabaad Dher [E] se rubber band ya tape chuno!');
           return;
         } else {
-          this.showDialogue('Chacha', carried.userData.rejectMsg || 'Is cheez se phone theek nahi hoga! Verandah se pili rubber band dhundo!');
+          this.showDialogue('Chacha', carried.userData.rejectMsg || 'Is cheez se phone theek nahi hoga! Deewal ke paas Kabaad Dher se jugaad tool chuno!');
           return;
         }
       }
@@ -1764,7 +2080,22 @@ class Game {
   updatePrompt() {
     const pPos = this.player.position;
 
+    // Check distance to Kabaad Dher
+    const distToJunk = pPos.distanceTo(new THREE.Vector3(-7.6, 0.32, -3.4));
+    if (distToJunk < 2.5) {
+      this.promptTip.innerHTML = '📦 Press <b>[E]</b> to Open Kabaad Dher Tool Selector!';
+      return;
+    }
+
     if (!this.inventory) {
+      if (this.stage === 0) {
+        const distToPhone = pPos.distanceTo(new THREE.Vector3(-5.8, 0.32, -3.4));
+        if (distToPhone < 2.5) {
+          this.promptTip.innerHTML = '✨ Press <b>[E]</b> to Pick up Broken Phone Pieces!';
+          return;
+        }
+      }
+
       let nearestItem = null;
       let minDist = 2.2;
       this.items.forEach(it => {
@@ -1789,8 +2120,14 @@ class Game {
 
       this.promptTip.innerHTML = 'Explore the mohalla with <b>W, A, S, D</b> | Find the right Jugaad objects!';
     } else {
-      if (this.stage === 0 && pPos.distanceTo(new THREE.Vector3(-5.9, 0.32, -3.2)) < 3.2) {
-        this.promptTip.innerHTML = `✨ Press <b>[E]</b> to repair phone with <b>${this.inventory.userData.title}</b>!`;
+      if (this.stage === 0) {
+        if (this.inventory.userData.isPhone) {
+          this.promptTip.innerHTML = 'Toota Phone haath me hai! Deewal ke paas Kabaad Dher [E] se tool chunein!';
+          return;
+        } else if (pPos.distanceTo(new THREE.Vector3(-5.8, 0.32, -3.4)) < 2.8) {
+          this.promptTip.innerHTML = `✨ Press <b>[E]</b> to apply <b>${this.inventory.userData.title}</b> to Broken Phone!`;
+          return;
+        }
       } else if (this.stage === 1 && pPos.distanceTo(this.trench.position) < 3.4) {
         this.promptTip.innerHTML = `✨ Press <b>[E]</b> to place <b>${this.inventory.userData.title}</b> across Trench!`;
       } else if (this.stage === 2 && pPos.distanceTo(this.cow.position) < 3.6) {
