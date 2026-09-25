@@ -1155,6 +1155,98 @@ export class AssetFactory {
     return group;
   }
 
+  // 5C. VIP Scooter Parking Bay & Animated Downward Floating Indicator Arrow outside Sheesh Mahal Gate
+  static createParkingBay() {
+    const group = new THREE.Group();
+    group.name = "SheeshMahalParkingBay";
+
+    const lineMat = new THREE.MeshBasicMaterial({ color: 0xf8fafc });
+    const yellowLineMat = new THREE.MeshBasicMaterial({ color: 0xfde047 });
+
+    // 1. White painted parking box boundary lines on road surface (X: 3.2m, Z: 2.0m)
+    // Left border
+    const leftLine = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 2.0), lineMat);
+    leftLine.rotation.x = -Math.PI / 2;
+    leftLine.position.set(-1.6, 0.005, 0);
+    group.add(leftLine);
+
+    // Right border
+    const rightLine = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 2.0), lineMat);
+    rightLine.rotation.x = -Math.PI / 2;
+    rightLine.position.set(1.6, 0.005, 0);
+    group.add(rightLine);
+
+    // Front road border
+    const frontLine = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 0.12), lineMat);
+    frontLine.rotation.x = -Math.PI / 2;
+    frontLine.position.set(0, 0.005, -1.0);
+    group.add(frontLine);
+
+    // Back curb border
+    const backLine = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 0.12), lineMat);
+    backLine.rotation.x = -Math.PI / 2;
+    backLine.position.set(0, 0.005, 1.0);
+    group.add(backLine);
+
+    // 2. Yellow Diagonal Safety Corner Stripes
+    [-1.3, 1.3].forEach(cx => {
+      const cornerMark = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.1), yellowLineMat);
+      cornerMark.rotation.x = -Math.PI / 2;
+      cornerMark.rotation.z = Math.PI / 4;
+      cornerMark.position.set(cx, 0.006, 0);
+      group.add(cornerMark);
+    });
+
+    // 3. Stencil "P" for Parking painted on road center
+    const pStem = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.6), lineMat);
+    pStem.rotation.x = -Math.PI / 2;
+    pStem.position.set(-0.15, 0.007, 0);
+    group.add(pStem);
+
+    const pLoopTop = new THREE.Mesh(new THREE.PlaneGeometry(0.25, 0.08), lineMat);
+    pLoopTop.rotation.x = -Math.PI / 2;
+    pLoopTop.position.set(0.02, 0.007, -0.22);
+    group.add(pLoopTop);
+
+    const pLoopSide = new THREE.Mesh(new THREE.PlaneGeometry(0.08, 0.22), lineMat);
+    pLoopSide.rotation.x = -Math.PI / 2;
+    pLoopSide.position.set(0.12, 0.007, -0.13);
+    group.add(pLoopSide);
+
+    const pLoopBot = new THREE.Mesh(new THREE.PlaneGeometry(0.25, 0.08), lineMat);
+    pLoopBot.rotation.x = -Math.PI / 2;
+    pLoopBot.position.set(0.02, 0.007, -0.04);
+    group.add(pLoopBot);
+
+    // 4. Floating 3D Downward-Pointing Animated Arrow
+    const arrowGroup = new THREE.Group();
+    arrowGroup.position.set(0, 2.3, 0);
+
+    const arrowMat = new THREE.MeshStandardMaterial({
+      color: 0xfacc15,
+      emissive: 0xeab308,
+      emissiveIntensity: 0.8,
+      metalness: 0.2,
+      roughness: 0.3
+    });
+
+    // Shaft
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.55, 12), arrowMat);
+    shaft.position.y = 0.35;
+    arrowGroup.add(shaft);
+
+    // Downward cone tip
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.5, 14), arrowMat);
+    cone.rotation.x = Math.PI; // Point downwards
+    cone.position.y = -0.15;
+    arrowGroup.add(cone);
+
+    group.add(arrowGroup);
+    group.userData = { arrow: arrowGroup };
+
+    return group;
+  }
+
   // --- PUZZLE ITEMS ---
   static createBrick() {
     const group = new THREE.Group();

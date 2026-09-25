@@ -126,6 +126,12 @@ class Game {
     this.chachi.rotation.y = -Math.PI / 2 - 0.25; // Angled facing the camera
     this.scene.add(this.chachi);
 
+    // VIP Scooter Parking Bay outside Sheesh Mahal Gate (x = 74.0, z = 0.0)
+    this.parkingBay = AssetFactory.createParkingBay();
+    this.parkingBay.position.set(74.0, 0.02, 0.0);
+    this.scene.add(this.parkingBay);
+    this.parkingArrow = this.parkingBay.userData.arrow;
+
     // Scattered Puzzle Items
     this.items = [];
 
@@ -547,6 +553,7 @@ class Game {
     if (!audio.musicPlaying) audio.startDesiBGM();
 
     if (savedStage === 0) {
+      this.updateMeter(0);
       if (this.chachaHome) this.chachaHome.userData.openDoors();
       this.player.position.set(-5.8, 0.32, -3.0);
       this.player.rotation.set(0, 0.2, 0);
@@ -562,8 +569,9 @@ class Game {
 
       this.questText.textContent = 'Level 1: Toota phone theek karo! Kabaad Dher se tool chuno ya toota phone uthao!';
       this.promptTip.innerHTML = '✨ Toota Phone uthayein [E] ya baayin taraf Kabaad Dher se tool chunein!';
-      this.showDialogue('Chacha', 'Phone to toot gaya miyaan! Pehle phone uthao ya Kabaad Dher se jugaad tool chuno!');
+      this.showDialogue('Chacha', 'Phone to toot gaya! Pehle phone uthao ya Kabaad Dher se jugaad tool chuno!');
     } else if (savedStage === 1) {
+      this.updateMeter(25);
       if (this.chachaHome) this.chachaHome.userData.openDoors();
       this.player.position.set(-1.5, 0, 0.5);
       this.player.visible = true;
@@ -572,12 +580,54 @@ class Game {
       this.camera.lookAt(0, 1.3, 0);
       this.questText.textContent = 'Crisis 2: Sadak par gehra gaddha khuda hai! Phatta dhundo aur pull banao!';
       this.promptTip.innerHTML = '✨ Press <b>[E]</b> to Kickstart & Mount Chetak Scooter!';
-      this.showDialogue('Chacha', 'Phone to jeb me rakh liya! Ab Chetak par baitho aur VIP road niklo!');
-    } else {
-      this.player.position.set(15.0, 0, 0.5);
+      this.showDialogue('Chacha', 'Phone to theek ho gaya! Ab Chetak par baitho aur VIP road niklo!');
+    } else if (savedStage === 2) {
+      this.updateMeter(50);
+      if (this.chachaHome) this.chachaHome.userData.openDoors();
+      this.plankPlaced = true;
+      this.trenchEncountered = true;
+      this.isRiding = true;
+      this.player.visible = false;
+      this.scooter.userData.riderMesh.visible = true;
+      this.scooter.position.set(49.0, 0, 0);
+      this.camera.position.set(53.5, 2.2, 8.8);
+      this.camera.lookAt(51.0, 1.4, 0);
+      this.questText.textContent = 'Aage sadak par dekhein! Gau Mata raste me aaram kar rahi hain!';
+      this.promptTip.innerHTML = 'Gau Mata ke paas badhein | Watch road!';
+    } else if (savedStage === 3) {
+      this.updateMeter(75);
+      if (this.chachaHome) this.chachaHome.userData.openDoors();
+      this.plankPlaced = true;
+      this.trenchEncountered = true;
+      this.cow.userData.isDistracted = true;
+      this.cow.userData.state = 'eating';
+      this.isRiding = true;
+      this.player.visible = false;
+      this.scooter.userData.riderMesh.visible = true;
+      this.scooter.position.set(64.0, 0, 0);
+      this.camera.position.set(68.5, 2.2, 8.8);
+      this.camera.lookAt(66.0, 1.4, 0);
+      this.questText.textContent = 'Full throttle bhagao! Sheesh Mahal gate ke bahar VIP Parking me lagao!';
+      this.promptTip.innerHTML = '🅿️ VIP Parking Bay me Chetak park karein!';
+    } else if (savedStage === 4) {
+      this.updateMeter(75);
+      if (this.chachaHome) this.chachaHome.userData.openDoors();
+      this.isRiding = false;
+      this.scooter.position.set(74.0, 0, 0);
+      this.scooter.userData.setFallenState(true);
+      this.scooter.userData.riderMesh.visible = false;
+      if (this.parkingArrow) this.parkingArrow.visible = false;
+      this.player.position.set(73.2, 0, 1.1);
       this.player.visible = true;
-      this.questText.textContent = 'Aage sadak par badhein!';
-      this.promptTip.innerHTML = 'W/A/S/D to move | [E] to interact';
+      this.camera.position.set(76.5, 2.1, 9.8);
+      this.camera.lookAt(74.5, 1.25, 0);
+      this.questText.textContent = 'Crisis 4: Kickstand toot gaya! Mandap ke paas se Laal Eent [E] uthao aur Chetak ko khada karo!';
+      this.promptTip.innerHTML = 'Mandap ke construction malbe se Laal Eent dhundo [E] | Chetak ko khada karo!';
+      this.showDialogue('Chacha', 'Arey baap re! Parking me Chetak ka stand toot gaya! Malbe se Laal Eent dhundo!');
+    } else {
+      // Stage 5 or invalid: clean restart from initial point (Stage 0)
+      this.setStage(0);
+      this.resumeInGameSession();
     }
   }
 
@@ -983,6 +1033,8 @@ class Game {
     const btnReplay = document.getElementById('btn-replay');
     if (btnReplay) {
       btnReplay.addEventListener('click', () => {
+        sessionStorage.removeItem('bhopali_stage');
+        sessionStorage.removeItem('bhopali_in_game');
         window.location.reload();
       });
     }
@@ -1173,6 +1225,7 @@ class Game {
     if (btnBackHome) {
       btnBackHome.addEventListener('click', () => {
         sessionStorage.removeItem('bhopali_in_game');
+        sessionStorage.removeItem('bhopali_stage');
         if (landingScreen) landingScreen.style.display = 'flex';
         audio.stopScooterEngine();
         if (this.isRiding) {
@@ -1313,6 +1366,7 @@ class Game {
   handleAction() {
     if (this.isFalling) return;
     const pPos = this.player.position;
+    const distToScooter = pPos.distanceTo(this.scooter.position);
 
     // 0. Priority: Broken Phone on ground takes precedence over Kabaad Dher wheel!
     if (!this.inventory && this.stage === 0) {
@@ -1637,17 +1691,15 @@ class Game {
 
           this.triggerJugaadToast('🏆 JUGAAD 4: LAAL EENT KA SOLID STAND! (+25%)');
           this.showDialogue(
-            'Chacha',
-            'Wah Miyaan! Laal Eent se Chetak shaahi style me khadi ho gayi! Guddu ka sehra aur Chacha ki izzat dono bach gayi!'
+            'Chachi',
+            'Arey wah! Laal Eent se Chetak shaahi style me khadi ho gayi aur Guddu ka sehra bhi bach gaya! Chalo ab jaldi mandap ke andar aao!'
           );
-          this.questText.textContent = '🌟 CONGRATULATIONS! You mastered the Bhopal Mohalla Jugaad!';
-          this.promptTip.innerHTML = 'Wah Miyaan! 100% Desi Swag Champion! 🏆';
+          this.questText.textContent = '🌟 CONGRATULATIONS! Chacha & Chachi entering Sheesh Mahal!';
+          this.promptTip.innerHTML = '100% Desi Swag Champion! 🏆';
 
-          if (this.victoryModal) {
-            setTimeout(() => {
-              this.victoryModal.style.display = 'flex';
-            }, 1200);
-          }
+          // Start the Grand Entrance Walk with Chachi!
+          this.isWeddingWalk = true;
+          this.weddingWalkTimer = 0;
           return;
         } else {
           this.showDialogue('Chacha', carried.userData.rejectMsg || 'Yeh cheez scooter ka stand nahi ban sakti! Wedding tent ke malbe se Laal Eent dhundo!');
@@ -1672,7 +1724,6 @@ class Game {
 
     // 3. Mount Scooter (Requires phone fixed!)
     if (this.stage < 4 && !this.isRiding) {
-      const distToScooter = pPos.distanceTo(this.scooter.position);
       if (distToScooter < 2.8) {
         if (this.stage === 0) {
           audio.playBrickThud();
@@ -1928,7 +1979,7 @@ class Game {
     });
 
     // --- 1. WALKING PLAYER PHYSICS & COLLISION ---
-    if (!this.isRiding && this.stage < 4 && !this.isFalling) {
+    if (!this.isRiding && this.stage <= 4 && !this.isFalling) {
       let vx = 0;
       let vz = 0;
 
@@ -2282,31 +2333,85 @@ class Game {
       const camTargetY = this.isFalling ? THREE.MathUtils.lerp(1.4, -1.6, Math.min(1, Math.max(0, -this.scooter.position.y / 2.15))) : 1.4;
       this.camera.lookAt(this.scooter.position.x + 2, camTargetY, this.scooter.position.z);
 
-      // --- 4. DESTINATION ARRIVAL CLIMAX: KICKSTAND SNAPS AT SHEESH MAHAL GATE! (x >= 75.0) ---
-      if (this.stage === 3 && this.scooter.position.x >= 75.0) {
-        this.setStage(4);
-        this.isRiding = false;
-        this.scooterSpeed = 0;
-        audio.stopScooterEngine();
-        audio.playPlankSnap();
-        audio.playBrickThud();
+      // --- 4. DESTINATION ARRIVAL CLIMAX: VIP PARKING BAY & KICKSTAND SNAP OUTSIDE SHEESH MAHAL GATE! ---
+      if (this.stage === 3) {
+        if (this.scooter.position.x >= 70.0 && this.scooter.position.x < 73.0) {
+          this.promptTip.innerHTML = '🅿️ Aage VIP Parking Bay hai! Slow down karke Chetak park karein!';
+        } else if (this.scooter.position.x >= 73.0 && this.scooter.position.x < 73.6) {
+          this.promptTip.innerHTML = '🅿️ Parking Bay me Chetak park karne ke liye slow down karein!';
+        }
 
-        // Chetak's kickstand snaps! Scooter falls onto its side on red carpet
-        this.scooter.userData.setFallenState(true);
-        this.scooter.userData.riderMesh.visible = false;
+        // Trigger parking & kickstand snap when arriving inside parking bay slot (x >= 73.6)
+        if (this.scooter.position.x >= 73.6) {
+          this.setStage(4);
+          this.isRiding = false;
+          this.scooterSpeed = 0;
+          this.scooter.position.set(74.0, 0, 0.0);
+          audio.stopScooterEngine();
+          audio.playPlankSnap();
+          audio.playBrickThud();
 
-        // Dismount Chacha next to the fallen scooter
-        this.player.position.set(this.scooter.position.x - 0.9, 0, this.scooter.position.z + 1.2);
-        this.player.rotation.y = 0.4;
-        this.player.visible = true;
+          // Hide bouncing arrow once parked
+          if (this.parkingArrow) this.parkingArrow.visible = false;
 
-        this.triggerJugaadToast('⚠️ KHATTT! CHETAK KA STAND TOOT GAYA!');
-        this.showDialogue(
-          'Chacha',
-          'Arey baap re baap! Sheesh Mahal pohochte hi Chetak ka kickstand toot ke alag ho gaya! Baaraat aane wali hai aur gaadi zameen par giri padi hai! Mandap ke malbe se Laal Eent dhundo aur Chetak ko khada karo!'
-        );
-        this.questText.textContent = 'Crisis 4: Kickstand toot gaya! Mandap ke paas se Laal Eent [E] uthao aur Chetak ko khada karo!';
-        this.promptTip.innerHTML = 'Mandap ke construction malbe se Laal Eent dhundo [E] | Chetak ko khada karo!';
+          // Chetak's kickstand snaps! Scooter falls onto its side in the parking slot
+          this.scooter.userData.setFallenState(true);
+          this.scooter.userData.riderMesh.visible = false;
+
+          // Dismount Chacha standing upright next to the fallen scooter in parking slot
+          this.player.position.set(73.2, 0, 1.1);
+          this.player.rotation.set(0, 0.35, 0);
+          this.player.visible = true;
+
+          this.triggerJugaadToast('⚠️ KHATTT! CHETAK KA STAND TOOT GAYA!');
+          this.showDialogue(
+            'Chacha',
+            'Arey baap re baap! Parking slot me lagate hi Chetak ka kickstand toot ke alag ho gaya! Baaraat aane wali hai aur gaadi zameen par giri padi hai! Mandap ke malbe se Laal Eent dhundo aur Chetak ko khada karo!'
+          );
+          this.questText.textContent = 'Crisis 4: Kickstand toot gaya! Mandap ke paas se Laal Eent [E] uthao aur Chetak ko khada karo!';
+          this.promptTip.innerHTML = 'Mandap ke construction malbe se Laal Eent dhundo [E] | Chetak ko khada karo!';
+        }
+      }
+    }
+
+    // --- ANIMATE PARKING BAY BOUNCING ARROW ---
+    if (this.parkingArrow && this.parkingArrow.visible) {
+      this.parkingArrow.position.y = 2.2 + Math.sin(time * 6) * 0.22;
+      this.parkingArrow.rotation.y += delta * 2.2;
+    }
+
+    // --- 4B. CINEMATIC WEDDING GRAND ENTRY WALK ---
+    if (this.isWeddingWalk) {
+      this.weddingWalkTimer = (this.weddingWalkTimer || 0) + delta;
+      
+      // Chacha & Chachi walk side-by-side into Sheesh Mahal doors (+X direction)
+      const walkSpeed = 2.0 * delta;
+      this.player.position.x += walkSpeed;
+      this.chachi.position.x += walkSpeed;
+      
+      // Face forwards into palace
+      this.player.rotation.y = THREE.MathUtils.lerp(this.player.rotation.y, Math.PI / 2, 0.15);
+      this.chachi.rotation.y = THREE.MathUtils.lerp(this.chachi.rotation.y, Math.PI / 2, 0.15);
+      
+      // Walking leg swing cadence for both
+      const swing = Math.sin(this.weddingWalkTimer * 9) * 0.42;
+      if (this.player.userData.leftLegPivot) {
+        this.player.userData.leftLegPivot.rotation.x = swing;
+        this.player.userData.rightLegPivot.rotation.x = -swing;
+      }
+      if (this.chachi.userData.leftLegPivot) {
+        this.chachi.userData.leftLegPivot.rotation.x = -swing;
+        this.chachi.userData.rightLegPivot.rotation.x = swing;
+      }
+      
+      // Camera smoothly tracks their proud entrance
+      this.camera.position.x = THREE.MathUtils.lerp(this.camera.position.x, this.player.position.x - 2.8, 0.06);
+      this.camera.position.z = THREE.MathUtils.lerp(this.camera.position.z, 7.2, 0.06);
+      this.camera.lookAt(this.player.position.x + 2, 1.4, 0);
+
+      if (this.weddingWalkTimer > 2.8) {
+        this.isWeddingWalk = false;
+        if (this.victoryModal) this.victoryModal.style.display = 'flex';
       }
     }
 
