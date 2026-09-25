@@ -1155,7 +1155,7 @@ export class AssetFactory {
     return group;
   }
 
-  // 5C. VIP Scooter Parking Bay & Animated Downward Floating Indicator Arrow outside Sheesh Mahal Gate
+  // 5C. VIP Roadside Scooter Parking Bay & Animated Downward Floating Indicator Arrow
   static createParkingBay() {
     const group = new THREE.Group();
     group.name = "SheeshMahalParkingBay";
@@ -1163,59 +1163,65 @@ export class AssetFactory {
     const lineMat = new THREE.MeshBasicMaterial({ color: 0xf8fafc });
     const yellowLineMat = new THREE.MeshBasicMaterial({ color: 0xfde047 });
 
-    // 1. White painted parking box boundary lines on road surface (X: 3.2m, Z: 2.0m)
-    // Left border
+    // 1. White painted curbside parking box boundary lines on road surface (X: 3.2m, Z: 2.0m)
+    // Left divider line
     const leftLine = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 2.0), lineMat);
     leftLine.rotation.x = -Math.PI / 2;
     leftLine.position.set(-1.6, 0.005, 0);
     group.add(leftLine);
 
-    // Right border
+    // Right divider line
     const rightLine = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 2.0), lineMat);
     rightLine.rotation.x = -Math.PI / 2;
     rightLine.position.set(1.6, 0.005, 0);
     group.add(rightLine);
 
-    // Front road border
+    // Center divider dividing into two scooter slots
+    const centerDivider = new THREE.Mesh(new THREE.PlaneGeometry(0.08, 1.8), lineMat);
+    centerDivider.rotation.x = -Math.PI / 2;
+    centerDivider.position.set(0, 0.005, 0);
+    group.add(centerDivider);
+
+    // Outer road lane border (demarcating parking from driving lane)
     const frontLine = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 0.12), lineMat);
     frontLine.rotation.x = -Math.PI / 2;
-    frontLine.position.set(0, 0.005, -1.0);
+    frontLine.position.set(0, 0.005, 1.0);
     group.add(frontLine);
 
-    // Back curb border
+    // Inner sidewalk curb border
     const backLine = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 0.12), lineMat);
     backLine.rotation.x = -Math.PI / 2;
-    backLine.position.set(0, 0.005, 1.0);
+    backLine.position.set(0, 0.005, -1.0);
     group.add(backLine);
 
     // 2. Yellow Diagonal Safety Corner Stripes
-    [-1.3, 1.3].forEach(cx => {
-      const cornerMark = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.1), yellowLineMat);
+    [-1.35, 1.35].forEach(cx => {
+      const cornerMark = new THREE.Mesh(new THREE.PlaneGeometry(0.45, 0.08), yellowLineMat);
       cornerMark.rotation.x = -Math.PI / 2;
       cornerMark.rotation.z = Math.PI / 4;
-      cornerMark.position.set(cx, 0.006, 0);
+      cornerMark.position.set(cx, 0.006, 0.6);
       group.add(cornerMark);
     });
 
-    // 3. Stencil "P" for Parking painted on road center
-    const pStem = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.6), lineMat);
+    // 3. Stencil "P" for Parking painted on left slot center
+    const pStem = new THREE.Mesh(new THREE.PlaneGeometry(0.08, 0.5), lineMat);
     pStem.rotation.x = -Math.PI / 2;
-    pStem.position.set(-0.15, 0.007, 0);
+    pStem.position.set(-0.85, 0.007, 0);
     group.add(pStem);
 
-    const pLoopTop = new THREE.Mesh(new THREE.PlaneGeometry(0.25, 0.08), lineMat);
+    const pLoopTop = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.07), lineMat);
     pLoopTop.rotation.x = -Math.PI / 2;
-    pLoopTop.position.set(0.02, 0.007, -0.22);
+    pLoopTop.position.set(-0.73, 0.007, -0.18);
     group.add(pLoopTop);
 
-    const pLoopSide = new THREE.Mesh(new THREE.PlaneGeometry(0.08, 0.22), lineMat);
+    const pLoopSide = new THREE.Mesh(new THREE.PlaneGeometry(0.07, 0.18), lineMat);
     pLoopSide.rotation.x = -Math.PI / 2;
-    pLoopSide.position.set(0.12, 0.007, -0.13);
+    pLoopSide.position.set(-0.64, 0.007, -0.10);
     group.add(pLoopSide);
 
-    const pLoopBot = new THREE.Mesh(new THREE.PlaneGeometry(0.25, 0.08), lineMat);
+    const pLoopBot = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.07), lineMat);
     pLoopBot.rotation.x = -Math.PI / 2;
-    pLoopBot.position.set(0.02, 0.007, -0.04);
+    pLoopBot.position.set(-0.73, 0.007, -0.02);
     group.add(pLoopBot);
 
     // 4. Floating 3D Downward-Pointing Animated Arrow

@@ -126,9 +126,9 @@ class Game {
     this.chachi.rotation.y = -Math.PI / 2 - 0.25; // Angled facing the camera
     this.scene.add(this.chachi);
 
-    // VIP Scooter Parking Bay outside Sheesh Mahal Gate (x = 74.0, z = 0.0)
+    // VIP Scooter Parking Bay outside Sheesh Mahal Gate (x = 74.0, z = -2.2)
     this.parkingBay = AssetFactory.createParkingBay();
-    this.parkingBay.position.set(74.0, 0.02, 0.0);
+    this.parkingBay.position.set(74.0, 0.02, -2.2);
     this.scene.add(this.parkingBay);
     this.parkingArrow = this.parkingBay.userData.arrow;
 
@@ -613,14 +613,14 @@ class Game {
       this.updateMeter(75);
       if (this.chachaHome) this.chachaHome.userData.openDoors();
       this.isRiding = false;
-      this.scooter.position.set(74.0, 0, 0);
+      this.scooter.position.set(74.0, 0, -2.2);
       this.scooter.userData.setFallenState(true);
       this.scooter.userData.riderMesh.visible = false;
       if (this.parkingArrow) this.parkingArrow.visible = false;
-      this.player.position.set(73.2, 0, 1.1);
+      this.player.position.set(73.2, 0, -1.2);
       this.player.visible = true;
-      this.camera.position.set(76.5, 2.1, 9.8);
-      this.camera.lookAt(74.5, 1.25, 0);
+      this.camera.position.set(76.5, 2.1, 7.8);
+      this.camera.lookAt(74.5, 1.25, -1.8);
       this.questText.textContent = 'Crisis 4: Kickstand toot gaya! Mandap ke paas se Laal Eent [E] uthao aur Chetak ko khada karo!';
       this.promptTip.innerHTML = 'Mandap ke construction malbe se Laal Eent dhundo [E] | Chetak ko khada karo!';
       this.showDialogue('Chacha', 'Arey baap re! Parking me Chetak ka stand toot gaya! Malbe se Laal Eent dhundo!');
@@ -2327,12 +2327,12 @@ class Game {
           this.promptTip.innerHTML = '🅿️ Parking Bay me Chetak park karne ke liye slow down karein!';
         }
 
-        // Trigger parking & kickstand snap when arriving inside parking bay slot (x >= 73.6)
+        // Trigger parking & kickstand snap when arriving inside roadside parking bay slot (x >= 73.6)
         if (this.scooter.position.x >= 73.6) {
           this.setStage(4);
           this.isRiding = false;
           this.scooterSpeed = 0;
-          this.scooter.position.set(74.0, 0, 0.0);
+          this.scooter.position.set(74.0, 0, -2.2);
           audio.stopScooterEngine();
           audio.playPlankSnap();
           audio.playBrickThud();
@@ -2344,8 +2344,8 @@ class Game {
           this.scooter.userData.setFallenState(true);
           this.scooter.userData.riderMesh.visible = false;
 
-          // Dismount Chacha standing upright next to the fallen scooter in parking slot
-          this.player.position.set(73.2, 0, 1.1);
+          // Dismount Chacha standing upright next to the fallen scooter in roadside parking slot
+          this.player.position.set(73.2, 0, -1.2);
           this.player.rotation.set(0, 0.35, 0);
           this.player.visible = true;
 
@@ -2370,9 +2370,10 @@ class Game {
     if (this.isWeddingWalk) {
       this.weddingWalkTimer = (this.weddingWalkTimer || 0) + delta;
       
-      // Chacha & Chachi walk side-by-side into Sheesh Mahal doors (+X direction)
+      // Chacha & Chachi walk side-by-side into Sheesh Mahal doors (+X direction, along red carpet)
       const walkSpeed = 2.0 * delta;
       this.player.position.x += walkSpeed;
+      this.player.position.z = THREE.MathUtils.lerp(this.player.position.z, -0.3, 0.08);
       this.chachi.position.x += walkSpeed;
       
       // Face forwards into palace
