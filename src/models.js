@@ -89,13 +89,9 @@ export class AssetFactory {
     nose.position.set(0, -0.04, 0.36);
     headGroup.add(nose);
 
-    const mouth = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.04, 14, 1, false, 0, Math.PI), mouthMat);
-    mouth.rotation.x = Math.PI / 2;
-    mouth.position.set(0, -0.16, 0.32);
-    headGroup.add(mouth);
-
-    const teeth = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.02, 0.02), teethMat);
-    teeth.position.set(0, -0.145, 0.33);
+    // Clean white teeth smile (no red slice)
+    const teeth = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.025, 0.02), teethMat);
+    teeth.position.set(0, -0.15, 0.34);
     headGroup.add(teeth);
 
     [-0.35, 0.35].forEach(earX => {
@@ -329,10 +325,9 @@ export class AssetFactory {
     nose.position.set(0.32, -0.02, 0);
     headGroup.add(nose);
 
-    const smile = new THREE.Mesh(new THREE.TorusGeometry(0.08, 0.02, 6, 12, Math.PI), new THREE.MeshBasicMaterial({ color: 0x831843 }));
-    smile.position.set(0.28, -0.12, 0);
-    smile.rotation.y = Math.PI / 2;
-    headGroup.add(smile);
+    const teeth = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.022, 0.12), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    teeth.position.set(0.30, -0.12, 0);
+    headGroup.add(teeth);
 
     rider.add(headGroup);
 
@@ -2011,14 +2006,14 @@ export class AssetFactory {
       headGroup.add(bell);
     });
 
-    // Nose & gentle mouth
+    // Nose & clean white smile (no red block)
     const nose = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 10), skinMat);
     nose.position.set(0, -0.04, 0.33);
     headGroup.add(nose);
 
-    const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.025, 0.02), new THREE.MeshBasicMaterial({ color: 0xbe123c }));
-    mouth.position.set(0, -0.14, 0.30);
-    headGroup.add(mouth);
+    const teeth = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.022, 0.02), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    teeth.position.set(0, -0.14, 0.31);
+    headGroup.add(teeth);
 
     torsoGroup.add(headGroup);
 

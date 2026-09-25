@@ -510,7 +510,7 @@ class Game {
 
   openRadialWheel() {
     if (this.radialWheelModal) {
-      const junkWorldPos = new THREE.Vector3(-9.2, 1.45, -2.8);
+      const junkWorldPos = new THREE.Vector3(-10.8, 3.1, -3.9);
       const proj = junkWorldPos.clone().project(this.camera);
       if (proj.z < 1) {
         const sx = (proj.x * 0.5 + 0.5) * window.innerWidth;
@@ -1856,13 +1856,13 @@ class Game {
       }
     }
 
-    // 3D Projected Floating Position of Radial Wheel above Kabaad Dher
+    // 3D Projected Floating Position of Radial Wheel above Kabaad Dher (Top-Left Wall)
     if (this.radialWheelModal && this.radialWheelModal.style.display === 'flex') {
-      const junkWorldPos = new THREE.Vector3(-9.2, 1.45, -2.8);
+      const junkWorldPos = new THREE.Vector3(-10.8, 3.1, -3.9);
       const proj = junkWorldPos.clone().project(this.camera);
       if (proj.z < 1) {
         const sx = (proj.x * 0.5 + 0.5) * window.innerWidth;
-        const sy = (-proj.y * 0.5 + 0.5) * window.innerHeight + Math.sin(time * 3.5) * 8;
+        const sy = (-proj.y * 0.5 + 0.5) * window.innerHeight + Math.sin(time * 3.5) * 5;
         this.radialWheelModal.style.left = `${sx}px`;
         this.radialWheelModal.style.top = `${sy}px`;
       }
@@ -2103,16 +2103,17 @@ class Game {
   updatePrompt() {
     const pPos = this.player.position;
 
-    // Check distance to Kabaad Dher
-    const distToJunk = pPos.distanceTo(new THREE.Vector3(-7.6, 0.32, -3.4));
-    if (distToJunk < 2.5) {
+    // Check distance to Kabaad Dher (strict proximity at junk pile x = -9.2, z = -2.8)
+    const distToJunk = pPos.distanceTo(new THREE.Vector3(-9.2, 0.32, -2.8));
+    if (this.stage === 0 && distToJunk < 1.8) {
       this.promptTip.innerHTML = '📦 Press <b>[E]</b> to Open Kabaad Dher Tool Selector!';
       return;
     }
 
     if (!this.inventory) {
       if (this.stage === 0) {
-        const distToPhone = pPos.distanceTo(new THREE.Vector3(-5.8, 0.32, -3.4));
+        const phonePos = this.phoneCurrentPos || new THREE.Vector3(-5.8, 0.32, -3.4);
+        const distToPhone = pPos.distanceTo(phonePos);
         if (distToPhone < 2.5) {
           this.promptTip.innerHTML = '✨ Press <b>[E]</b> to Pick up Broken Phone Pieces!';
           return;
@@ -2144,10 +2145,11 @@ class Game {
       this.promptTip.innerHTML = 'Explore the mohalla with <b>W, A, S, D</b> | Find the right Jugaad objects!';
     } else {
       if (this.stage === 0) {
+        const phonePos = this.phoneCurrentPos || new THREE.Vector3(-5.8, 0.32, -3.4);
         if (this.inventory.userData.isPhone) {
           this.promptTip.innerHTML = 'Toota Phone haath me hai! Deewal ke paas Kabaad Dher [E] se tool chunein!';
           return;
-        } else if (pPos.distanceTo(new THREE.Vector3(-5.8, 0.32, -3.4)) < 2.8) {
+        } else if (pPos.distanceTo(phonePos) < 2.8) {
           this.promptTip.innerHTML = `✨ Press <b>[E]</b> to apply <b>${this.inventory.userData.title}</b> to Broken Phone!`;
           return;
         }
