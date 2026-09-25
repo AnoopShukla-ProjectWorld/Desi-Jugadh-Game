@@ -1569,84 +1569,84 @@ export class AssetFactory {
     const asphaltMat = new THREE.MeshStandardMaterial({ color: 0x292524, roughness: 0.92 });
     const lineWhiteMat = new THREE.MeshBasicMaterial({ color: 0xf8fafc });
 
-    // PLATFORM 1: APPROACH ROAD (x: -16.0 to 9.2, Solid elevated road at y = 0.0)
-    const roadPlat1 = new THREE.Mesh(new THREE.BoxGeometry(25.2, 0.4, 7.0), asphaltMat);
-    roadPlat1.position.set(-3.4, -0.2, 0);
+    // PLATFORM 1: EXTENDED 50m APPROACH ROAD (x: -16.0 to 44.0, Solid elevated road at y = 0.0)
+    const roadPlat1 = new THREE.Mesh(new THREE.BoxGeometry(60.0, 0.4, 7.0), asphaltMat);
+    roadPlat1.position.set(14.0, -0.2, 0);
     roadPlat1.receiveShadow = true;
     envGroup.add(roadPlat1);
 
     // Dashed center road line on Platform 1
-    for (let cx = -14; cx <= 7.5; cx += 2.5) {
+    for (let cx = -14; cx <= 41.5; cx += 2.5) {
       const dash = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 0.18), lineWhiteMat);
       dash.rotation.x = -Math.PI / 2;
       dash.position.set(cx, 0.005, 0);
       envGroup.add(dash);
     }
 
-    // PLATFORM 2: DESTINATION ROAD (x: 12.8 to 46.0, Solid elevated road at y = 0.0)
-    const roadPlat2 = new THREE.Mesh(new THREE.BoxGeometry(33.2, 0.4, 7.0), asphaltMat);
-    roadPlat2.position.set(29.4, -0.2, 0);
+    // PLATFORM 2: DESTINATION ROAD (x: 47.6 to 94.0, Solid elevated road at y = 0.0)
+    const roadPlat2 = new THREE.Mesh(new THREE.BoxGeometry(46.4, 0.4, 7.0), asphaltMat);
+    roadPlat2.position.set(70.8, -0.2, 0);
     roadPlat2.receiveShadow = true;
     envGroup.add(roadPlat2);
 
     // Dashed center road line on Platform 2
-    for (let cx = 14.5; cx <= 44; cx += 2.5) {
+    for (let cx = 49.5; cx <= 91.5; cx += 2.5) {
       const dash = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 0.18), lineWhiteMat);
       dash.rotation.x = -Math.PI / 2;
       dash.position.set(cx, 0.005, 0);
       envGroup.add(dash);
     }
-    // [REAL 3D VOID]: Between x = 9.2 and x = 12.8 there is NO road floor.
+    // [REAL 3D VOID]: Between x = 44.0 and x = 47.6 there is NO road floor.
     // The deep chasm descends 2.2 meters down to the mud floor below!
 
     // Sidewalk
-    const walk = new THREE.Mesh(new THREE.BoxGeometry(65, 0.35, 3.5), new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.85 }));
-    walk.position.set(15, 0.08, -5.2);
+    const walk = new THREE.Mesh(new THREE.BoxGeometry(110, 0.35, 3.5), new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.85 }));
+    walk.position.set(39, 0.08, -5.2);
     walk.receiveShadow = true;
     envGroup.add(walk);
 
-    // Front Street Curb / Railing (BROKEN & OPEN at Excavated Trench between x = 9.2 and 12.8)
+    // Front Street Curb / Railing (BROKEN & OPEN at Excavated Trench between x = 44.0 and 47.6)
     const railMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.85 });
     const brokenCurbMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.95 });
 
-    // Curb Section 1 (Approach Road: x = -16.0 to 9.2)
-    const rail1 = new THREE.Mesh(new THREE.BoxGeometry(25.2, 0.3, 0.4), railMat);
-    rail1.position.set(-3.4, 0.1, 3.6);
+    // Curb Section 1 (Approach Road: x = -16.0 to 44.0)
+    const rail1 = new THREE.Mesh(new THREE.BoxGeometry(60.0, 0.3, 0.4), railMat);
+    rail1.position.set(14.0, 0.1, 3.6);
     rail1.receiveShadow = true;
     envGroup.add(rail1);
 
-    // Broken / Jagged cracked curb end on left trench lip (x = 9.2)
+    // Broken / Jagged cracked curb end on left trench lip (x = 44.0)
     const breakLeft = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.28, 0.42), brokenCurbMat);
-    breakLeft.position.set(9.25, 0.04, 3.6);
+    breakLeft.position.set(44.05, 0.04, 3.6);
     breakLeft.rotation.z = -0.35; // Drooping down into pit
     envGroup.add(breakLeft);
 
-    // Curb Section 2 (Destination Road: x = 12.8 to 46.0)
-    const rail2 = new THREE.Mesh(new THREE.BoxGeometry(33.2, 0.3, 0.4), railMat);
-    rail2.position.set(29.4, 0.1, 3.6);
+    // Curb Section 2 (Destination Road: x = 47.6 to 94.0)
+    const rail2 = new THREE.Mesh(new THREE.BoxGeometry(46.4, 0.3, 0.4), railMat);
+    rail2.position.set(70.8, 0.1, 3.6);
     rail2.receiveShadow = true;
     envGroup.add(rail2);
 
-    // Broken / Jagged cracked curb end on right trench lip (x = 12.8)
+    // Broken / Jagged cracked curb end on right trench lip (x = 47.6)
     const breakRight = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.28, 0.42), brokenCurbMat);
-    breakRight.position.set(12.75, 0.04, 3.6);
+    breakRight.position.set(47.55, 0.04, 3.6);
     breakRight.rotation.z = 0.35; // Drooping down into pit
     envGroup.add(breakRight);
 
     // Fallen shattered curb chunks in the trench bottom at z = 3.4
     const fallenChunk1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.25, 0.35), brokenCurbMat);
-    fallenChunk1.position.set(10.2, -2.12, 3.4);
+    fallenChunk1.position.set(45.0, -2.12, 3.4);
     fallenChunk1.rotation.set(0.4, 0.3, -0.6);
     envGroup.add(fallenChunk1);
 
     const fallenChunk2 = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.22, 0.3), brokenCurbMat);
-    fallenChunk2.position.set(11.8, -2.14, 3.3);
+    fallenChunk2.position.set(46.6, -2.14, 3.3);
     fallenChunk2.rotation.set(-0.3, 0.6, 0.4);
     envGroup.add(fallenChunk2);
 
-    // Buildings along the street
+    // Buildings along the street (extended across the 110m mohalla)
     const bColors = [0xfef08a, 0xfca5a5, 0x93c5fd, 0x86efac, 0xfde047, 0xf9a8d4];
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < 15; i++) {
       // Reserve dedicated space at x = -6.0 for Chacha's Ancestral Home!
       if (i === 1) continue;
 
@@ -1655,10 +1655,10 @@ export class AssetFactory {
       bMesh.castShadow = true;
       envGroup.add(bMesh);
 
-      if (i === 2) {
-        // Grey/blue building (i=2): place compact balcony over Chai stall (x = 1.8), leaving right wall completely clear (x = 3.2 to 6.6)
+      if (i === 7) {
+        // Building right before trench (i=7, center = 37.6): place compact balcony on left so right wall (38.0 to 40.6) is completely clear for the long timber plank
         const balc = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.8, 0.8), new THREE.MeshStandardMaterial({ color: 0xd97706 }));
-        balc.position.set(1.8, 3.5, -5.0);
+        balc.position.set(36.0, 3.5, -5.0);
         envGroup.add(balc);
       } else {
         const balc = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.8, 0.8), new THREE.MeshStandardMaterial({ color: 0xd97706 }));
@@ -1667,9 +1667,9 @@ export class AssetFactory {
       }
     }
 
-    // Chai Stall (with authentic 4 support pillars holding up the blue canopy roof)
+    // Chai Stall (positioned nicely along the 50m approach road at x = 18.0)
     const stallGroup = new THREE.Group();
-    stallGroup.position.set(2, 0.2, -4.0);
+    stallGroup.position.set(18.0, 0.2, -4.0);
     const stall = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1.1, 1.4), new THREE.MeshStandardMaterial({ color: 0x9a3412 }));
     stall.position.y = 0.55;
     stallGroup.add(stall);
@@ -1698,8 +1698,8 @@ export class AssetFactory {
     stallGroup.add(roof);
     envGroup.add(stallGroup);
 
-    // Lamp Posts
-    for (let x = -8; x <= 38; x += 12) {
+    // Lamp Posts along the 100m street
+    for (let x = -8; x <= 86; x += 12) {
       const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 4.5, 8), new THREE.MeshStandardMaterial({ color: 0x1f2937, metalness: 0.8 }));
       pole.position.set(x, 2.25, -3.8);
       envGroup.add(pole);
@@ -1713,10 +1713,10 @@ export class AssetFactory {
       envGroup.add(light);
     }
 
-    // --- SHEESH MAHAL: COMPACT ROYAL PALACE WEDDING FACADE (x = 42.0, Height = 3.8m) ---
+    // --- SHEESH MAHAL: COMPACT ROYAL PALACE WEDDING FACADE (x = 80.0, Height = 3.8m) ---
     const sheeshMahal = new THREE.Group();
     sheeshMahal.name = "SheeshMahalWeddingVenue";
-    sheeshMahal.position.set(42.0, 0, 0);
+    sheeshMahal.position.set(80.0, 0, 0);
 
     const stoneMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.65, metalness: 0.15 });
     const trimGoldMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.35, metalness: 0.6 });

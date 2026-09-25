@@ -104,20 +104,20 @@ class Game {
     this.fallingPhoneMesh.visible = false;
     this.scene.add(this.fallingPhoneMesh);
 
-    // Road Excavation Trench at x = 11
+    // Road Excavation Trench at x = 45.8 (Starts at x = 44.0, exactly 50m from Chacha's house at x = -6.0)
     this.trench = AssetFactory.createRoadTrench();
-    this.trench.position.set(11, 0, 0);
+    this.trench.position.set(45.8, 0, 0);
     this.scene.add(this.trench);
 
-    // Cartoon Cow at x = 21.5, z = -0.2
+    // Cartoon Cow at x = 62.0, z = -0.2 (Level 3 Roadblock past trench)
     this.cow = AssetFactory.createCartoonCow();
-    this.cow.position.set(21.5, 0, -0.2);
+    this.cow.position.set(62.0, 0, -0.2);
     this.cow.rotation.y = -Math.PI / 2;
     this.scene.add(this.cow);
 
-    // Chachi Character at Sheesh Mahal on Red Carpet (Clear view, outside gate arch at x = 39.8, z = 0.3)
+    // Chachi Character at Sheesh Mahal on Red Carpet (x = 77.8, z = 0.3)
     this.chachi = AssetFactory.createCartoonChachi();
-    this.chachi.position.set(39.8, 0, 0.3);
+    this.chachi.position.set(77.8, 0, 0.3);
     this.chachi.rotation.y = -Math.PI / 2 - 0.25; // Angled facing the camera
     this.scene.add(this.chachi);
 
@@ -142,53 +142,58 @@ class Game {
     this.junkPile.position.set(-9.2, 0.32, -2.8);
     this.scene.add(this.junkPile);
 
-    // Level 2 Plank 1: Long Sturdy Timber Bridge (4.2m) leaning against Grey Building Wall near Chai Stall (x = 5.8)
+    // Level 2 Plank 1: Long Sturdy Timber Bridge (4.2m) leaning against Building Wall near Trench (x = 39.0)
     const plank = AssetFactory.createTimberPlank();
-    plank.position.set(5.8, 2.05, -5.0);
+    plank.position.set(39.0, 2.05, -5.0);
     plank.rotation.set(-0.14, Math.PI / 2, Math.PI / 2);
     this.scene.add(plank);
     this.items.push(plank);
 
-    // Level 2 Plank 2: Short Plank Distractor (2.2m) leaning against Green Building Wall near Trench (x = 8.0)
+    // Level 2 Plank 2: Short Plank Distractor (2.2m) leaning against Wall right beside Trench (x = 41.5)
     const shortPlank = AssetFactory.createShortPlank();
-    shortPlank.position.set(8.0, 1.05, -5.0);
+    shortPlank.position.set(41.5, 1.05, -5.0);
     shortPlank.rotation.set(-0.14, Math.PI / 2, Math.PI / 2);
     this.scene.add(shortPlank);
     this.items.push(shortPlank);
 
-    // Level 3 Grass Item (Cow feed)
+    // Level 3 Grass Item (Cow feed near Chai Stall at x = 58.5)
     const grass = AssetFactory.createGrassRotiBasket();
-    grass.position.set(18.0, 0, -3.2);
+    grass.position.set(58.5, 0, -3.2);
     this.scene.add(grass);
     this.items.push(grass);
 
-    // Level 4 Climax Brick Item (Placed near Sheesh Mahal wedding construction debris)
+    // Level 4 Climax Brick Item (Placed near Sheesh Mahal wedding construction debris at x = 75.5)
     const brick = AssetFactory.createBrick();
-    brick.position.set(38.2, 0, -2.2);
+    brick.position.set(75.5, 0, -2.2);
     this.scene.add(brick);
     this.items.push(brick);
 
     // Other street props / distractors
     const broom = AssetFactory.createBroom();
-    broom.position.set(-2.5, 0, 1.8);
+    broom.position.set(8.5, 0, 1.8);
     this.scene.add(broom);
     this.items.push(broom);
 
     const tyre = AssetFactory.createOldTyre();
-    tyre.position.set(15.5, 0, 1.8);
+    tyre.position.set(52.5, 0, 1.8);
     this.scene.add(tyre);
     this.items.push(tyre);
 
-    // 8 Shiny Collectible Desi Rupee Coins along the road
+    // 13 Shiny Collectible Desi Rupee Coins along the 50m road (Slalom S-Curve for exciting steering!)
     const coinCoords = [
-      { x: -2.0, z: 0.0 },
-      { x: 2.2, z: 0.5 },
-      { x: 5.6, z: -0.5 },
-      { x: 11.0, z: 0.0 }, // Directly on the plank bridge!
-      { x: 15.2, z: 0.8 },
-      { x: 26.0, z: -0.6 },
-      { x: 32.5, z: 0.6 },
-      { x: 38.5, z: 0.0 }
+      { x: 3.5, z: -1.4 },
+      { x: 8.0, z: 1.4 },
+      { x: 13.0, z: -1.6 },
+      { x: 18.0, z: 1.6 },
+      { x: 23.0, z: -1.2 },
+      { x: 28.0, z: 1.2 },
+      { x: 33.0, z: -1.5 },
+      { x: 38.0, z: 1.5 },
+      { x: 41.5, z: 0.0 }, // Right before trench!
+      { x: 45.8, z: 0.0 }, // Directly on the plank bridge!
+      { x: 50.0, z: 1.0 },
+      { x: 67.0, z: -0.8 },
+      { x: 73.0, z: 0.0 }
     ];
     this.coins = coinCoords.map(pos => {
       const c = AssetFactory.createDesiCoin();
@@ -204,19 +209,19 @@ class Game {
       { type: 'circle', x: -3.6, z: -3.4, radius: 0.45, name: 'TulsiPot' },
       { type: 'box', minX: -9.8, maxX: -8.6, minZ: -3.4, maxZ: -2.2, name: 'JunkPile' },
 
-      // 2. Chai Tapri (x = 2.0, z = -4.0)
-      { type: 'box', minX: 0.5, maxX: 3.5, minZ: -4.8, maxZ: -3.2, name: 'ChaiStall' },
+      // 2. Chai Tapri (x = 18.0, z = -4.0)
+      { type: 'box', minX: 16.5, maxX: 19.5, minZ: -4.8, maxZ: -3.2, name: 'ChaiStall' },
 
-      // 3. North buildings wall along road (sidewalk barrier)
-      { type: 'box', minX: 3.6, maxX: 40.0, minZ: -10.0, maxZ: -4.4, name: 'NorthBuildings' },
+      // 3. North buildings wall along road (sidewalk barrier spanning entire street)
+      { type: 'box', minX: 2.0, maxX: 78.0, minZ: -10.0, maxZ: -4.4, name: 'NorthBuildings' },
 
       // 4. South boundary railing along road
-      { type: 'box', minX: -16.0, maxX: 45.0, minZ: 3.2, maxZ: 10.0, name: 'SouthRailing' },
+      { type: 'box', minX: -16.0, maxX: 94.0, minZ: 3.2, maxZ: 10.0, name: 'SouthRailing' },
 
-      // 5. Sheesh Mahal Palace Facade Walls & Side Wings (at x = 42.0)
-      { type: 'box', minX: 41.6, maxX: 42.6, minZ: -6.0, maxZ: -1.35, name: 'PalaceWallLeft' },
-      { type: 'box', minX: 41.6, maxX: 42.6, minZ: 1.35, maxZ: 6.0, name: 'PalaceWallRight' },
-      { type: 'box', minX: 45.0, maxX: 55.0, minZ: -6.0, maxZ: 6.0, name: 'PalaceBackBoundary' }
+      // 5. Sheesh Mahal Palace Facade Walls & Side Wings (at x = 80.0)
+      { type: 'box', minX: 79.6, maxX: 80.6, minZ: -6.0, maxZ: -1.35, name: 'PalaceWallLeft' },
+      { type: 'box', minX: 79.6, maxX: 80.6, minZ: 1.35, maxZ: 6.0, name: 'PalaceWallRight' },
+      { type: 'box', minX: 83.0, maxX: 95.0, minZ: -6.0, maxZ: 6.0, name: 'PalaceBackBoundary' }
     ];
 
     // Dazed Character (Spawned after accident)
@@ -460,8 +465,8 @@ class Game {
     audio.playPhoneRing();
 
     // Position camera framing Chachi from comfortable medium-wide angle
-    this.camera.position.set(34.2, 1.85, 2.8);
-    this.camera.lookAt(39.8, 1.25, 0.3);
+    this.camera.position.set(72.2, 1.85, 2.8);
+    this.camera.lookAt(77.8, 1.25, 0.3);
   }
 
   endCutscene() {
@@ -573,7 +578,7 @@ class Game {
     this.isFalling = true;
     this.trenchLanded = false;
     this.trenchFallVel = -1.2;
-    this.trenchTargetX = 11.0;
+    this.trenchTargetX = 45.8;
 
     if (isRiding) {
       this.scooterSpeed = 0;
@@ -1281,13 +1286,13 @@ class Game {
     // Hide dazed guy
     this.dazedGuy.visible = false;
 
-    // Restore scooter before cow
-    this.scooter.position.set(14.0, 0, 0);
+    // Restore scooter before cow (cow is at x = 62.0)
+    this.scooter.position.set(55.0, 0, 0);
     this.scooter.rotation.set(0, 0, 0);
     this.scooter.userData.riderMesh.visible = false;
 
     // Restore walking player
-    this.player.position.set(15.0, 0, 0.5);
+    this.player.position.set(56.0, 0, 0.5);
     this.player.visible = true;
     this.player.rotation.set(0, 0, 0);
 
@@ -1498,18 +1503,18 @@ class Game {
           // If a short plank was already placed, restore it back to wall
           if (this.placedPlankMesh && this.placedPlankMesh !== carried) {
             this.scene.remove(this.placedPlankMesh);
-            this.placedPlankMesh.position.set(8.0, 1.05, -5.0);
+            this.placedPlankMesh.position.set(41.5, 1.05, -5.0);
             this.placedPlankMesh.rotation.set(-0.14, Math.PI / 2, Math.PI / 2);
             this.scene.add(this.placedPlankMesh);
             if (!this.items.includes(this.placedPlankMesh)) this.items.push(this.placedPlankMesh);
           }
 
-          // Snap long plank (4.2m) across trench spanning from Platform 1 (x=9.2) to Platform 2 (x=12.8)!
+          // Snap long plank (4.2m) across trench spanning from Platform 1 (x=44.0) to Platform 2 (x=47.6)!
           this.player.remove(carried);
           this.scene.add(carried);
           
           this.plankZ = Math.max(-2.2, Math.min(2.2, pPos.z)); // Place bridge at current lane!
-          carried.position.set(11.0, 0.09, this.plankZ);
+          carried.position.set(45.8, 0.09, this.plankZ);
           carried.rotation.set(0, 0, 0);
 
           this.plankPlaced = true;
@@ -1534,18 +1539,18 @@ class Game {
           // If another plank was already placed, restore it back to wall
           if (this.placedPlankMesh && this.placedPlankMesh !== carried) {
             this.scene.remove(this.placedPlankMesh);
-            this.placedPlankMesh.position.set(5.8, 2.05, -5.0);
+            this.placedPlankMesh.position.set(39.0, 2.05, -5.0);
             this.placedPlankMesh.rotation.set(-0.14, Math.PI / 2, Math.PI / 2);
             this.scene.add(this.placedPlankMesh);
             if (!this.items.includes(this.placedPlankMesh)) this.items.push(this.placedPlankMesh);
           }
 
-          // Place 2.2m short plank (spans halfway: x=9.2 to 11.4)
+          // Place 2.2m short plank (spans halfway: x=44.0 to 46.2)
           this.player.remove(carried);
           this.scene.add(carried);
           
           this.plankZ = Math.max(-2.2, Math.min(2.2, pPos.z));
-          carried.position.set(10.3, 0.09, this.plankZ);
+          carried.position.set(45.1, 0.09, this.plankZ);
           carried.rotation.set(0, 0, 0);
 
           this.plankPlaced = true;
@@ -1569,13 +1574,13 @@ class Game {
         }
       }
 
-      // CRISIS 3: Near Cow (21.5, 0, -0.2)
+      // CRISIS 3: Near Cow (62.0, 0, -0.2)
       const distToCow = pPos.distanceTo(this.cow.position);
       if (this.stage === 2 && distToCow < 3.6) {
         if (carried.userData.type === 'grass') {
           this.player.remove(carried);
           this.scene.add(carried);
-          carried.position.set(21.5, 0, -2.8);
+          carried.position.set(62.0, 0, -2.8);
           this.inventory = null;
           if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
             this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
@@ -1711,8 +1716,8 @@ class Game {
 
       if (t < 2.8) {
         // Shot 1: Chachi talking urgently on phone at Sheesh Mahal Mandap (Camera pulled back at comfortable medium-wide angle)
-        this.camera.position.set(34.2, 1.85, 2.8);
-        this.camera.lookAt(39.8, 1.25, 0.3);
+        this.camera.position.set(72.2, 1.85, 2.8);
+        this.camera.lookAt(77.8, 1.25, 0.3);
 
         // Animated head nod & phone gesture while talking
         if (this.chachi && this.chachi.userData.headGroup) {
@@ -1727,11 +1732,11 @@ class Game {
         const u = (t - 2.8) / 2.0; // 0 to 1
         const easeU = u * u * (3 - 2 * u); // SmoothStep
 
-        const camX = THREE.MathUtils.lerp(34.2, -2.8, easeU);
+        const camX = THREE.MathUtils.lerp(72.2, -2.8, easeU);
         const camY = THREE.MathUtils.lerp(1.85, 2.2, easeU);
         const camZ = THREE.MathUtils.lerp(2.8, 0.8, easeU);
 
-        const lookX = THREE.MathUtils.lerp(39.8, -6.0, easeU);
+        const lookX = THREE.MathUtils.lerp(77.8, -6.0, easeU);
         const lookY = THREE.MathUtils.lerp(1.25, 1.35, easeU);
         const lookZ = THREE.MathUtils.lerp(0.3, -3.6, easeU);
 
@@ -1933,7 +1938,7 @@ class Game {
         let nextX = this.player.position.x + vx;
         let nextZ = this.player.position.z + vz;
 
-        nextX = Math.max(-11.5, Math.min(43.5, nextX));
+        nextX = Math.max(-11.5, Math.min(82.0, nextX));
         nextZ = Math.max(-4.4, Math.min(3.0, nextZ));
 
         const colliders = this.getColliders();
@@ -2051,12 +2056,12 @@ class Game {
       }
 
       // --- TRENCH CROSSING LOGIC FOR WALKING CHACHA ---
-      if (this.player.position.x >= 9.2 && this.player.position.x <= 12.8) {
+      if (this.player.position.x >= 44.0 && this.player.position.x <= 47.6) {
         let onPlank = false;
         if (this.plankPlaced && Math.abs(this.player.position.z - this.plankZ) <= this.plankHalfWidth) {
           if (this.placedPlankType === 'short_plank') {
-            // Short plank (2.2m) only extends up to x = 11.4!
-            if (this.player.position.x <= 11.4) {
+            // Short plank (2.2m) placed at 45.1 only extends up to x = 46.2!
+            if (this.player.position.x <= 46.2) {
               onPlank = true;
             }
           } else {
@@ -2115,7 +2120,7 @@ class Game {
 
     // --- 2. GAU MATA BEHAVIOR: NATURAL ROTATION & FORWARD WALK TO GRASS ---
     if (this.cow.userData.isDistracted && this.cow.userData.state === 'moving') {
-      const targetX = 21.5;
+      const targetX = 62.0;
       const targetZ = -2.8;
       const dx = targetX - this.cow.position.x;
       const dz = targetZ - this.cow.position.z;
@@ -2184,23 +2189,23 @@ class Game {
       }
 
       // Unlock planks when scooter approaches trench zone
-      if (this.stage === 1 && !this.trenchEncountered && this.scooter.position.x >= 2.0) {
+      if (this.stage === 1 && !this.trenchEncountered && this.scooter.position.x >= 15.0) {
         this.trenchEncountered = true;
         this.triggerJugaadToast('🛑 SADAK TOOTI HAI! PULL BANANA PADEGA!');
       }
 
       // Approach warning if approaching trench without plank
-      if (this.stage === 1 && !this.plankPlaced && this.scooter.position.x >= 5.5 && this.scooter.position.x < 9.0) {
+      if (this.stage === 1 && !this.plankPlaced && this.scooter.position.x >= 39.5 && this.scooter.position.x < 43.8) {
         this.promptTip.innerHTML = '🛑 Sadak tooti hai! Press <b>[E]</b> to Dismount & Lakdi ka Phatta dhundo!';
       }
 
       // --- TRENCH CRASH CHECK FOR SCOOTER ---
-      if (this.scooter.position.x >= 9.2 && this.scooter.position.x <= 12.8) {
+      if (this.scooter.position.x >= 44.0 && this.scooter.position.x <= 47.6) {
         let onPlank = false;
         if (this.plankPlaced && Math.abs(this.scooter.position.z - this.plankZ) <= this.plankHalfWidth) {
           if (this.placedPlankType === 'short_plank') {
-            // Short plank (2.2m) only extends up to x = 11.4!
-            if (this.scooter.position.x <= 11.4) {
+            // Short plank (2.2m) placed at 45.1 only extends up to x = 46.2!
+            if (this.scooter.position.x <= 46.2) {
               onPlank = true;
             }
           } else {
@@ -2216,7 +2221,7 @@ class Game {
       }
 
       // Progress from Stage 1 to Stage 2 once trench is safely crossed!
-      if (this.stage === 1 && this.plankPlaced && this.scooter.position.x > 13.5) {
+      if (this.stage === 1 && this.plankPlaced && this.scooter.position.x > 48.3) {
         this.setStage(2);
         this.triggerJugaadToast('✨ TRENCH CROSSED! KEEP GOING! ✨');
         this.showDialogue('Chacha', 'Wah miyaan! Phatte ke upar se nikal gaye! Ab aage VIP road badho!');
@@ -2225,9 +2230,9 @@ class Game {
 
       // STAGE 2: Cow Roadblock Slowdown before Cow if NOT distracted
       if (this.stage === 2 && !this.cow.userData.isDistracted) {
-        if (this.scooter.position.x >= 17.2) {
-          if (this.scooter.position.x > 18.2) {
-            this.scooter.position.x = 18.2;
+        if (this.scooter.position.x >= 57.5) {
+          if (this.scooter.position.x > 58.5) {
+            this.scooter.position.x = 58.5;
             this.scooterSpeed = 0;
           } else {
             this.scooterSpeed = Math.min(1.8, this.scooterSpeed);
@@ -2239,7 +2244,7 @@ class Game {
       }
 
       // Progress from Stage 2 to Stage 3 once Cow roadblock is cleared!
-      if (this.stage === 2 && this.cow.userData.isDistracted && this.scooter.position.x > 23.0) {
+      if (this.stage === 2 && this.cow.userData.isDistracted && this.scooter.position.x > 63.5) {
         this.setStage(3);
         this.triggerJugaadToast('✨ ROAD CLEAR! FULL THROTTLE! ✨');
         this.questText.textContent = 'Full throttle bhagao! Sheesh Mahal gate me entry maaro!';
@@ -2268,8 +2273,8 @@ class Game {
       const camTargetY = this.isFalling ? THREE.MathUtils.lerp(1.4, -1.6, Math.min(1, Math.max(0, -this.scooter.position.y / 2.15))) : 1.4;
       this.camera.lookAt(this.scooter.position.x + 2, camTargetY, this.scooter.position.z);
 
-      // --- 4. DESTINATION ARRIVAL CLIMAX: KICKSTAND SNAPS AT SHEESH MAHAL GATE! (x >= 37.0) ---
-      if (this.stage === 3 && this.scooter.position.x >= 37.0) {
+      // --- 4. DESTINATION ARRIVAL CLIMAX: KICKSTAND SNAPS AT SHEESH MAHAL GATE! (x >= 75.0) ---
+      if (this.stage === 3 && this.scooter.position.x >= 75.0) {
         this.setStage(4);
         this.isRiding = false;
         this.scooterSpeed = 0;
@@ -2371,14 +2376,14 @@ class Game {
           // 5. Allow player to clearly see Chacha/scooter down in the pit for 1.8 seconds, then safely respawn
           setTimeout(() => {
             if (this.isRiding) {
-              this.scooter.position.set(7.0, 0, this.plankPlaced ? this.plankZ : 0);
+              this.scooter.position.set(41.5, 0, this.plankPlaced ? this.plankZ : 0);
               this.scooter.rotation.set(0, 0, 0);
               this.scooter.position.y = 0;
               this.isFalling = false;
               this.trenchLanded = false;
               audio.startScooterEngine();
             } else {
-              this.player.position.set(7.5, 0, this.plankPlaced ? this.plankZ : 0);
+              this.player.position.set(41.5, 0, this.plankPlaced ? this.plankZ : 0);
               this.player.rotation.set(0, 0, 0);
               this.player.position.y = 0;
               this.isFalling = false;
