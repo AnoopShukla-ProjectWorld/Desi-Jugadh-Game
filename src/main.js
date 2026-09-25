@@ -1916,25 +1916,30 @@ class Game {
         while (diff > Math.PI) diff -= Math.PI * 2;
         this.player.rotation.y += diff * 0.22;
 
-        // Walk cycle
-        this.player.userData.walkPhase += moveLen * 3.8;
-        const swing = Math.sin(this.player.userData.walkPhase) * 0.65;
+        // Natural Desi Walk Cycle (Calibrated stride frequency, relaxed leg/arm swing & gentle weight-shift)
+        this.player.userData.walkPhase += moveLen * 1.55;
+        const swing = Math.sin(this.player.userData.walkPhase) * 0.48;
         this.player.userData.leftLegPivot.rotation.x = swing;
         this.player.userData.rightLegPivot.rotation.x = -swing;
 
+        // Subtle side-to-side weight transfer when walking
+        this.player.userData.torsoGroup.rotation.z = Math.sin(this.player.userData.walkPhase) * 0.035;
+
         if (this.inventory) {
           // TWO-HANDED CARRY ANIMATION: Arms stay raised forward holding object with subtle walking bob
-          const holdBob = Math.sin(this.player.userData.walkPhase * 2) * 0.04;
+          const holdBob = Math.sin(this.player.userData.walkPhase * 2) * 0.025;
           this.player.userData.leftArmPivot.rotation.set(-1.25 + holdBob, -0.15, -0.22);
           this.player.userData.rightArmPivot.rotation.set(-1.25 - holdBob, 0.15, 0.22);
         } else {
-          this.player.userData.leftArmPivot.rotation.set(-swing * 0.75, 0, 0);
-          this.player.userData.rightArmPivot.rotation.set(swing * 0.75, 0, 0);
+          // Relaxed arm swing counter to leg movement
+          this.player.userData.leftArmPivot.rotation.set(-swing * 0.70, 0, -0.06);
+          this.player.userData.rightArmPivot.rotation.set(swing * 0.70, 0, 0.06);
         }
-        this.player.userData.torsoGroup.position.y = 1.25 + Math.abs(Math.sin(this.player.userData.walkPhase * 2)) * 0.05;
+        this.player.userData.torsoGroup.position.y = 1.25 + Math.abs(Math.sin(this.player.userData.walkPhase * 2)) * 0.025;
       } else {
         this.player.userData.leftLegPivot.rotation.x *= 0.8;
         this.player.userData.rightLegPivot.rotation.x *= 0.8;
+        this.player.userData.torsoGroup.rotation.z *= 0.8;
         if (this.inventory) {
           // Stationary carry: Both arms held forward holding item
           this.player.userData.leftArmPivot.rotation.set(-1.25, -0.15, -0.22);
