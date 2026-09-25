@@ -949,17 +949,6 @@ export class AssetFactory {
       }
     });
 
-    // --- D. NORTH & SOUTH PIT RETAINING WALLS (Seals pit so no yellow background shines through) ---
-    const sideWallN = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.4, 0.3), earthWallMat);
-    sideWallN.position.set(0, -1.2, -3.55);
-    sideWallN.receiveShadow = true;
-    trenchGroup.add(sideWallN);
-
-    const sideWallS = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.4, 0.3), earthWallMat);
-    sideWallS.position.set(0, -1.2, 3.55);
-    sideWallS.receiveShadow = true;
-    trenchGroup.add(sideWallS);
-
     // --- E. REAL BLUE WATER SURFACE AT ACTUAL PIT BOTTOM (y = -2.18) ---
     const waterGeo = new THREE.PlaneGeometry(3.55, 6.95);
     const waterMat = new THREE.MeshStandardMaterial({

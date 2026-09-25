@@ -510,6 +510,14 @@ class Game {
 
   openRadialWheel() {
     if (this.radialWheelModal) {
+      const junkWorldPos = new THREE.Vector3(-9.2, 1.45, -2.8);
+      const proj = junkWorldPos.clone().project(this.camera);
+      if (proj.z < 1) {
+        const sx = (proj.x * 0.5 + 0.5) * window.innerWidth;
+        const sy = (-proj.y * 0.5 + 0.5) * window.innerHeight;
+        this.radialWheelModal.style.left = `${sx}px`;
+        this.radialWheelModal.style.top = `${sy}px`;
+      }
       this.radialWheelModal.style.display = 'flex';
       audio.init();
     }
@@ -528,8 +536,6 @@ class Game {
     // WORKFLOW 1: Player ALREADY CARRIES Broken Phone in hands!
     if (this.inventory && this.inventory.userData.isPhone) {
       if (toolType === 'rubber') {
-        // High Score Best Jugaad!
-        this.player.remove(this.inventory);
         // High Score Best Jugaad! Phone goes into pocket!
         this.player.remove(this.inventory);
         this.inventory = null;
@@ -608,8 +614,8 @@ class Game {
     if (toolMesh) {
       this.inventory = toolMesh;
       this.player.add(toolMesh);
-      toolMesh.position.set(0, 0.88, 0.48);
-      toolMesh.rotation.set(0, 0, 0);
+      toolMesh.position.set(0, 1.28, 0.56);
+      toolMesh.rotation.set(0.35, 0, 0);
 
       if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
         this.player.userData.leftArmPivot.rotation.set(-1.25, -0.15, -0.22);
@@ -1140,7 +1146,7 @@ class Game {
 
     // 0. Near Kabaad ka Dher (Tools & Scrap Corner at left sidewalk corner x = -9.2, z = -2.8)
     const distToJunk = pPos.distanceTo(new THREE.Vector3(-9.2, 0.32, -2.8));
-    if (distToJunk < 3.0) {
+    if (distToJunk < 1.8) {
       this.openRadialWheel();
       return;
     }
@@ -1156,8 +1162,8 @@ class Game {
         this.items = this.items.filter(it => it !== this.phoneScreenItem);
         if (this.phoneBackItem) this.phoneBackItem.visible = false;
         this.player.add(this.inventory);
-        this.inventory.position.set(0, 0.88, 0.48);
-        this.inventory.rotation.set(0, 0, 0);
+        this.inventory.position.set(0, 1.28, 0.56);
+        this.inventory.rotation.set(0.35, 0, 0);
 
         if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
           this.player.userData.leftArmPivot.rotation.set(-1.25, -0.15, -0.22);
@@ -1188,8 +1194,8 @@ class Game {
         this.player.add(nearestItem);
 
         // Position item directly in Chacha's hands in front of torso
-        nearestItem.position.set(0, 0.88, 0.48);
-        nearestItem.rotation.set(0, 0, 0);
+        nearestItem.position.set(0, 1.28, 0.56);
+        nearestItem.rotation.set(0.35, 0, 0);
 
         // Bring both arms forward to firmly hold the object
         if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
@@ -1834,7 +1840,7 @@ class Game {
       // Automatic Proximity for Kabaad ka Dher Radial Wheel (left sidewalk x = -9.2, z = -2.8)
       if (this.stage === 0) {
         const distToJunk = this.player.position.distanceTo(new THREE.Vector3(-9.2, 0.32, -2.8));
-        if (distToJunk < 3.2) {
+        if (distToJunk < 1.8) {
           if (!this.radialWheelModal || this.radialWheelModal.style.display !== 'flex') {
             this.openRadialWheel();
           }
