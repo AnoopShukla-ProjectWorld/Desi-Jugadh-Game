@@ -101,11 +101,6 @@ class Game {
     this.fallingPhoneMesh.visible = false;
     this.scene.add(this.fallingPhoneMesh);
 
-    // Warning Barrier before Excavation (at x = 8.2)
-    this.warningBarrier = AssetFactory.createWarningBarrier();
-    this.warningBarrier.position.set(8.2, 0, 0);
-    this.scene.add(this.warningBarrier);
-
     // Road Excavation Trench at x = 11
     this.trench = AssetFactory.createRoadTrench();
     this.trench.position.set(11, 0, 0);
@@ -139,9 +134,9 @@ class Game {
     this.phoneBackItem.visible = false;
     this.scene.add(this.phoneBackItem);
 
-    // Kabaad Ka Dher (Tools & Scrap Corner moved away from house to mohalla street/driveway corner)
+    // Kabaad Ka Dher (Tools & Scrap Corner at left sidewalk corner x = -9.2, z = -2.8)
     this.junkPile = AssetFactory.createJunkToolCorner();
-    this.junkPile.position.set(-3.5, 0, 1.8);
+    this.junkPile.position.set(-9.2, 0.32, -2.8);
     this.scene.add(this.junkPile);
 
     // Level 2 Plank Item (Road trench bridge)
@@ -196,8 +191,7 @@ class Game {
       // 1. Chacha's Home main back wall and verandah props (Verandah surface is 100% walkable!)
       { type: 'box', minX: -9.5, maxX: -2.5, minZ: -10.0, maxZ: -4.8, name: 'HomeBackWall' },
       { type: 'circle', x: -3.6, z: -3.4, radius: 0.45, name: 'TulsiPot' },
-      { type: 'box', minX: -8.5, maxX: -7.7, minZ: -3.8, maxZ: -3.0, name: 'AtlasBicycle' },
-      { type: 'box', minX: -4.1, maxX: -2.9, minZ: 1.3, maxZ: 2.3, name: 'JunkPile' },
+      { type: 'box', minX: -9.8, maxX: -8.6, minZ: -3.4, maxZ: -2.2, name: 'JunkPile' },
 
       // 2. Chai Tapri (x = 2.0, z = -4.0)
       { type: 'box', minX: 0.5, maxX: 3.5, minZ: -4.8, maxZ: -3.2, name: 'ChaiStall' },
@@ -316,18 +310,6 @@ class Game {
       });
     }
 
-    // 3. Deep Road Excavation Trench (Blocks crossing unless timber plank is placed)
-    if (!this.plankPlaced && this.trench) {
-      list.push({
-        type: 'box',
-        minX: 9.3,
-        maxX: 12.7,
-        minZ: -3.5,
-        maxZ: 3.5,
-        name: 'TrenchVoid'
-      });
-    }
-
     return list;
   }
 
@@ -403,6 +385,9 @@ class Game {
     this.player.visible = false;
     if (this.player.userData.setPhoneCallPose) this.player.userData.setPhoneCallPose(false);
 
+    const uiOverlay = document.getElementById('ui-overlay');
+    if (uiOverlay) uiOverlay.style.display = 'none';
+
     const overlay = document.getElementById('cutscene-overlay');
     if (overlay) {
       overlay.style.display = 'flex';
@@ -424,6 +409,10 @@ class Game {
   endCutscene() {
     if (!this.isCutscene) return;
     this.isCutscene = false;
+
+    // Show gameplay UI overlay now that cutscene is finished
+    const uiOverlay = document.getElementById('ui-overlay');
+    if (uiOverlay) uiOverlay.style.display = 'flex';
 
     // Ensure Chacha's doors remain open
     if (this.chachaHome) this.chachaHome.userData.openDoors();
@@ -459,10 +448,10 @@ class Game {
 
     this.showDialogue(
       'Chacha',
-      'Arre miyaan! Screen aur back cover dono alag ho gaye! Pehle toota phone uthao ya saamne Kabaad Dher se jugaad tool chuno!'
+      'Arre miyaan! Screen aur back cover dono alag ho gaye! Pehle toota phone uthao ya baayin taraf Kabaad Dher se jugaad tool chuno!'
     );
     this.questText.textContent = 'Level 1: Toota phone theek karo! Kabaad Dher se tool chuno ya toota phone uthao!';
-    this.promptTip.innerHTML = 'Kabaad Dher ke paas jayein (Radial Wheel) | Toota Phone theek karein!';
+    this.promptTip.innerHTML = 'Toota Phone uthayein ya Kabaad Dher ke paas jayein!';
   }
 
   // --- CIRCULAR RADIAL SELECTION WHEEL (GTA/RPG STYLE) ---
@@ -541,10 +530,13 @@ class Game {
       if (toolType === 'rubber') {
         // High Score Best Jugaad!
         this.player.remove(this.inventory);
-        this.fixedPhone = AssetFactory.createFixedRubberBandPhone();
-        this.fixedPhone.position.set(0, 0.88, 0.48);
-        this.player.add(this.fixedPhone);
-        this.inventory = this.fixedPhone;
+        // High Score Best Jugaad! Phone goes into pocket!
+        this.player.remove(this.inventory);
+        this.inventory = null;
+        if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
+          this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
+          this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
+        }
 
         this.stage = 1;
         this.updateMeter(25);
@@ -554,18 +546,19 @@ class Game {
         this.triggerJugaadToast('🎉 JUGAAD 1: RUBBER BAND SE PHONE REPAIRED! (+300 PTS)');
         this.showDialogue(
           'Chacha',
-          'Wah miyaan! Ek number jugaad! Mithai wali rubber band se phone ekdum mast jud gaya! Screen on ho gayi aur GPS map chal raha hai! Ab driveway me Chetak scooter par baitho [E]!'
+          'Wah miyaan! Ek number jugaad! Mithai wali rubber band se phone ekdum mast jud gaya aur jeb me rakh liya! Screen on ho gayi aur GPS map chal raha hai! Ab Chetak scooter par baitho [E]!'
         );
-        this.questText.textContent = 'Chetak Scooter par baitho [E] aur VIP Road Sheesh Mahal ki taraf nikal pado!';
+        this.questText.textContent = 'Phone jeb me rakh liya! Chetak Scooter par baitho [E] aur VIP Road Sheesh Mahal ki taraf nikal pado!';
         this.promptTip.innerHTML = 'Press <b>[E]</b> near Chetak Scooter to Kickstart & Mount!';
         return;
       } else if (toolType === 'tape') {
-        // Alternative OK Jugaad (Lower Score)
+        // Alternative OK Jugaad (Lower Score) - Phone goes into pocket!
         this.player.remove(this.inventory);
-        this.fixedPhone = AssetFactory.createFixedTapePhone();
-        this.fixedPhone.position.set(0, 0.88, 0.48);
-        this.player.add(this.fixedPhone);
-        this.inventory = this.fixedPhone;
+        this.inventory = null;
+        if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
+          this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
+          this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
+        }
 
         this.stage = 1;
         this.updateMeter(25);
@@ -576,9 +569,9 @@ class Game {
         this.triggerJugaadToast('🩹 JUGAAD 1: TAPE SE PHONE JUD GAYA! (+100 PTS)');
         this.showDialogue(
           'Chacha',
-          'Chalo kaam chal gaya! Tape se phone jud toh gaya par screen thodi dhundhli ho gayi (+100 Swag Score). Ab jaldi Chetak scooter par baitho [E]!'
+          'Chalo kaam chal gaya! Tape se phone jud toh gaya aur jeb me daal liya! Ab jaldi Chetak scooter par baitho [E]!'
         );
-        this.questText.textContent = 'Chetak Scooter par baitho [E] aur VIP Road Sheesh Mahal ki taraf nikal pado!';
+        this.questText.textContent = 'Phone jeb me rakh liya! Chetak Scooter par baitho [E] aur VIP Road Sheesh Mahal ki taraf nikal pado!';
         this.promptTip.innerHTML = 'Press <b>[E]</b> near Chetak Scooter to Kickstart & Mount!';
         return;
       } else if (toolType === 'rope') {
@@ -641,6 +634,11 @@ class Game {
     audio.playHammerSmashPhone();
     this.shakeDuration = 0.65;
 
+    // Determine smash position (at Chacha's feet if carrying or near junk, else at current phone location)
+    const smashPos = (this.inventory && this.inventory.userData.isPhone)
+      ? new THREE.Vector3(this.player.position.x, 0.32, this.player.position.z)
+      : (this.phoneCurrentPos || new THREE.Vector3(-5.8, 0.32, -3.4));
+
     // Remove phone if carried
     if (this.inventory && this.inventory.userData.isPhone) {
       this.player.remove(this.inventory);
@@ -654,15 +652,15 @@ class Game {
       }
     });
 
-    // Spawn crushed flat smashed phone debris on verandah
+    // Spawn crushed flat smashed phone debris at smashPos
     if (this.smashedPhoneMesh) this.scene.remove(this.smashedPhoneMesh);
     this.smashedPhoneMesh = AssetFactory.createSmashedPhoneDebris();
-    this.smashedPhoneMesh.position.set(-5.9, 0.32, -3.2);
+    this.smashedPhoneMesh.position.set(smashPos.x, 0.32, smashPos.z);
     this.scene.add(this.smashedPhoneMesh);
 
     // Score Penalty: -200 Swag Score!
     this.addScore(-200, 0);
-    this.spawnFloatingScore('💥 -200 SWAG POINTS! PHONE CHUR-CHUR!', new THREE.Vector3(-5.9, 1.2, -3.2));
+    this.spawnFloatingScore('💥 -200 SWAG POINTS! PHONE CHUR-CHUR!', new THREE.Vector3(smashPos.x, 1.2, smashPos.z));
     this.triggerJugaadToast('💥 DISASTER! PHONE PAR HATHODA MAAR DIYA! (-200 PTS)');
 
     this.showDialogue(
@@ -686,13 +684,14 @@ class Game {
         this.smashedPhoneMesh = null;
       }
 
-      // Respawn 2 phone pieces
-      this.phoneScreenItem.position.set(-5.8, 0.32, -3.4);
+      // Respawn 2 phone pieces at smashPos (not teleporting back to distant verandah!)
+      this.phoneCurrentPos = smashPos.clone();
+      this.phoneScreenItem.position.set(smashPos.x, 0.32, smashPos.z);
       this.phoneScreenItem.visible = true;
       this.scene.add(this.phoneScreenItem);
       this.items.push(this.phoneScreenItem);
 
-      this.phoneBackItem.position.set(-6.1, 0.32, -3.2);
+      this.phoneBackItem.position.set(smashPos.x - 0.25, 0.32, smashPos.z + 0.15);
       this.phoneBackItem.visible = true;
       this.scene.add(this.phoneBackItem);
 
@@ -1139,17 +1138,18 @@ class Game {
     if (this.isFalling) return;
     const pPos = this.player.position;
 
-    // 0. Near Kabaad ka Dher (Tools & Scrap Corner at x = -3.5, z = 1.8)
-    const distToJunk = pPos.distanceTo(new THREE.Vector3(-3.5, 0, 1.8));
-    if (distToJunk < 2.8) {
+    // 0. Near Kabaad ka Dher (Tools & Scrap Corner at left sidewalk corner x = -9.2, z = -2.8)
+    const distToJunk = pPos.distanceTo(new THREE.Vector3(-9.2, 0.32, -2.8));
+    if (distToJunk < 3.0) {
       this.openRadialWheel();
       return;
     }
 
-    // 1. Not carrying: Pick up broken phone on verandah, or other items
+    // 1. Not carrying: Pick up broken phone, or other items
     if (!this.inventory) {
-      // Check if near broken phone on verandah
-      const distToPhone = pPos.distanceTo(new THREE.Vector3(-5.8, 0.32, -3.4));
+      // Check if near broken phone (verandah or respawned smash location)
+      const phoneTargetPos = this.phoneCurrentPos || new THREE.Vector3(-5.8, 0.32, -3.4);
+      const distToPhone = pPos.distanceTo(phoneTargetPos);
       if (this.stage === 0 && distToPhone < 2.5) {
         this.inventory = this.phoneScreenItem;
         this.scene.remove(this.phoneScreenItem);
@@ -1165,7 +1165,7 @@ class Game {
         }
 
         audio.playBrickThud();
-        this.showDialogue('Chacha', 'Haan! Phone ke dono tukde samet liye! Ab driveway corner ke Kabaad Dher [E] se rubber band ya tape chuno!');
+        this.showDialogue('Chacha', 'Haan! Phone ke dono tukde samet liye! Ab baayin taraf Kabaad Dher [E] se rubber band ya tape chuno!');
         this.promptTip.innerHTML = 'Toota Phone haath me hai! Kabaad Dher se tool chuno!';
         return;
       }
@@ -1207,8 +1207,9 @@ class Game {
     if (this.inventory) {
       const carried = this.inventory;
 
-      // CRISIS 1: Near Broken Phone on Verandah (x: -5.8, z: -3.4)
-      const distToPhone = pPos.distanceTo(new THREE.Vector3(-5.8, 0.32, -3.4));
+      // CRISIS 1: Near Broken Phone (verandah or respawned position)
+      const phoneTargetPos = this.phoneCurrentPos || new THREE.Vector3(-5.8, 0.32, -3.4);
+      const distToPhone = pPos.distanceTo(phoneTargetPos);
       if (this.stage === 0 && distToPhone < 2.8) {
         if (carried.userData.type === 'rubber_band') {
           this.player.remove(carried);
@@ -1222,11 +1223,7 @@ class Game {
             }
           });
 
-          // Spawn assembled phone bound with yellow rubber bands!
-          this.fixedPhone = AssetFactory.createFixedRubberBandPhone();
-          this.fixedPhone.position.set(-5.8, 0.32, -3.4);
-          this.scene.add(this.fixedPhone);
-
+          // POCKET THE PHONE! Reset arms to natural posture
           if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
             this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
             this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
@@ -1241,9 +1238,9 @@ class Game {
 
           this.showDialogue(
             'Chacha',
-            'Wah miyaan! Ek number jugaad! Mithai wali rubber band se phone ekdum mast jud gaya! Screen on ho gayi aur GPS map chal raha hai! Ab driveway me Chetak scooter par baitho [E]!'
+            'Wah miyaan! Ek number jugaad! Mithai wali rubber band se phone ekdum mast jud gaya aur jeb me rakh liya! Screen on ho gayi aur GPS map chal raha hai! Ab driveway me Chetak scooter par baitho [E]!'
           );
-          this.questText.textContent = 'Driveway me Chetak Scooter par baitho [E] aur Sheesh Mahal ki taraf nikal pado!';
+          this.questText.textContent = 'Phone jeb me rakh liya! Driveway me Chetak Scooter par baitho [E] aur Sheesh Mahal ki taraf nikal pado!';
           this.promptTip.innerHTML = 'Press <b>[E]</b> near Chetak Scooter to Kickstart & Mount!';
           return;
         } else if (carried.userData.type === 'cello_tape') {
@@ -1258,10 +1255,7 @@ class Game {
             }
           });
 
-          this.fixedPhone = AssetFactory.createFixedTapePhone();
-          this.fixedPhone.position.set(-5.8, 0.32, -3.4);
-          this.scene.add(this.fixedPhone);
-
+          // POCKET THE PHONE!
           if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
             this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
             this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
@@ -1277,11 +1271,10 @@ class Game {
 
           this.showDialogue(
             'Chacha',
-            'Chalo kaam chal gaya! Tape se phone jud toh gaya par screen thodi dhundhli ho gayi (+100 Swag Score). Ab jaldi Chetak scooter par baitho [E]!'
+            'Chalo kaam chal gaya! Tape se phone jud toh gaya aur jeb me daal liya! Ab jaldi Chetak scooter par baitho [E]!'
           );
-          this.questText.textContent = 'Driveway me Chetak Scooter par baitho [E] aur Sheesh Mahal ki taraf nikal pado!';
+          this.questText.textContent = 'Phone jeb me rakh liya! Driveway me Chetak Scooter par baitho [E] aur Sheesh Mahal ki taraf nikal pado!';
           this.promptTip.innerHTML = 'Press <b>[E]</b> near Chetak Scooter to Kickstart & Mount!';
-          return;
         } else if (carried.userData.type === 'hammer') {
           this.triggerHammerDisaster();
           return;
@@ -1415,8 +1408,8 @@ class Game {
       return;
     }
 
-    // 3. Mount Scooter (Unlocked once Phone is repaired!)
-    if (this.stage >= 1 && this.stage < 4 && !this.isRiding) {
+    // 3. Mount Scooter (Can mount and kickstart anytime!)
+    if (this.stage < 4 && !this.isRiding) {
       const distToScooter = pPos.distanceTo(this.scooter.position);
       if (distToScooter < 2.8) {
         this.isRiding = true;
@@ -1424,12 +1417,20 @@ class Game {
         this.scooter.userData.riderMesh.visible = true;
         audio.startScooterEngine();
         audio.playHorn();
-        this.showDialogue(
-          'Chacha',
-          'Dhup-dhup-dhup! Scooter start! Ab steering sambhalo, aur dhyan se phatte ke upar se nikalna!'
-        );
-        this.questText.textContent = 'Dhyan se chalayein! Phatte ke upar se gaddhe ko cross karein!';
-        this.promptTip.innerHTML = 'Drive [W/S/A/D] | Cross Plank Carefully | [Space] Honk | [E] Stop & Dismount';
+        if (this.stage === 0) {
+          this.showDialogue(
+            'Chacha',
+            'Dhup-dhup-dhup! Chetak start toh ho gayi! Lekin bina GPS Map ke aage kahan jayenge?! Pehle zameen se toota mobile theek karo!'
+          );
+          this.promptTip.innerHTML = 'Press <b>[E]</b> to Dismount Chetak | Pehle toota mobile theek karein!';
+        } else {
+          this.showDialogue(
+            'Chacha',
+            'Dhup-dhup-dhup! Scooter start! Ab steering sambhalo, aur dhyan se phatte ke upar se nikalna!'
+          );
+          this.questText.textContent = 'Dhyan se chalayein! Phatte ke upar se gaddhe ko cross karein!';
+          this.promptTip.innerHTML = 'Drive [W/S/A/D] | Cross Plank Carefully | [Space] Honk | [E] Stop & Dismount';
+        }
         return;
       }
     }
@@ -1685,7 +1686,7 @@ class Game {
         let nextX = this.player.position.x + vx;
         let nextZ = this.player.position.z + vz;
 
-        nextX = Math.max(-8.5, Math.min(43.5, nextX));
+        nextX = Math.max(-11.5, Math.min(43.5, nextX));
         nextZ = Math.max(-4.4, Math.min(3.0, nextZ));
 
         const colliders = this.getColliders();
@@ -1744,8 +1745,8 @@ class Game {
           }
         }
 
-        // Dynamic step height for Chacha's verandah
-        if (nextX >= -7.5 && nextX <= -4.5 && nextZ <= -2.2) {
+        // Dynamic step height for Chacha's verandah and left sidewalk
+        if (nextX >= -11.5 && nextX <= -4.5 && nextZ <= -2.2) {
           if (nextZ <= -2.8) {
             this.player.position.y = 0.32;
           } else {
@@ -1830,10 +1831,10 @@ class Game {
 
       this.updatePrompt();
 
-      // Automatic Proximity for Kabaad ka Dher Radial Wheel
+      // Automatic Proximity for Kabaad ka Dher Radial Wheel (left sidewalk x = -9.2, z = -2.8)
       if (this.stage === 0) {
-        const distToJunk = this.player.position.distanceTo(new THREE.Vector3(-3.5, 0, 1.8));
-        if (distToJunk < 2.8) {
+        const distToJunk = this.player.position.distanceTo(new THREE.Vector3(-9.2, 0.32, -2.8));
+        if (distToJunk < 3.2) {
           if (!this.radialWheelModal || this.radialWheelModal.style.display !== 'flex') {
             this.openRadialWheel();
           }
@@ -1846,6 +1847,18 @@ class Game {
         if (this.radialWheelModal && this.radialWheelModal.style.display === 'flex') {
           this.closeRadialWheel();
         }
+      }
+    }
+
+    // 3D Projected Floating Position of Radial Wheel above Kabaad Dher
+    if (this.radialWheelModal && this.radialWheelModal.style.display === 'flex') {
+      const junkWorldPos = new THREE.Vector3(-9.2, 1.45, -2.8);
+      const proj = junkWorldPos.clone().project(this.camera);
+      if (proj.z < 1) {
+        const sx = (proj.x * 0.5 + 0.5) * window.innerWidth;
+        const sy = (-proj.y * 0.5 + 0.5) * window.innerHeight + Math.sin(time * 3.5) * 8;
+        this.radialWheelModal.style.left = `${sx}px`;
+        this.radialWheelModal.style.top = `${sy}px`;
       }
     }
 
@@ -1891,42 +1904,39 @@ class Game {
     }
 
     // --- 3. SCOOTER RIDING & SKILL-BASED TRENCH BRIDGE CROSSING ---
-    if (this.isRiding && this.stage >= 1 && this.stage <= 3 && !this.isFalling) {
-      if (this.keys.right) {
-        this.scooterSpeed = Math.min(this.maxSpeed, this.scooterSpeed + 9 * delta);
-      } else if (this.keys.left) {
-        this.scooterSpeed = Math.max(-2, this.scooterSpeed - 8 * delta);
-      } else {
-        this.scooterSpeed *= 0.96;
-      }
-
-      // Steer across road width
-      if (this.keys.up) this.scooter.position.z = Math.max(-2.5, this.scooter.position.z - 3.5 * delta);
-      if (this.keys.down) this.scooter.position.z = Math.min(2.5, this.scooter.position.z + 3.5 * delta);
-
-      this.scooter.position.x += this.scooterSpeed * delta;
-
-      // Wheel rotation
-      const wheelRot = (this.scooterSpeed * delta) / 0.34;
-      this.scooter.userData.frontWheel.rotation.z -= wheelRot;
-      this.scooter.userData.rearWheel.rotation.z -= wheelRot;
-
-      // Gentle suspension bounce
-      this.scooter.position.y = Math.abs(Math.sin(time * 16)) * 0.04;
-
-      // STAGE 1: Warning barrier slowdown before trench if plank is NOT placed
-      if (this.stage === 1 && !this.plankPlaced) {
-        if (this.scooter.position.x >= 7.6) {
-          if (this.scooter.position.x > 8.4) {
-            this.scooter.position.x = 8.4;
-            this.scooterSpeed = 0;
-          } else {
-            this.scooterSpeed = Math.min(1.5, this.scooterSpeed);
-          }
-          if (Math.abs(this.scooterSpeed) < 0.6) {
-            this.promptTip.innerHTML = '⚠️ Trench Ahead! Press <b>[E]</b> to Dismount & find timber plank!';
-          }
+    if (this.isRiding && this.stage <= 3 && !this.isFalling) {
+      if (this.stage === 0) {
+        // Phone not repaired yet! Cannot accelerate forward without GPS Google Map!
+        if (this.keys.right || this.keys.up || this.keys.down) {
+          this.scooterSpeed = 0;
+          this.showDialogue(
+            'Chacha',
+            'Arre miyaan! Bhopal ki bhool-bhulaiya jaisi tang galiyon me bina GPS Google Map ke mandap tak kaise pahuchenge?! Pandit ji gusse me hain! Pehle zameen se toota mobile theek karo!'
+          );
+          this.promptTip.innerHTML = 'Press <b>[E]</b> to Dismount Chetak | Pehle toota mobile theek karein!';
         }
+      } else {
+        if (this.keys.right) {
+          this.scooterSpeed = Math.min(this.maxSpeed, this.scooterSpeed + 9 * delta);
+        } else if (this.keys.left) {
+          this.scooterSpeed = Math.max(-2, this.scooterSpeed - 8 * delta);
+        } else {
+          this.scooterSpeed *= 0.96;
+        }
+
+        // Steer across road width
+        if (this.keys.up) this.scooter.position.z = Math.max(-2.5, this.scooter.position.z - 3.5 * delta);
+        if (this.keys.down) this.scooter.position.z = Math.min(2.5, this.scooter.position.z + 3.5 * delta);
+
+        this.scooter.position.x += this.scooterSpeed * delta;
+
+        // Wheel rotation
+        const wheelRot = (this.scooterSpeed * delta) / 0.34;
+        this.scooter.userData.frontWheel.rotation.z -= wheelRot;
+        this.scooter.userData.rearWheel.rotation.z -= wheelRot;
+
+        // Gentle suspension bounce
+        this.scooter.position.y = Math.abs(Math.sin(time * 16)) * 0.04;
       }
 
       // --- TRENCH CRASH CHECK FOR SCOOTER ---
@@ -1936,7 +1946,7 @@ class Game {
           // Riding safely ON TOP of the wooden timber bridge without sinking into wood!
           this.scooter.position.y = 0.18;
         } else {
-          // CRASH! Drove into the open ditch!
+          // CRASH! Drove directly into the open ditch!
           this.isFalling = true;
           this.scooterFallVel = 0;
           this.scooterSpeed = 0;
@@ -1947,8 +1957,8 @@ class Game {
           this.showDialogue('Chacha', 'Arey miyaan! Dhyan se handle sambhalo, phatte ke side me gehre khadde me gira diya!');
 
           setTimeout(() => {
-            // Respawn safely aligned with bridge!
-            this.scooter.position.set(7.0, 0, this.plankZ);
+            // Respawn safely aligned before bridge!
+            this.scooter.position.set(7.0, 0, this.plankPlaced ? this.plankZ : 0);
             this.scooter.rotation.z = 0;
             this.scooter.position.y = 0;
             this.isFalling = false;

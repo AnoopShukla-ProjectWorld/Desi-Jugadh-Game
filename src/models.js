@@ -2286,30 +2286,7 @@ export class AssetFactory {
     tulsiLeaves.position.set(2.4, 0.88, 1.4);
     home.add(tulsiLeaves);
 
-    // 7. Vintage Indian Roadster Bicycle (Atlas/Hero) leaning against house wall
-    const cycleGroup = new THREE.Group();
-    cycleGroup.position.set(-2.2, 0.45, 1.2);
-    cycleGroup.rotation.y = 0.2;
-    cycleGroup.rotation.z = -0.15; // Leaning against wall
 
-    // Wheels
-    [-0.55, 0.55].forEach(cx => {
-      const cWheel = new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.025, 8, 18), cycleMat);
-      cWheel.position.set(cx, 0, 0);
-      cycleGroup.add(cWheel);
-    });
-
-    // Frame tubes
-    const cFrame = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.03, 0.03), cycleMat);
-    cFrame.position.set(0, 0.15, 0);
-    cycleGroup.add(cFrame);
-
-    const cHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.4, 8), cycleMat);
-    cHandle.rotation.x = Math.PI / 2;
-    cHandle.position.set(0.55, 0.42, 0);
-    cycleGroup.add(cHandle);
-
-    home.add(cycleGroup);
 
     home.userData = {
       doorPivotL,

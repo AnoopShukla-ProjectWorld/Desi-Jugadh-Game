@@ -692,7 +692,10 @@
       border-radius: 8px;
     }
     .quest-banner {
-      align-self: center;
+      position: absolute;
+      top: 76px;
+      left: 50%;
+      transform: translateX(-50%);
       background: rgba(30, 27, 75, 0.9);
       border: 2px solid #818cf8;
       border-radius: 30px;
@@ -705,20 +708,26 @@
       align-items: center;
       gap: 10px;
       pointer-events: auto;
+      white-space: nowrap;
+      z-index: 100;
     }
     .dialogue-box {
-      align-self: center;
+      position: absolute;
+      bottom: 74px;
+      left: 50%;
+      transform: translateX(-50%);
       background: rgba(24, 24, 30, 0.95);
       border: 2px solid #f59e0b;
       border-radius: 16px;
       padding: 12px 22px;
       max-width: 620px;
+      width: 90%;
       color: #fff;
       display: none;
       pointer-events: auto;
       box-shadow: 0 8px 30px rgba(0,0,0,0.7);
       backdrop-filter: blur(10px);
-      margin-bottom: 16px;
+      z-index: 110;
     }
     .dialogue-speaker {
       color: #fbbf24;
@@ -745,6 +754,8 @@
       font-weight: 500;
       pointer-events: auto;
       text-align: center;
+      z-index: 100;
+      white-space: nowrap;
     }
     .jugaad-popup {
       position: absolute;
@@ -961,8 +972,7 @@
     .radial-wheel-modal {
       display: none;
       position: absolute;
-      bottom: 24px;
-      right: 28px;
+      transform: translate(-50%, -50%);
       background: transparent;
       z-index: 1200;
       align-items: center;
