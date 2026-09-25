@@ -1655,9 +1655,16 @@ export class AssetFactory {
       bMesh.castShadow = true;
       envGroup.add(bMesh);
 
-      const balc = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.8, 0.8), new THREE.MeshStandardMaterial({ color: 0xd97706 }));
-      balc.position.set(-10 + i * 6.8, 3.5, -5.0);
-      envGroup.add(balc);
+      if (i === 2) {
+        // Grey/blue building (i=2): place compact balcony over Chai stall (x = 1.8), leaving right wall completely clear (x = 3.2 to 6.6)
+        const balc = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.8, 0.8), new THREE.MeshStandardMaterial({ color: 0xd97706 }));
+        balc.position.set(1.8, 3.5, -5.0);
+        envGroup.add(balc);
+      } else {
+        const balc = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.8, 0.8), new THREE.MeshStandardMaterial({ color: 0xd97706 }));
+        balc.position.set(-10 + i * 6.8, 3.5, -5.0);
+        envGroup.add(balc);
+      }
     }
 
     // Chai Stall (with authentic 4 support pillars holding up the blue canopy roof)

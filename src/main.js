@@ -139,9 +139,9 @@ class Game {
     this.junkPile.position.set(-9.2, 0.32, -2.8);
     this.scene.add(this.junkPile);
 
-    // Level 2 Plank 1: Long Sturdy Timber Bridge (4.2m) leaning against Grey Building Wall near Chai Stall (x = 4.6)
+    // Level 2 Plank 1: Long Sturdy Timber Bridge (4.2m) leaning against Grey Building Wall near Chai Stall (x = 5.8)
     const plank = AssetFactory.createTimberPlank();
-    plank.position.set(4.6, 2.05, -5.0);
+    plank.position.set(5.8, 2.05, -5.0);
     plank.rotation.set(-0.14, Math.PI / 2, Math.PI / 2);
     this.scene.add(plank);
     this.items.push(plank);
@@ -1329,12 +1329,14 @@ class Game {
       }
 
       let nearestItem = null;
-      let minDist = 2.2;
+      let minDist = 2.8;
 
       this.items.forEach(item => {
-        const d = pPos.distanceTo(item.position);
-        if (d < minDist) {
-          minDist = d;
+        // Use horizontal ground distance so items leaning against walls (with higher vertical center) can be easily reached and picked up
+        const horizDist = Math.hypot(pPos.x - item.position.x, pPos.z - item.position.z);
+        const vertDist = Math.abs(pPos.y - item.position.y);
+        if (horizDist < minDist && vertDist < 3.2) {
+          minDist = horizDist;
           nearestItem = item;
         }
       });
@@ -1555,7 +1557,8 @@ class Game {
       // Drop item anywhere
       this.player.remove(carried);
       this.scene.add(carried);
-      carried.position.set(pPos.x, 0, pPos.z);
+      carried.position.set(pPos.x, 0.08, pPos.z);
+      carried.rotation.set(0, 0, 0);
       this.items.push(carried);
       this.inventory = null;
       if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
@@ -2317,11 +2320,12 @@ class Game {
       }
 
       let nearestItem = null;
-      let minDist = 2.2;
+      let minDist = 2.8;
       this.items.forEach(it => {
-        const d = pPos.distanceTo(it.position);
-        if (d < minDist) {
-          minDist = d;
+        const horizDist = Math.hypot(pPos.x - it.position.x, pPos.z - it.position.z);
+        const vertDist = Math.abs(pPos.y - it.position.y);
+        if (horizDist < minDist && vertDist < 3.2) {
+          minDist = horizDist;
           nearestItem = it;
         }
       });
