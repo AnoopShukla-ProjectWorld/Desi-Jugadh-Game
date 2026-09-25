@@ -496,22 +496,29 @@
       justify-content: space-between;
       transition: opacity 0.5s ease;
     }
-    .cinema-bar-top, .cinema-bar-bottom {
+    .cinema-bar-top {
       width: 100%;
-      height: 70px;
-      background: #000000;
-      box-shadow: 0 0 20px rgba(0,0,0,0.8);
+      height: 52px;
+      background: transparent;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 24px;
+      padding: 12px 24px;
       pointer-events: auto;
     }
+    .cinema-bar-bottom {
+      display: none !important;
+    }
     .cutscene-title-tag {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      backdrop-filter: blur(8px);
+      padding: 6px 14px;
+      border-radius: 20px;
       color: #f59e0b;
       font-weight: 800;
       letter-spacing: 2px;
-      font-size: 0.95rem;
+      font-size: 0.85rem;
       text-transform: uppercase;
       display: flex;
       align-items: center;
@@ -948,163 +955,159 @@
     /* ========================================================
        CIRCULAR RADIAL WEAPON / TOOL SELECTION WHEEL (GTA/RPG STYLE)
        ======================================================== */
+    /* ========================================================
+       COMPACT FLOATING IN-GAME RADIAL WHEEL (NO SCREEN BLACKOUT)
+       ======================================================== */
     .radial-wheel-modal {
       display: none;
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(9, 13, 22, 0.82);
-      backdrop-filter: blur(10px);
-      z-index: 1500;
+      bottom: 24px;
+      right: 28px;
+      background: transparent;
+      z-index: 1200;
       align-items: center;
       justify-content: center;
       pointer-events: auto;
       flex-direction: column;
+      animation: wheelPop 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes wheelPop {
+      0% { opacity: 0; transform: scale(0.8) translateY(20px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
     }
     .radial-wheel-title {
+      background: rgba(15, 23, 42, 0.94);
+      border: 1.5px solid #f59e0b;
+      border-radius: 18px;
+      padding: 5px 14px;
       color: #fbbf24;
-      font-size: 1.45rem;
-      font-weight: 900;
-      letter-spacing: 2px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 1.2px;
       text-transform: uppercase;
-      text-shadow: 0 0 20px rgba(251, 191, 36, 0.7);
-      margin-bottom: 6px;
+      text-shadow: 0 0 12px rgba(251, 191, 36, 0.7);
+      margin-bottom: 3px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 6px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
     }
     .radial-wheel-subtitle {
-      color: #94a3b8;
-      font-size: 0.95rem;
-      margin-bottom: 22px;
+      color: #cbd5e1;
+      font-size: 0.68rem;
+      background: rgba(0,0,0,0.65);
+      padding: 2px 10px;
+      border-radius: 10px;
+      margin-bottom: 8px;
       text-align: center;
     }
     .radial-dial-container {
       position: relative;
-      width: 380px;
-      height: 380px;
+      width: 220px;
+      height: 220px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 70%, rgba(245, 158, 11, 0.15) 100%);
-      border: 3px solid #f59e0b;
-      box-shadow: 0 0 50px rgba(245, 158, 11, 0.35), inset 0 0 30px rgba(0, 0, 0, 0.8);
+      background: radial-gradient(circle, rgba(15, 23, 42, 0.96) 0%, rgba(30, 41, 59, 0.92) 75%, rgba(245, 158, 11, 0.25) 100%);
+      border: 2.5px solid #f59e0b;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(245, 158, 11, 0.4);
       display: flex;
       align-items: center;
       justify-content: center;
     }
     .radial-center-hub {
       position: absolute;
-      width: 150px;
-      height: 150px;
+      width: 84px;
+      height: 84px;
       border-radius: 50%;
       background: #0f172a;
-      border: 2px solid #ca8a04;
-      box-shadow: 0 0 25px rgba(0,0,0,0.9);
+      border: 1.5px solid #ca8a04;
+      box-shadow: 0 0 16px rgba(0,0,0,0.9);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 12px;
+      padding: 4px;
       z-index: 5;
       pointer-events: none;
     }
     .radial-hub-icon {
-      font-size: 2.3rem;
-      margin-bottom: 2px;
-      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+      font-size: 1.45rem;
+      margin-bottom: 1px;
     }
     .radial-hub-name {
-      font-size: 0.85rem;
+      font-size: 0.62rem;
       font-weight: 800;
       color: #fef08a;
-      line-height: 1.2;
+      line-height: 1.1;
     }
     .radial-hub-score {
-      font-size: 0.72rem;
+      font-size: 0.54rem;
       color: #38bdf8;
-      margin-top: 2px;
+      margin-top: 1px;
       font-weight: bold;
     }
     .radial-sector-btn {
       position: absolute;
-      width: 88px;
-      height: 88px;
+      width: 54px;
+      height: 54px;
       border-radius: 50%;
-      background: rgba(30, 41, 59, 0.95);
-      border: 2px solid rgba(255, 255, 255, 0.25);
+      background: rgba(30, 41, 59, 0.96);
+      border: 1.5px solid rgba(255, 255, 255, 0.35);
       color: #fff;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+      transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.7);
       user-select: none;
       z-index: 10;
     }
     .radial-sector-btn:hover, .radial-sector-btn.active {
-      transform: scale(1.18);
+      transform: scale(1.22);
       background: #1e1b4b;
       border-color: #f59e0b;
-      box-shadow: 0 0 25px rgba(245, 158, 11, 0.8);
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.9);
     }
     .radial-sector-btn .sec-icon {
-      font-size: 2.0rem;
+      font-size: 1.25rem;
     }
     .radial-sector-btn .sec-label {
-      font-size: 0.68rem;
+      font-size: 0.48rem;
       font-weight: 800;
-      margin-top: 3px;
+      margin-top: 1px;
       text-align: center;
       color: #f1f5f9;
     }
     .radial-sector-btn .sec-badge {
       position: absolute;
-      top: -8px;
-      right: -8px;
+      top: -4px;
+      right: -4px;
       background: #f59e0b;
       color: #111;
-      font-size: 0.62rem;
+      font-size: 0.52rem;
       font-weight: 900;
-      padding: 2px 6px;
-      border-radius: 10px;
+      padding: 1px 4px;
+      border-radius: 8px;
     }
 
     /* Position the 4 Sectors (Top, Right, Bottom, Left) */
-    .sec-top { top: 12px; left: 50%; transform: translateX(-50%); }
-    .sec-top:hover, .sec-top.active { transform: translateX(-50%) scale(1.18); }
+    .sec-top { top: 6px; left: 50%; transform: translateX(-50%); }
+    .sec-top:hover, .sec-top.active { transform: translateX(-50%) scale(1.22); }
 
-    .sec-right { right: 12px; top: 50%; transform: translateY(-50%); }
-    .sec-right:hover, .sec-right.active { transform: translateY(-50%) scale(1.18); }
+    .sec-right { right: 6px; top: 50%; transform: translateY(-50%); }
+    .sec-right:hover, .sec-right.active { transform: translateY(-50%) scale(1.22); }
 
-    .sec-bottom { bottom: 12px; left: 50%; transform: translateX(-50%); }
-    .sec-bottom:hover, .sec-bottom.active { transform: translateX(-50%) scale(1.18); }
+    .sec-bottom { bottom: 6px; left: 50%; transform: translateX(-50%); }
+    .sec-bottom:hover, .sec-bottom.active { transform: translateX(-50%) scale(1.22); }
 
-    .sec-left { left: 12px; top: 50%; transform: translateY(-50%); }
-    .sec-left:hover, .sec-left.active { transform: translateY(-50%) scale(1.18); }
+    .sec-left { left: 6px; top: 50%; transform: translateY(-50%); }
+    .sec-left:hover, .sec-left.active { transform: translateY(-50%) scale(1.22); }
 
     .radial-wheel-footer {
-      margin-top: 24px;
-      display: flex;
-      gap: 16px;
-      align-items: center;
-    }
-    .btn-close-wheel {
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      color: #e2e8f0;
-      padding: 8px 24px;
-      border-radius: 30px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .btn-close-wheel:hover {
-      background: #ef4444;
-      color: #fff;
+      display: none;
     }
   </style>
 </head>
@@ -1274,8 +1277,6 @@
         "Arey suno! Baaraat dwar par khadi hai! Pandit ji gusse me hain! Guddu ka dulha sehra leke turant aao!"
       </div>
     </div>
-
-    <div class="cinema-bar-bottom"></div>
   </div>
 
   <!-- ========================================================

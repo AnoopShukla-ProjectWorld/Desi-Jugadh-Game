@@ -138,17 +138,10 @@ class Game {
     this.phoneBackItem.position.set(-6.1, 0.32, -3.2);
     this.phoneBackItem.visible = false;
     this.scene.add(this.phoneBackItem);
-    this.items.push(this.phoneBackItem);
 
-    this.phoneBatteryItem = AssetFactory.createPhoneBattery();
-    this.phoneBatteryItem.position.set(-5.9, 0.32, -3.0);
-    this.phoneBatteryItem.visible = false;
-    this.scene.add(this.phoneBatteryItem);
-    this.items.push(this.phoneBatteryItem);
-
-    // Kabaad Ka Dher (Tools & Scrap Corner on Verandah next to House Wall)
+    // Kabaad Ka Dher (Tools & Scrap Corner moved away from house to mohalla street/driveway corner)
     this.junkPile = AssetFactory.createJunkToolCorner();
-    this.junkPile.position.set(-7.6, 0.32, -3.4);
+    this.junkPile.position.set(-3.5, 0, 1.8);
     this.scene.add(this.junkPile);
 
     // Level 2 Plank Item (Road trench bridge)
@@ -204,7 +197,7 @@ class Game {
       { type: 'box', minX: -9.5, maxX: -2.5, minZ: -10.0, maxZ: -4.8, name: 'HomeBackWall' },
       { type: 'circle', x: -3.6, z: -3.4, radius: 0.45, name: 'TulsiPot' },
       { type: 'box', minX: -8.5, maxX: -7.7, minZ: -3.8, maxZ: -3.0, name: 'AtlasBicycle' },
-      { type: 'box', minX: -8.1, maxX: -7.1, minZ: -3.7, maxZ: -3.1, name: 'JunkPile' },
+      { type: 'box', minX: -4.1, maxX: -2.9, minZ: 1.3, maxZ: 2.3, name: 'JunkPile' },
 
       // 2. Chai Tapri (x = 2.0, z = -4.0)
       { type: 'box', minX: 0.5, maxX: 3.5, minZ: -4.8, maxZ: -3.2, name: 'ChaiStall' },
@@ -392,11 +385,10 @@ class Game {
     this.cutscenePhase = 1;
     this.phoneDropped = false;
 
-    // Reset phone drop pieces visibility
+    // Reset phone drop pieces visibility (strictly 2 pieces: screen and back)
     if (this.fallingPhoneMesh) this.fallingPhoneMesh.visible = false;
     if (this.phoneScreenItem) this.phoneScreenItem.visible = false;
     if (this.phoneBackItem) this.phoneBackItem.visible = false;
-    if (this.phoneBatteryItem) this.phoneBatteryItem.visible = false;
 
     // Scooter starts standing upright in driveway
     if (this.scooter && this.scooter.userData.setFallenState) {
@@ -436,10 +428,9 @@ class Game {
     // Ensure Chacha's doors remain open
     if (this.chachaHome) this.chachaHome.userData.openDoors();
 
-    // Ensure broken phone pieces are visible on verandah
+    // Ensure broken phone pieces are visible on verandah (strictly 2 pieces: screen and back)
     if (this.phoneScreenItem) this.phoneScreenItem.visible = true;
     if (this.phoneBackItem) this.phoneBackItem.visible = true;
-    if (this.phoneBatteryItem) this.phoneBatteryItem.visible = true;
     if (this.fallingPhoneMesh) this.fallingPhoneMesh.visible = false;
 
     // Chacha stands on verandah looking down at broken phone
@@ -468,10 +459,10 @@ class Game {
 
     this.showDialogue(
       'Chacha',
-      'Arre miyaan! Screen aur battery dono nikal gayi! Pehle toota phone uthao ya deewal ke paas Kabaad Dher [E] se jugaad tool chuno!'
+      'Arre miyaan! Screen aur back cover dono alag ho gaye! Pehle toota phone uthao ya saamne Kabaad Dher se jugaad tool chuno!'
     );
-    this.questText.textContent = 'Level 1: Toota phone theek karo! Kabaad Dher [E] se tool chuno ya toota phone uthao!';
-    this.promptTip.innerHTML = 'Kabaad Dher [E] par Radial Wheel kholein | Toota Phone theek karein!';
+    this.questText.textContent = 'Level 1: Toota phone theek karo! Kabaad Dher se tool chuno ya toota phone uthao!';
+    this.promptTip.innerHTML = 'Kabaad Dher ke paas jayein (Radial Wheel) | Toota Phone theek karein!';
   }
 
   // --- CIRCULAR RADIAL SELECTION WHEEL (GTA/RPG STYLE) ---
@@ -655,8 +646,8 @@ class Game {
       this.player.remove(this.inventory);
       this.inventory = null;
     }
-    // Remove broken phone pieces from verandah floor
-    [this.phoneScreenItem, this.phoneBackItem, this.phoneBatteryItem].forEach(item => {
+    // Remove broken phone pieces from verandah floor (strictly 2 pieces: screen and back)
+    [this.phoneScreenItem, this.phoneBackItem].forEach(item => {
       if (item) {
         this.scene.remove(item);
         this.items = this.items.filter(it => it !== item);
@@ -695,7 +686,7 @@ class Game {
         this.smashedPhoneMesh = null;
       }
 
-      // Respawn phone pieces
+      // Respawn 2 phone pieces
       this.phoneScreenItem.position.set(-5.8, 0.32, -3.4);
       this.phoneScreenItem.visible = true;
       this.scene.add(this.phoneScreenItem);
@@ -704,10 +695,6 @@ class Game {
       this.phoneBackItem.position.set(-6.1, 0.32, -3.2);
       this.phoneBackItem.visible = true;
       this.scene.add(this.phoneBackItem);
-
-      this.phoneBatteryItem.position.set(-5.9, 0.32, -3.0);
-      this.phoneBatteryItem.visible = true;
-      this.scene.add(this.phoneBatteryItem);
 
       if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
         this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
@@ -719,9 +706,9 @@ class Game {
 
       this.showDialogue(
         'Chacha',
-        'Shukr hai bhagwan ka, battery aur circuit bach gaya! Ab hathoda chhod kar Kabaad Dher se dhang ka jugaad chuno!'
+        'Shukr hai bhagwan ka, screen aur back cover bach gaye! Ab hathoda chhod kar Kabaad Dher se dhang ka jugaad chuno!'
       );
-      this.promptTip.innerHTML = 'Kabaad Dher [E] se Rubber Band ya Cello Tape chuno!';
+      this.promptTip.innerHTML = 'Kabaad Dher ke paas jayein | Rubber Band ya Cello Tape chuno!';
     }, 2800);
   }
 
@@ -1152,9 +1139,9 @@ class Game {
     if (this.isFalling) return;
     const pPos = this.player.position;
 
-    // 0. Near Kabaad ka Dher (Tools & Scrap Corner at x = -7.6, z = -3.4)
-    const distToJunk = pPos.distanceTo(new THREE.Vector3(-7.6, 0.32, -3.4));
-    if (distToJunk < 2.5) {
+    // 0. Near Kabaad ka Dher (Tools & Scrap Corner at x = -3.5, z = 1.8)
+    const distToJunk = pPos.distanceTo(new THREE.Vector3(-3.5, 0, 1.8));
+    if (distToJunk < 2.8) {
       this.openRadialWheel();
       return;
     }
@@ -1168,7 +1155,6 @@ class Game {
         this.scene.remove(this.phoneScreenItem);
         this.items = this.items.filter(it => it !== this.phoneScreenItem);
         if (this.phoneBackItem) this.phoneBackItem.visible = false;
-        if (this.phoneBatteryItem) this.phoneBatteryItem.visible = false;
         this.player.add(this.inventory);
         this.inventory.position.set(0, 0.88, 0.48);
         this.inventory.rotation.set(0, 0, 0);
@@ -1179,8 +1165,8 @@ class Game {
         }
 
         audio.playBrickThud();
-        this.showDialogue('Chacha', 'Haan! Phone ke tukde samet liye! Ab deewal ke paas Kabaad Dher [E] se rubber band ya tape chuno!');
-        this.promptTip.innerHTML = 'Toota Phone haath me hai! Deewal ke paas Kabaad Dher [E] se tool chuno!';
+        this.showDialogue('Chacha', 'Haan! Phone ke dono tukde samet liye! Ab driveway corner ke Kabaad Dher [E] se rubber band ya tape chuno!');
+        this.promptTip.innerHTML = 'Toota Phone haath me hai! Kabaad Dher se tool chuno!';
         return;
       }
 
@@ -1228,8 +1214,8 @@ class Game {
           this.player.remove(carried);
           this.inventory = null;
 
-          // Remove scattered phone pieces
-          [this.phoneScreenItem, this.phoneBackItem, this.phoneBatteryItem].forEach(item => {
+          // Remove scattered phone pieces (strictly 2 pieces)
+          [this.phoneScreenItem, this.phoneBackItem].forEach(item => {
             if (item) {
               this.scene.remove(item);
               this.items = this.items.filter(it => it !== item);
@@ -1264,7 +1250,8 @@ class Game {
           this.player.remove(carried);
           this.inventory = null;
 
-          [this.phoneScreenItem, this.phoneBackItem, this.phoneBatteryItem].forEach(item => {
+          // Remove scattered phone pieces (strictly 2 pieces)
+          [this.phoneScreenItem, this.phoneBackItem].forEach(item => {
             if (item) {
               this.scene.remove(item);
               this.items = this.items.filter(it => it !== item);
@@ -1572,8 +1559,9 @@ class Game {
           this.player.userData.headGroup.rotation.z = -lowerProg * 0.15;
         }
 
-        this.camera.position.lerp(new THREE.Vector3(-3.8, 1.85, -0.6), 0.06);
-        this.camera.lookAt(-6.0, 1.0, -3.6);
+        // Maintain crystal-clear elevated wide framing from screenshot (no zooming into ground!)
+        this.camera.position.set(-3.0, 2.1, 0.8);
+        this.camera.lookAt(-6.0, 1.35, -3.6);
       } else if (t < 9.0) {
         // Shot 3C: SLIP & TUMBLE! Phone slips from hand and drops with 3D gravity physics!
         if (this.cutscenePhase === 3) {
@@ -1600,11 +1588,11 @@ class Game {
           this.fallingPhoneMesh.rotation.z += delta * 8;
         }
 
-        // Camera smoothly tracks down towards the falling phone
-        this.camera.position.lerp(new THREE.Vector3(-4.4, 1.45, -1.5), 0.08);
-        this.camera.lookAt(-5.9, 0.55, -3.4);
+        // Keep elevated medium framing so Chacha, door, and falling phone are all visible!
+        this.camera.position.set(-3.0, 2.1, 0.8);
+        this.camera.lookAt(-6.0, 1.35, -3.6);
       } else if (t < 11.2) {
-        // Shot 3D: IMPACT & SPLIT! Hits stone floor with KHATTT! Splits into 3 pieces, Chacha shocked!
+        // Shot 3D: IMPACT & SPLIT! Strictly 2 pieces (Screen & Back Cover)
         if (this.cutscenePhase === 4) {
           this.cutscenePhase = 5;
           if (this.fallingPhoneMesh) this.fallingPhoneMesh.visible = false;
@@ -1612,7 +1600,7 @@ class Game {
           // Sound of phone hitting stone verandah & splitting
           audio.playPhoneDropSound();
 
-          // Spawn the 3 broken pieces on verandah
+          // Spawn strictly 2 broken pieces on verandah
           if (this.phoneScreenItem) {
             this.phoneScreenItem.position.set(-5.8, 0.32, -3.45);
             this.phoneScreenItem.rotation.set(0, 0.35, 0.02);
@@ -1623,16 +1611,21 @@ class Game {
             this.phoneBackItem.rotation.set(Math.PI, 0.8, 0);
             this.phoneBackItem.visible = true;
           }
-          if (this.phoneBatteryItem) {
-            this.phoneBatteryItem.position.set(-5.95, 0.32, -3.05);
-            this.phoneBatteryItem.rotation.set(0, -0.6, 0);
-            this.phoneBatteryItem.visible = true;
-          }
 
           const speakerTitle = document.getElementById('cutscene-speaker-title');
           const cutsceneText = document.getElementById('cutscene-text');
           if (speakerTitle) speakerTitle.textContent = '😱 Chacha (Comic Shock!)';
-          if (cutsceneText) cutsceneText.textContent = '"Haye daiyya re! Naya-navela phone haath se chhut gaya! Screen aur battery dono nikal gayi! Bina phone ke mandap ka rasta kaise milega?!"';
+          if (cutsceneText) cutsceneText.textContent = '"Haye daiyya re! Naya-navela phone haath se chhut gaya! Screen alag ho gayi aur back cover alag! Bina phone ke mandap ka rasta kaise milega?!"';
+        }
+
+        // Brief subtle focus at break point (t < 9.35s), then immediately zoom back out for Chacha's full shock reaction!
+        if (t < 9.35) {
+          this.camera.position.lerp(new THREE.Vector3(-3.4, 1.9, 0.4), 0.12);
+          this.camera.lookAt(-5.95, 1.0, -3.4);
+        } else {
+          // Immediately zoom back out to screenshot framing!
+          this.camera.position.lerp(new THREE.Vector3(-3.0, 2.1, 0.8), 0.15);
+          this.camera.lookAt(-6.0, 1.35, -3.6);
         }
 
         // COMIC SHOCK POSE: Hands to head/cheeks, mouth open in comic despair, trembling!
@@ -1647,10 +1640,6 @@ class Game {
           this.player.userData.headGroup.rotation.x = 0.25 + jitter * 2;
           this.player.userData.headGroup.rotation.z = jitter * 1.5;
         }
-
-        // Close-up shot framing Chacha in shock and the 3 broken phone pieces on the floor
-        this.camera.position.lerp(new THREE.Vector3(-4.6, 1.55, -1.8), 0.06);
-        this.camera.lookAt(-5.9, 0.5, -3.3);
       } else {
         this.endCutscene();
       }
@@ -1840,6 +1829,24 @@ class Game {
       this.camera.lookAt(this.player.position.x + 1, 1.3, this.player.position.z);
 
       this.updatePrompt();
+
+      // Automatic Proximity for Kabaad ka Dher Radial Wheel
+      if (this.stage === 0) {
+        const distToJunk = this.player.position.distanceTo(new THREE.Vector3(-3.5, 0, 1.8));
+        if (distToJunk < 2.8) {
+          if (!this.radialWheelModal || this.radialWheelModal.style.display !== 'flex') {
+            this.openRadialWheel();
+          }
+        } else {
+          if (this.radialWheelModal && this.radialWheelModal.style.display === 'flex') {
+            this.closeRadialWheel();
+          }
+        }
+      } else {
+        if (this.radialWheelModal && this.radialWheelModal.style.display === 'flex') {
+          this.closeRadialWheel();
+        }
+      }
     }
 
     // Continuous downward gravity descent while falling into pit
