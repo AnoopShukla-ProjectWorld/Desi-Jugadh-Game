@@ -132,6 +132,16 @@ export class AssetFactory {
     const handR = new THREE.Mesh(new THREE.SphereGeometry(0.08, 10, 10), skinMat);
     handR.position.y = -0.66;
     rightArmPivot.add(handR);
+
+    // Handheld Smartphone Prop (visible during call cutscene)
+    const phoneProp = new THREE.Mesh(
+      new THREE.BoxGeometry(0.075, 0.15, 0.02),
+      new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.85, roughness: 0.2 })
+    );
+    phoneProp.position.set(0, -0.66, 0.08);
+    phoneProp.visible = false;
+    rightArmPivot.add(phoneProp);
+
     torsoGroup.add(rightArmPivot);
 
     character.add(torsoGroup);
@@ -173,6 +183,7 @@ export class AssetFactory {
       rightArmPivot,
       leftLegPivot,
       rightLegPivot,
+      phoneProp,
       walkPhase: 0,
       radius: 0.5
     };
@@ -1128,9 +1139,12 @@ export class AssetFactory {
     rail.position.set(15, 0.1, 3.6);
     envGroup.add(rail);
 
-    // Buildings
+    // Buildings along the street
     const bColors = [0xfef08a, 0xfca5a5, 0x93c5fd, 0x86efac, 0xfde047, 0xf9a8d4];
     for (let i = 0; i < 9; i++) {
+      // Reserve dedicated space at x = -6.0 for Chacha's Ancestral Home!
+      if (i === 1) continue;
+
       const bMesh = new THREE.Mesh(new THREE.BoxGeometry(6.0, 7.0 + (i % 3) * 2, 4.0), new THREE.MeshStandardMaterial({ color: bColors[i % bColors.length], roughness: 0.85 }));
       bMesh.position.set(-10 + i * 6.8, (7.0 + (i % 3) * 2) / 2, -7.2);
       bMesh.castShadow = true;
@@ -1645,5 +1659,177 @@ export class AssetFactory {
     };
 
     return chachi;
+  }
+
+  // 16. Chacha's Traditional Bhopali Ancestral Home (With Carved Double Doors, Ootla Verandah, Tulsi, Bicycle & Steps)
+  static createChachaHome() {
+    const home = new THREE.Group();
+    home.name = "ChachaHome";
+
+    const wallMat = new THREE.MeshStandardMaterial({ color: 0xfef08a, roughness: 0.85 }); // Warm ochre lime wash
+    const brickTrimMat = new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.7 });
+    const woodMat = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.6 }); // Teakwood
+    const roofTileMat = new THREE.MeshStandardMaterial({ color: 0xc2410c, roughness: 0.8 }); // Terracotta khaprail
+    const stonePlinthMat = new THREE.MeshStandardMaterial({ color: 0x78716c, roughness: 0.9 });
+    const brassMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.8, roughness: 0.25 });
+    const cycleMat = new THREE.MeshStandardMaterial({ color: 0x18181b, metalness: 0.5, roughness: 0.5 });
+    const leafMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.6 });
+
+    // 1. Main House Wall Block (Width: 6.6m, Height: 7.2m, Depth: 3.5m)
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(6.6, 7.2, 3.5), wallMat);
+    wall.position.set(0, 3.6, -1.75);
+    wall.castShadow = true;
+    home.add(wall);
+
+    // Decorative Plaster Cornice below roof
+    const cornice = new THREE.Mesh(new THREE.BoxGeometry(6.8, 0.28, 0.4), brickTrimMat);
+    cornice.position.set(0, 7.1, 0.1);
+    home.add(cornice);
+
+    // Terracotta Clay Tile Slanted Overhang Roof (Khaprail Chhat)
+    const roof = new THREE.Mesh(new THREE.BoxGeometry(7.0, 0.24, 1.4), roofTileMat);
+    roof.rotation.x = 0.35;
+    roof.position.set(0, 7.3, 0.45);
+    home.add(roof);
+
+    // 2. Raised Stone Verandah Plinth (Ootla / Chhabootra)
+    const ootla = new THREE.Mesh(new THREE.BoxGeometry(6.4, 0.32, 2.0), stonePlinthMat);
+    ootla.position.set(0, 0.16, 1.0);
+    ootla.receiveShadow = true;
+    home.add(ootla);
+
+    // 2 Stone Steps leading down to street driveway
+    const step1 = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.16, 0.5), stonePlinthMat);
+    step1.position.set(0, 0.08, 2.25);
+    step1.receiveShadow = true;
+    home.add(step1);
+
+    // 3. Antique Carved Teakwood Door Frame (Archway)
+    const frameLeft = new THREE.Mesh(new THREE.BoxGeometry(0.18, 2.6, 0.22), woodMat);
+    frameLeft.position.set(-1.0, 1.45, 0.05);
+    home.add(frameLeft);
+
+    const frameRight = new THREE.Mesh(new THREE.BoxGeometry(0.18, 2.6, 0.22), woodMat);
+    frameRight.position.set(1.0, 1.45, 0.05);
+    home.add(frameRight);
+
+    const frameTop = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.24, 0.24), woodMat);
+    frameTop.position.set(0, 2.75, 0.05);
+    home.add(frameTop);
+
+    // 4. Carved Double Door Leaves (Pivoting Outward)
+    const doorPivotL = new THREE.Group();
+    doorPivotL.position.set(-0.91, 1.45, 0.05);
+    const doorLeafL = new THREE.Mesh(new THREE.BoxGeometry(0.88, 2.4, 0.06), woodMat);
+    doorLeafL.position.set(0.44, 0, 0);
+    doorPivotL.add(doorLeafL);
+    // Brass handle knocker
+    const knockerL = new THREE.Mesh(new THREE.TorusGeometry(0.045, 0.012, 6, 12), brassMat);
+    knockerL.position.set(0.78, 0, 0.04);
+    doorPivotL.add(knockerL);
+    home.add(doorPivotL);
+
+    const doorPivotR = new THREE.Group();
+    doorPivotR.position.set(0.91, 1.45, 0.05);
+    const doorLeafR = new THREE.Mesh(new THREE.BoxGeometry(0.88, 2.4, 0.06), woodMat);
+    doorLeafR.position.set(-0.44, 0, 0);
+    doorPivotR.add(doorLeafR);
+    // Brass handle knocker
+    const knockerR = new THREE.Mesh(new THREE.TorusGeometry(0.045, 0.012, 6, 12), brassMat);
+    knockerR.position.set(-0.78, 0, 0.04);
+    doorPivotR.add(knockerR);
+    home.add(doorPivotR);
+
+    // Dark Doorway Interior Void (seen when doors open)
+    const doorwayVoid = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 2.5), new THREE.MeshBasicMaterial({ color: 0x09090b }));
+    doorwayVoid.position.set(0, 1.45, 0.01);
+    home.add(doorwayVoid);
+
+    // 5. Hand-Painted Traditional Wooden Nameplate: "चाचा का निवास"
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#451a03';
+    ctx.fillRect(0, 0, 512, 128);
+    ctx.strokeStyle = '#facc15';
+    ctx.lineWidth = 8;
+    ctx.strokeRect(6, 6, 500, 116);
+
+    ctx.fillStyle = '#fef08a';
+    ctx.font = 'bold 36px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🏠 चाचा का निवास 🏠', 256, 42);
+
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 22px sans-serif';
+    ctx.fillText('(लाला का बाड़ा, पुराना भोपाल)', 256, 88);
+
+    const nameplateTex = new THREE.CanvasTexture(canvas);
+    const nameplate = new THREE.Mesh(
+      new THREE.BoxGeometry(1.9, 0.48, 0.05),
+      new THREE.MeshStandardMaterial({ map: nameplateTex, roughness: 0.6 })
+    );
+    nameplate.position.set(0, 3.25, 0.12);
+    home.add(nameplate);
+
+    // Hanging Brass Lantern (Laalten) with warm ambient light
+    const lantern = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 0.28, 8), brassMat);
+    lantern.position.set(1.4, 2.8, 0.35);
+    home.add(lantern);
+
+    const lanternLight = new THREE.PointLight(0xfef08a, 1.2, 5.0);
+    lanternLight.position.set(1.4, 2.65, 0.45);
+    home.add(lanternLight);
+
+    // 6. Sacred Tulsi Vrindavan / Potted Tulsi Plant on Ootla
+    const tulsiPot = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.42, 0.42), brickTrimMat);
+    tulsiPot.position.set(2.4, 0.53, 1.4);
+    home.add(tulsiPot);
+
+    const tulsiLeaves = new THREE.Mesh(new THREE.SphereGeometry(0.24, 10, 8), leafMat);
+    tulsiLeaves.position.set(2.4, 0.88, 1.4);
+    home.add(tulsiLeaves);
+
+    // 7. Vintage Indian Roadster Bicycle (Atlas/Hero) leaning against house wall
+    const cycleGroup = new THREE.Group();
+    cycleGroup.position.set(-2.2, 0.45, 1.2);
+    cycleGroup.rotation.y = 0.2;
+    cycleGroup.rotation.z = -0.15; // Leaning against wall
+
+    // Wheels
+    [-0.55, 0.55].forEach(cx => {
+      const cWheel = new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.025, 8, 18), cycleMat);
+      cWheel.position.set(cx, 0, 0);
+      cycleGroup.add(cWheel);
+    });
+
+    // Frame tubes
+    const cFrame = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.03, 0.03), cycleMat);
+    cFrame.position.set(0, 0.15, 0);
+    cycleGroup.add(cFrame);
+
+    const cHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.4, 8), cycleMat);
+    cHandle.rotation.x = Math.PI / 2;
+    cHandle.position.set(0.55, 0.42, 0);
+    cycleGroup.add(cHandle);
+
+    home.add(cycleGroup);
+
+    home.userData = {
+      doorPivotL,
+      doorPivotR,
+      openDoors: () => {
+        doorPivotL.rotation.y = -Math.PI * 0.45;
+        doorPivotR.rotation.y = Math.PI * 0.45;
+      },
+      closeDoors: () => {
+        doorPivotL.rotation.y = 0;
+        doorPivotR.rotation.y = 0;
+      }
+    };
+
+    return home;
   }
 }

@@ -77,9 +77,15 @@ class Game {
     this.scooter.userData.riderMesh.visible = false;
     this.scene.add(this.scooter);
 
-    // Standing Pixar Boy Character
+    // Chacha's Traditional Bhopali Ancestral Home (x = -6.0, z = -4.8)
+    this.chachaHome = AssetFactory.createChachaHome();
+    this.chachaHome.position.set(-6.0, 0, -4.8);
+    this.scene.add(this.chachaHome);
+
+    // Standing Pixar Boy Character (Initially on home verandah behind doors)
     this.player = AssetFactory.createCartoonBoy();
-    this.player.position.set(-4, 0, 0.5);
+    this.player.position.set(-6.0, 0.32, -4.6);
+    this.player.visible = false;
     this.scene.add(this.player);
 
     // Warning Barrier before Excavation (at x = 8.2)
@@ -98,10 +104,10 @@ class Game {
     this.cow.rotation.y = -Math.PI / 2;
     this.scene.add(this.cow);
 
-    // Chachi Character at Sheesh Mahal Palace Gate (x = 42.2, z = 1.2)
+    // Chachi Character at Sheesh Mahal on Red Carpet (Clear view, outside gate arch at x = 39.8, z = 0.3)
     this.chachi = AssetFactory.createCartoonChachi();
-    this.chachi.position.set(42.2, 0, 1.2);
-    this.chachi.rotation.y = -Math.PI / 2 + 0.35; // Angled facing camera & mandap
+    this.chachi.position.set(39.8, 0, 0.3);
+    this.chachi.rotation.y = -Math.PI / 2 - 0.25; // Angled facing the camera
     this.scene.add(this.chachi);
 
     // Scattered Puzzle Items
@@ -287,11 +293,19 @@ class Game {
     this.meterPercent.textContent = `${this.meter}%`;
   }
 
-  // 1. Cinematic Opening Cutscene (Sheesh Mahal Call -> Mohalla Flyover -> Chacha's Driveway)
+  // 1. Cinematic Opening Cutscene (Sheesh Mahal Call -> Mohalla Flyover -> Chacha's Home Departure)
   startCutscene() {
     this.isCutscene = true;
     this.cutsceneTime = 0;
     this.cutscenePhase = 1;
+
+    // Reset Chacha Home doors closed initially
+    if (this.chachaHome) this.chachaHome.userData.closeDoors();
+
+    // Chacha starts inside doorway, hidden initially
+    this.player.position.set(-6.0, 0.32, -4.6);
+    this.player.visible = false;
+    if (this.player.userData.phoneProp) this.player.userData.phoneProp.visible = false;
 
     const overlay = document.getElementById('cutscene-overlay');
     if (overlay) {
@@ -307,13 +321,25 @@ class Game {
     audio.playPhoneRing();
 
     // Position camera framing Chachi talking on phone at Sheesh Mahal
-    this.camera.position.set(40.2, 1.9, 3.2);
-    this.camera.lookAt(42.2, 1.35, 1.2);
+    this.camera.position.set(37.5, 1.55, 1.4);
+    this.camera.lookAt(39.8, 1.35, 0.3);
   }
 
   endCutscene() {
     if (!this.isCutscene) return;
     this.isCutscene = false;
+
+    // Ensure Chacha's doors remain open
+    if (this.chachaHome) this.chachaHome.userData.openDoors();
+
+    // Chacha in driveway beside scooter, fully visible with relaxed arms
+    this.player.position.set(-5.2, 0, 0.5);
+    this.player.visible = true;
+    if (this.player.userData.phoneProp) this.player.userData.phoneProp.visible = false;
+    if (this.player.userData.rightArmPivot) this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
+    if (this.player.userData.leftArmPivot) this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
+    if (this.player.userData.leftLegPivot) this.player.userData.leftLegPivot.rotation.set(0, 0, 0);
+    if (this.player.userData.rightLegPivot) this.player.userData.rightLegPivot.rotation.set(0, 0, 0);
 
     const overlay = document.getElementById('cutscene-overlay');
     if (overlay) {
@@ -960,43 +986,94 @@ class Game {
       this.cutsceneTime += delta;
       const t = this.cutsceneTime;
 
-      if (t < 2.5) {
-        // Focus on Chachi talking urgently on phone at Sheesh Mahal
-        this.camera.position.set(40.2, 1.9, 3.2);
-        this.camera.lookAt(42.2, 1.35, 1.2);
+      if (t < 2.8) {
+        // Shot 1: Chachi talking urgently on phone at Sheesh Mahal Mandap
+        this.camera.position.set(37.5, 1.55, 1.4);
+        this.camera.lookAt(39.8, 1.35, 0.3);
 
         // Animated head nod & phone gesture while talking
         if (this.chachi && this.chachi.userData.headGroup) {
-          this.chachi.userData.headGroup.rotation.x = Math.sin(time * 6) * 0.07;
-          this.chachi.userData.headGroup.rotation.z = 0.12 + Math.sin(time * 4) * 0.04;
-          if (this.chachi.userData.phoneArmPivot) {
-            this.chachi.userData.phoneArmPivot.rotation.x = Math.sin(time * 5) * 0.05;
-          }
+          this.chachi.userData.headGroup.rotation.x = Math.sin(time * 6) * 0.08;
+          this.chachi.userData.headGroup.rotation.z = 0.12 + Math.sin(time * 4) * 0.05;
         }
-      } else if (t < 5.2) {
-        // Smooth cinematic tracking shot backwards along the entire road
-        const u = (t - 2.5) / 2.7; // 0 to 1
+        if (this.chachi && this.chachi.userData.phoneArmPivot) {
+          this.chachi.userData.phoneArmPivot.rotation.x = Math.sin(time * 5) * 0.06;
+        }
+      } else if (t < 4.8) {
+        // Shot 2: Fast cinematic flyover tracking backwards from Sheesh Mahal to Chacha's mohalla home
+        const u = (t - 2.8) / 2.0; // 0 to 1
         const easeU = u * u * (3 - 2 * u); // SmoothStep
 
-        const camX = THREE.MathUtils.lerp(40.5, -4.0, easeU);
-        const camY = THREE.MathUtils.lerp(3.2, 3.2, easeU);
-        const camZ = THREE.MathUtils.lerp(5.5, 6.2, easeU);
+        const camX = THREE.MathUtils.lerp(37.5, -3.2, easeU);
+        const camY = THREE.MathUtils.lerp(1.55, 2.0, easeU);
+        const camZ = THREE.MathUtils.lerp(1.4, 1.8, easeU);
+
+        const lookX = THREE.MathUtils.lerp(39.8, -5.5, easeU);
+        const lookY = THREE.MathUtils.lerp(1.35, 1.2, easeU);
+        const lookZ = THREE.MathUtils.lerp(0.3, -2.5, easeU);
 
         this.camera.position.set(camX, camY, camZ);
-        this.camera.lookAt(camX - 2.8, 1.3, 0);
+        this.camera.lookAt(lookX, lookY, lookZ);
 
-        // Transition speech toast to Chacha
+        // Transition speech toast to Chacha's phone reply
         if (this.cutscenePhase === 1) {
           this.cutscenePhase = 2;
           const speakerTitle = document.getElementById('cutscene-speaker-title');
           const cutsceneText = document.getElementById('cutscene-text');
           if (speakerTitle) speakerTitle.textContent = '🛵 Chacha (Mohalla Driveway)';
-          if (cutsceneText) cutsceneText.textContent = '"Arre baap re! Chetak scooter ka stand toot ke gir gaya! Mohalle se koi mazboot laal eent dhundni padegi!"';
+          if (cutsceneText) cutsceneText.textContent = '"Haan haan bhagyawan! Bas 5 minute me Chetak leke pohoch raha hoon!"';
         }
-      } else if (t < 6.5) {
-        // Settle near Chacha & fallen scooter
-        this.camera.position.set(-4.0, 2.8, 5.5);
-        this.camera.lookAt(-5.5, 1.0, -0.5);
+      } else if (t < 6.8) {
+        // Shot 3A: Chacha's ancestral doors open, Chacha steps out on phone walking down verandah steps
+        if (this.chachaHome) this.chachaHome.userData.openDoors();
+        this.player.visible = true;
+        if (this.player.userData.phoneProp) this.player.userData.phoneProp.visible = true;
+        if (this.player.userData.rightArmPivot) {
+          this.player.userData.rightArmPivot.rotation.set(-1.6, 0.3, -0.4);
+        }
+
+        const walkProg = (t - 4.8) / 2.0; // 0 to 1
+        const wx = THREE.MathUtils.lerp(-6.0, -5.2, walkProg);
+        const wz = THREE.MathUtils.lerp(-4.6, 0.5, walkProg);
+        const wy = walkProg < 0.45 ? 0.32 : THREE.MathUtils.lerp(0.32, 0.0, Math.min(1, (walkProg - 0.45) / 0.18));
+
+        this.player.position.set(wx, wy, wz);
+        this.player.rotation.y = 0; // Walking facing +Z towards driveway
+
+        // Leg swing & left arm swing during walk
+        if (this.player.userData.leftLegPivot) {
+          this.player.userData.leftLegPivot.rotation.x = Math.sin((t - 4.8) * 12) * 0.45;
+        }
+        if (this.player.userData.rightLegPivot) {
+          this.player.userData.rightLegPivot.rotation.x = -Math.sin((t - 4.8) * 12) * 0.45;
+        }
+        if (this.player.userData.leftArmPivot) {
+          this.player.userData.leftArmPivot.rotation.x = Math.sin((t - 4.8) * 12) * 0.35;
+        }
+
+        this.camera.position.set(-3.2, 1.85, 2.2);
+        this.camera.lookAt(wx, wy + 1.0, wz);
+      } else if (t < 8.2) {
+        // Shot 3B: Chacha arrives at scooter, puts away phone, and is shocked by broken kickstand
+        this.player.position.set(-5.2, 0, 0.5);
+        this.player.rotation.y = 0.55; // Turn slightly to face scooter
+
+        if (this.player.userData.leftLegPivot) this.player.userData.leftLegPivot.rotation.set(0, 0, 0);
+        if (this.player.userData.rightLegPivot) this.player.userData.rightLegPivot.rotation.set(0, 0, 0);
+        if (this.player.userData.leftArmPivot) this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
+        if (this.player.userData.rightArmPivot) this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
+        if (this.player.userData.phoneProp) this.player.userData.phoneProp.visible = false;
+
+        if (this.cutscenePhase === 2) {
+          this.cutscenePhase = 3;
+          const speakerTitle = document.getElementById('cutscene-speaker-title');
+          const cutsceneText = document.getElementById('cutscene-text');
+          if (speakerTitle) speakerTitle.textContent = '🛵 Chacha (Mohalla Driveway)';
+          if (cutsceneText) cutsceneText.textContent = '"Arre baap re! Chetak ka stand toot ke gir gaya! Mohalle me kabaad dhundo aur Laal Eent jaisa koi jugaad stand banao!"';
+        }
+
+        this.camera.position.set(-3.6, 1.65, 3.2);
+        this.camera.lookAt(-4.0, 0.9, 0.2);
       } else {
         this.endCutscene();
       }
