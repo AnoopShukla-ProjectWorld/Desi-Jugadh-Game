@@ -166,11 +166,28 @@ class Game {
       return c;
     });
 
-    // Solid Colliders
-    this.colliders = [
-      { type: 'circle', x: -6.0, z: -0.5, radius: 1.2, name: 'Scooter' },
-      { type: 'box', minX: 0.6, maxX: 3.4, minZ: -4.8, maxZ: -3.2, name: 'ChaiStall' },
-      { type: 'circle', x: 21.5, z: -0.2, radius: 1.5, name: 'Cow' }
+    // Universal Static Colliders (Permanent Structures in Bhopal Mohalla)
+    this.staticColliders = [
+      // 1. Chacha's Home main back wall and verandah flanks
+      { type: 'box', minX: -9.5, maxX: -2.5, minZ: -10.0, maxZ: -4.7, name: 'HomeBackWall' },
+      { type: 'box', minX: -9.5, maxX: -7.0, minZ: -4.7, maxZ: -2.6, name: 'OotlaLeftFlank' },
+      { type: 'box', minX: -5.0, maxX: -2.5, minZ: -4.7, maxZ: -2.6, name: 'OotlaRightFlank' },
+      { type: 'circle', x: -3.6, z: -3.4, radius: 0.5, name: 'TulsiPot' },
+      { type: 'box', minX: -8.5, maxX: -7.6, minZ: -3.8, maxZ: -3.2, name: 'AtlasBicycle' },
+
+      // 2. Chai Tapri (x = 2.0, z = -4.0)
+      { type: 'box', minX: 0.5, maxX: 3.5, minZ: -4.8, maxZ: -3.2, name: 'ChaiStall' },
+
+      // 3. North buildings wall along road (sidewalk barrier)
+      { type: 'box', minX: 3.6, maxX: 40.0, minZ: -10.0, maxZ: -4.4, name: 'NorthBuildings' },
+
+      // 4. South boundary railing along road
+      { type: 'box', minX: -16.0, maxX: 45.0, minZ: 3.2, maxZ: 10.0, name: 'SouthRailing' },
+
+      // 5. Sheesh Mahal Palace Facade Walls & Side Wings (at x = 42.0)
+      { type: 'box', minX: 41.6, maxX: 42.6, minZ: -6.0, maxZ: -1.35, name: 'PalaceWallLeft' },
+      { type: 'box', minX: 41.6, maxX: 42.6, minZ: 1.35, maxZ: 6.0, name: 'PalaceWallRight' },
+      { type: 'box', minX: 45.0, maxX: 55.0, minZ: -6.0, maxZ: 6.0, name: 'PalaceBackBoundary' }
     ];
 
     // Dazed Character (Spawned after accident)
@@ -248,6 +265,48 @@ class Game {
     });
   }
 
+  // Unified Real-Time Colliders (Dynamic Scooter & Cow + Static World Obstacles)
+  getColliders() {
+    const list = [...this.staticColliders];
+
+    // 1. Dynamic Solid Scooter Barrier (Active whenever player is on foot)
+    if (!this.isRiding && this.scooter) {
+      list.push({
+        type: 'box',
+        minX: this.scooter.position.x - 1.15,
+        maxX: this.scooter.position.x + 1.15,
+        minZ: this.scooter.position.z - 0.55,
+        maxZ: this.scooter.position.z + 0.55,
+        name: 'Scooter'
+      });
+    }
+
+    // 2. Dynamic Solid Cow Barrier (Follows cow wherever Gau Mata moves)
+    if (this.cow) {
+      list.push({
+        type: 'circle',
+        x: this.cow.position.x,
+        z: this.cow.position.z,
+        radius: 1.45,
+        name: 'Cow'
+      });
+    }
+
+    // 3. Deep Road Excavation Trench (Blocks crossing unless timber plank is placed)
+    if (!this.plankPlaced && this.trench) {
+      list.push({
+        type: 'box',
+        minX: 9.3,
+        maxX: 12.7,
+        minZ: -3.5,
+        maxZ: 3.5,
+        name: 'TrenchVoid'
+      });
+    }
+
+    return list;
+  }
+
   initUI() {
     this.meterFill = document.getElementById('jugaad-bar-fill');
     this.meterPercent = document.getElementById('meter-percent');
@@ -320,9 +379,9 @@ class Game {
 
     audio.playPhoneRing();
 
-    // Position camera framing Chachi talking on phone at Sheesh Mahal
-    this.camera.position.set(37.5, 1.55, 1.4);
-    this.camera.lookAt(39.8, 1.35, 0.3);
+    // Position camera framing Chachi from comfortable medium-wide angle (NOT zoomed in / chipka hua)
+    this.camera.position.set(34.2, 1.85, 2.8);
+    this.camera.lookAt(39.8, 1.25, 0.3);
   }
 
   endCutscene() {
@@ -332,8 +391,9 @@ class Game {
     // Ensure Chacha's doors remain open
     if (this.chachaHome) this.chachaHome.userData.openDoors();
 
-    // Chacha in driveway beside scooter, fully visible with relaxed arms
-    this.player.position.set(-5.2, 0, 0.5);
+    // Chacha safely in front of verandah steps entering driveway at (-5.5, 0, -1.8) facing scooter
+    this.player.position.set(-5.5, 0, -1.8);
+    this.player.rotation.y = 0.5; // looking towards scooter
     this.player.visible = true;
     if (this.player.userData.phoneProp) this.player.userData.phoneProp.visible = false;
     if (this.player.userData.rightArmPivot) this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
@@ -351,8 +411,8 @@ class Game {
     }
 
     // Return camera smoothly to player gameplay view
-    this.camera.position.set(-4, 4.8, 9.5);
-    this.camera.lookAt(-2, 1.2, 0);
+    this.camera.position.set(-4.5, 4.8, 8.5);
+    this.camera.lookAt(-3.0, 1.2, 0);
 
     this.showDialogue(
       'Chacha',
@@ -987,9 +1047,9 @@ class Game {
       const t = this.cutsceneTime;
 
       if (t < 2.8) {
-        // Shot 1: Chachi talking urgently on phone at Sheesh Mahal Mandap
-        this.camera.position.set(37.5, 1.55, 1.4);
-        this.camera.lookAt(39.8, 1.35, 0.3);
+        // Shot 1: Chachi talking urgently on phone at Sheesh Mahal Mandap (Camera pulled back at comfortable medium-wide angle)
+        this.camera.position.set(34.2, 1.85, 2.8);
+        this.camera.lookAt(39.8, 1.25, 0.3);
 
         // Animated head nod & phone gesture while talking
         if (this.chachi && this.chachi.userData.headGroup) {
@@ -1004,13 +1064,13 @@ class Game {
         const u = (t - 2.8) / 2.0; // 0 to 1
         const easeU = u * u * (3 - 2 * u); // SmoothStep
 
-        const camX = THREE.MathUtils.lerp(37.5, -3.2, easeU);
-        const camY = THREE.MathUtils.lerp(1.55, 2.0, easeU);
-        const camZ = THREE.MathUtils.lerp(1.4, 1.8, easeU);
+        const camX = THREE.MathUtils.lerp(34.2, -2.8, easeU);
+        const camY = THREE.MathUtils.lerp(1.85, 2.2, easeU);
+        const camZ = THREE.MathUtils.lerp(2.8, 0.8, easeU);
 
-        const lookX = THREE.MathUtils.lerp(39.8, -5.5, easeU);
-        const lookY = THREE.MathUtils.lerp(1.35, 1.2, easeU);
-        const lookZ = THREE.MathUtils.lerp(0.3, -2.5, easeU);
+        const lookX = THREE.MathUtils.lerp(39.8, -6.0, easeU);
+        const lookY = THREE.MathUtils.lerp(1.25, 1.35, easeU);
+        const lookZ = THREE.MathUtils.lerp(0.3, -3.6, easeU);
 
         this.camera.position.set(camX, camY, camZ);
         this.camera.lookAt(lookX, lookY, lookZ);
@@ -1023,8 +1083,8 @@ class Game {
           if (speakerTitle) speakerTitle.textContent = '🛵 Chacha (Mohalla Driveway)';
           if (cutsceneText) cutsceneText.textContent = '"Haan haan bhagyawan! Bas 5 minute me Chetak leke pohoch raha hoon!"';
         }
-      } else if (t < 6.8) {
-        // Shot 3A: Chacha's ancestral doors open, Chacha steps out on phone walking down verandah steps
+      } else if (t < 7.0) {
+        // Shot 3A: Chacha's ancestral doors open, Chacha steps JUST OUTSIDE THE DOOR ON THE VERANDAH and talks on phone!
         if (this.chachaHome) this.chachaHome.userData.openDoors();
         this.player.visible = true;
         if (this.player.userData.phoneProp) this.player.userData.phoneProp.visible = true;
@@ -1032,37 +1092,31 @@ class Game {
           this.player.userData.rightArmPivot.rotation.set(-1.6, 0.3, -0.4);
         }
 
-        const walkProg = (t - 4.8) / 2.0; // 0 to 1
-        const wx = THREE.MathUtils.lerp(-6.0, -5.2, walkProg);
-        const wz = THREE.MathUtils.lerp(-4.6, 0.5, walkProg);
-        const wy = walkProg < 0.45 ? 0.32 : THREE.MathUtils.lerp(0.32, 0.0, Math.min(1, (walkProg - 0.45) / 0.18));
+        // Chacha steps only from inside door (-6.0, 0.32, -4.6) to just outside on verandah (-6.0, 0.32, -3.6)
+        const stepProg = Math.min(1, (t - 4.8) / 0.8);
+        const wz = THREE.MathUtils.lerp(-4.6, -3.6, stepProg);
+        this.player.position.set(-6.0, 0.32, wz);
+        this.player.rotation.y = 0.2; // Facing camera / verandah
 
-        this.player.position.set(wx, wy, wz);
-        this.player.rotation.y = 0; // Walking facing +Z towards driveway
+        if (stepProg < 1) {
+          if (this.player.userData.leftLegPivot) this.player.userData.leftLegPivot.rotation.x = Math.sin(stepProg * Math.PI) * 0.3;
+        } else {
+          if (this.player.userData.leftLegPivot) this.player.userData.leftLegPivot.rotation.x = 0;
+          if (this.player.userData.rightLegPivot) this.player.userData.rightLegPivot.rotation.x = 0;
+        }
 
-        // Leg swing & left arm swing during walk
-        if (this.player.userData.leftLegPivot) {
-          this.player.userData.leftLegPivot.rotation.x = Math.sin((t - 4.8) * 12) * 0.45;
-        }
-        if (this.player.userData.rightLegPivot) {
-          this.player.userData.rightLegPivot.rotation.x = -Math.sin((t - 4.8) * 12) * 0.45;
-        }
         if (this.player.userData.leftArmPivot) {
-          this.player.userData.leftArmPivot.rotation.x = Math.sin((t - 4.8) * 12) * 0.35;
+          this.player.userData.leftArmPivot.rotation.x = Math.sin(t * 4) * 0.12;
         }
 
-        this.camera.position.set(-3.2, 1.85, 2.2);
-        this.camera.lookAt(wx, wy + 1.0, wz);
-      } else if (t < 8.2) {
-        // Shot 3B: Chacha arrives at scooter, puts away phone, and is shocked by broken kickstand
-        this.player.position.set(-5.2, 0, 0.5);
-        this.player.rotation.y = 0.55; // Turn slightly to face scooter
-
-        if (this.player.userData.leftLegPivot) this.player.userData.leftLegPivot.rotation.set(0, 0, 0);
-        if (this.player.userData.rightLegPivot) this.player.userData.rightLegPivot.rotation.set(0, 0, 0);
-        if (this.player.userData.leftArmPivot) this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
-        if (this.player.userData.rightArmPivot) this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
+        // Camera pulled back at comfortable medium-wide angle framing verandah, nameplate, and Chacha
+        this.camera.position.set(-3.0, 2.1, 0.8);
+        this.camera.lookAt(-6.0, 1.35, -3.6);
+      } else if (t < 8.4) {
+        // Shot 3B: Call ends, Chacha lowers phone, spots broken kickstand from verandah
         if (this.player.userData.phoneProp) this.player.userData.phoneProp.visible = false;
+        if (this.player.userData.rightArmPivot) this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
+        if (this.player.userData.leftArmPivot) this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
 
         if (this.cutscenePhase === 2) {
           this.cutscenePhase = 3;
@@ -1072,8 +1126,9 @@ class Game {
           if (cutsceneText) cutsceneText.textContent = '"Arre baap re! Chetak ka stand toot ke gir gaya! Mohalle me kabaad dhundo aur Laal Eent jaisa koi jugaad stand banao!"';
         }
 
-        this.camera.position.set(-3.6, 1.65, 3.2);
-        this.camera.lookAt(-4.0, 0.9, 0.2);
+        // Camera shifts to medium view framing Chacha on verandah looking towards scooter
+        this.camera.position.set(-3.2, 2.2, 1.8);
+        this.camera.lookAt(-4.4, 0.9, -1.0);
       } else {
         this.endCutscene();
       }
@@ -1119,35 +1174,75 @@ class Game {
         let nextX = this.player.position.x + vx;
         let nextZ = this.player.position.z + vz;
 
-        nextX = Math.max(-8, Math.min(38, nextX));
-        nextZ = Math.max(-4.2, Math.min(2.8, nextZ));
+        nextX = Math.max(-8.5, Math.min(43.5, nextX));
+        nextZ = Math.max(-4.4, Math.min(3.0, nextZ));
 
-        // Solid Colliders
-        this.colliders.forEach(c => {
+        const colliders = this.getColliders();
+        const pR = (this.player.userData && this.player.userData.radius) || 0.35;
+
+        // Resolve X movement with solid obstacles (Dynamic Scooter, Cow, Walls, Stalls)
+        for (const c of colliders) {
+          if (c.type === 'circle') {
+            const dx = nextX - c.x;
+            const dz = this.player.position.z - c.z;
+            const dist = Math.hypot(dx, dz);
+            const minDist = c.radius + pR;
+            if (dist < minDist && dist > 0.0001) {
+              const push = minDist - dist;
+              nextX += (dx / dist) * push;
+            }
+          } else if (c.type === 'box') {
+            const curZ = this.player.position.z;
+            if (curZ > c.minZ - pR && curZ < c.maxZ + pR) {
+              if (nextX > c.minX - pR && nextX < c.maxX + pR) {
+                if (vx > 0) nextX = c.minX - pR;
+                else if (vx < 0) nextX = c.maxX + pR;
+                else {
+                  const dL = Math.abs(nextX - (c.minX - pR));
+                  const dR = Math.abs(nextX - (c.maxX + pR));
+                  nextX = dL < dR ? c.minX - pR : c.maxX + pR;
+                }
+              }
+            }
+          }
+        }
+
+        // Resolve Z movement with solid obstacles
+        for (const c of colliders) {
           if (c.type === 'circle') {
             const dx = nextX - c.x;
             const dz = nextZ - c.z;
             const dist = Math.hypot(dx, dz);
-            const minDist = c.radius + this.player.userData.radius;
-            if (dist < minDist) {
+            const minDist = c.radius + pR;
+            if (dist < minDist && dist > 0.0001) {
               const push = minDist - dist;
-              nextX += (dx / dist) * push;
               nextZ += (dz / dist) * push;
             }
           } else if (c.type === 'box') {
-            if (nextX > c.minX && nextX < c.maxX && nextZ > c.minZ && nextZ < c.maxZ) {
-              const dLeft = Math.abs(nextX - c.minX);
-              const dRight = Math.abs(nextX - c.maxX);
-              const dTop = Math.abs(nextZ - c.minZ);
-              const dBottom = Math.abs(nextZ - c.maxZ);
-              const minEdge = Math.min(dLeft, dRight, dTop, dBottom);
-              if (minEdge === dLeft) nextX = c.minX - 0.1;
-              else if (minEdge === dRight) nextX = c.maxX + 0.1;
-              else if (minEdge === dTop) nextZ = c.minZ - 0.1;
-              else nextZ = c.maxZ + 0.1;
+            if (nextX > c.minX - pR && nextX < c.maxX + pR) {
+              if (nextZ > c.minZ - pR && nextZ < c.maxZ + pR) {
+                if (vz > 0) nextZ = c.minZ - pR;
+                else if (vz < 0) nextZ = c.maxZ + pR;
+                else {
+                  const dT = Math.abs(nextZ - (c.minZ - pR));
+                  const dB = Math.abs(nextZ - (c.maxZ + pR));
+                  nextZ = dT < dB ? c.minZ - pR : c.maxZ + pR;
+                }
+              }
             }
           }
-        });
+        }
+
+        // Dynamic step height for Chacha's verandah
+        if (nextX >= -7.5 && nextX <= -4.5 && nextZ <= -2.2) {
+          if (nextZ <= -2.8) {
+            this.player.position.y = 0.32;
+          } else {
+            this.player.position.y = 0.16;
+          }
+        } else {
+          this.player.position.y = 0.0;
+        }
 
         this.player.position.x = nextX;
         this.player.position.z = nextZ;
