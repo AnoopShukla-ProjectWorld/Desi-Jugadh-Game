@@ -121,7 +121,9 @@ export class AssetFactory {
     leftArmPivot.add(handL);
     torsoGroup.add(leftArmPivot);
 
+    // 1. Regular Walking / Carrying Right Arm
     const rightArmPivot = new THREE.Group();
+    rightArmPivot.name = "RightArmPivot";
     rightArmPivot.position.set(-0.36, 0.25, 0);
     const armUpperR = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.065, 0.36, 10), blueShirtMat);
     armUpperR.position.y = -0.18;
@@ -132,17 +134,50 @@ export class AssetFactory {
     const handR = new THREE.Mesh(new THREE.SphereGeometry(0.08, 10, 10), skinMat);
     handR.position.y = -0.66;
     rightArmPivot.add(handR);
+    torsoGroup.add(rightArmPivot);
 
-    // Handheld Smartphone Prop (visible during call cutscene)
-    const phoneProp = new THREE.Mesh(
-      new THREE.BoxGeometry(0.075, 0.15, 0.02),
+    // 2. Dedicated Phone-to-Ear Arm (Exactly like Chachi: elbow bent up, phone pressed to right ear)
+    const phoneArmGroup = new THREE.Group();
+    phoneArmGroup.name = "PhoneArmGroup";
+    phoneArmGroup.position.set(-0.36, 0.25, 0);
+    phoneArmGroup.visible = false;
+
+    // Bicep / Shirt sleeve angling down from shoulder
+    const phoneArmUpper = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.065, 0.32, 10), blueShirtMat);
+    phoneArmUpper.position.set(-0.02, -0.15, 0.04);
+    phoneArmUpper.rotation.set(0.2, 0, -0.15);
+    phoneArmGroup.add(phoneArmUpper);
+
+    // Forearm bent sharply upwards bringing phone right to the ear
+    const phoneForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.052, 0.36, 10), skinMat);
+    phoneForearm.position.set(0.01, 0.16, 0.10);
+    phoneForearm.rotation.set(-1.75, 0.32, -0.35);
+    phoneArmGroup.add(phoneForearm);
+
+    // Hand cradling phone
+    const phoneHand = new THREE.Mesh(new THREE.SphereGeometry(0.075, 10, 10), skinMat);
+    phoneHand.position.set(0.03, 0.42, 0.10);
+    phoneArmGroup.add(phoneHand);
+
+    // Smartphone pressed to right ear
+    const phoneMesh = new THREE.Mesh(
+      new THREE.BoxGeometry(0.08, 0.16, 0.02),
       new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.85, roughness: 0.2 })
     );
-    phoneProp.position.set(0, -0.66, 0.08);
-    phoneProp.visible = false;
-    rightArmPivot.add(phoneProp);
+    phoneMesh.position.set(0.01, 0.47, 0.10);
+    phoneMesh.rotation.set(-0.15, 0.35, 0.08);
+    phoneArmGroup.add(phoneMesh);
 
-    torsoGroup.add(rightArmPivot);
+    // Smartphone Glowing Screen
+    const phoneScreen = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.068, 0.135),
+      new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+    );
+    phoneScreen.position.set(0.01, 0.47, 0.111);
+    phoneScreen.rotation.set(-0.15, 0.35, 0.08);
+    phoneArmGroup.add(phoneScreen);
+
+    torsoGroup.add(phoneArmGroup);
 
     character.add(torsoGroup);
 
@@ -179,11 +214,23 @@ export class AssetFactory {
 
     character.userData = {
       torsoGroup,
+      headGroup,
       leftArmPivot,
       rightArmPivot,
+      phoneArmGroup,
+      setPhoneCallPose: (active) => {
+        if (active) {
+          rightArmPivot.visible = false;
+          phoneArmGroup.visible = true;
+        } else {
+          phoneArmGroup.visible = false;
+          rightArmPivot.visible = true;
+          rightArmPivot.rotation.set(0, 0, 0);
+          if (headGroup) headGroup.rotation.set(0, 0, 0);
+        }
+      },
       leftLegPivot,
       rightLegPivot,
-      phoneProp,
       walkPhase: 0,
       radius: 0.5
     };

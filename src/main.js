@@ -364,7 +364,7 @@ class Game {
     // Chacha starts inside doorway, hidden initially
     this.player.position.set(-6.0, 0.32, -4.6);
     this.player.visible = false;
-    if (this.player.userData.phoneProp) this.player.userData.phoneProp.visible = false;
+    if (this.player.userData.setPhoneCallPose) this.player.userData.setPhoneCallPose(false);
 
     const overlay = document.getElementById('cutscene-overlay');
     if (overlay) {
@@ -395,7 +395,7 @@ class Game {
     this.player.position.set(-5.5, 0, -1.8);
     this.player.rotation.y = 0.5; // looking towards scooter
     this.player.visible = true;
-    if (this.player.userData.phoneProp) this.player.userData.phoneProp.visible = false;
+    if (this.player.userData.setPhoneCallPose) this.player.userData.setPhoneCallPose(false);
     if (this.player.userData.rightArmPivot) this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
     if (this.player.userData.leftArmPivot) this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
     if (this.player.userData.leftLegPivot) this.player.userData.leftLegPivot.rotation.set(0, 0, 0);
@@ -1087,9 +1087,8 @@ class Game {
         // Shot 3A: Chacha's ancestral doors open, Chacha steps JUST OUTSIDE THE DOOR ON THE VERANDAH and talks on phone!
         if (this.chachaHome) this.chachaHome.userData.openDoors();
         this.player.visible = true;
-        if (this.player.userData.phoneProp) this.player.userData.phoneProp.visible = true;
-        if (this.player.userData.rightArmPivot) {
-          this.player.userData.rightArmPivot.rotation.set(-1.6, 0.3, -0.4);
+        if (this.player.userData.setPhoneCallPose) {
+          this.player.userData.setPhoneCallPose(true);
         }
 
         // Chacha steps only from inside door (-6.0, 0.32, -4.6) to just outside on verandah (-6.0, 0.32, -3.6)
@@ -1105,6 +1104,15 @@ class Game {
           if (this.player.userData.rightLegPivot) this.player.userData.rightLegPivot.rotation.x = 0;
         }
 
+        // Animated head nod and phone gesture while talking on phone (just like Chachi!)
+        if (this.player.userData.headGroup) {
+          this.player.userData.headGroup.rotation.x = Math.sin(time * 5) * 0.06;
+          this.player.userData.headGroup.rotation.z = -0.06 + Math.sin(time * 3) * 0.03;
+        }
+        if (this.player.userData.phoneArmGroup) {
+          this.player.userData.phoneArmGroup.rotation.x = Math.sin(time * 4) * 0.04;
+        }
+
         if (this.player.userData.leftArmPivot) {
           this.player.userData.leftArmPivot.rotation.x = Math.sin(t * 4) * 0.12;
         }
@@ -1114,7 +1122,9 @@ class Game {
         this.camera.lookAt(-6.0, 1.35, -3.6);
       } else if (t < 8.4) {
         // Shot 3B: Call ends, Chacha lowers phone, spots broken kickstand from verandah
-        if (this.player.userData.phoneProp) this.player.userData.phoneProp.visible = false;
+        if (this.player.userData.setPhoneCallPose) {
+          this.player.userData.setPhoneCallPose(false);
+        }
         if (this.player.userData.rightArmPivot) this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
         if (this.player.userData.leftArmPivot) this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
 
