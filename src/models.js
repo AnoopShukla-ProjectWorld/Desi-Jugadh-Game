@@ -191,15 +191,15 @@ export class AssetFactory {
     const hairMat = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.4 });
     const whiteShoeMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.4 });
 
-    // Torso sitting on seat (x = -0.2, y = 1.35)
-    const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.26, 0.6, 16), blueShirtMat);
-    torso.position.set(-0.2, 1.45, 0);
+    // Torso sitting on seat (x = -0.2, y = 1.34)
+    const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.26, 0.58, 16), blueShirtMat);
+    torso.position.set(-0.2, 1.32, 0);
     torso.rotation.z = -0.15; // Leaning slightly forward towards handlebar
     rider.add(torso);
 
     // Head
     const headGroup = new THREE.Group();
-    headGroup.position.set(-0.1, 1.95, 0);
+    headGroup.position.set(-0.1, 1.82, 0);
 
     const headGeo = new THREE.SphereGeometry(0.32, 22, 22);
     headGeo.scale(1.0, 1.08, 1.0);
@@ -250,27 +250,27 @@ export class AssetFactory {
     // Arms reaching forward to grip the handlebars (Handlebar at x = 0.75, y = 1.58)
     [-0.32, 0.32].forEach(armZ => {
       const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.065, 0.75, 8), blueShirtMat);
-      arm.position.set(0.25, 1.55, armZ);
+      arm.position.set(0.25, 1.48, armZ);
       arm.rotation.set(0, 0, -1.05); // Angled forward to handlebar grips
       rider.add(arm);
 
       const hand = new THREE.Mesh(new THREE.SphereGeometry(0.075, 8, 8), skinMat);
-      hand.position.set(0.65, 1.58, armZ);
+      hand.position.set(0.68, 1.56, armZ);
       rider.add(hand);
     });
 
     // Seated bent legs resting on floorboard
     [-0.22, 0.22].forEach(legZ => {
       const thigh = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.18, 0.18), denimPantsMat);
-      thigh.position.set(0.12, 1.1, legZ);
+      thigh.position.set(0.12, 1.02, legZ);
       rider.add(thigh);
 
       const shin = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.55, 0.18), denimPantsMat);
-      shin.position.set(0.38, 0.75, legZ);
+      shin.position.set(0.38, 0.72, legZ);
       rider.add(shin);
 
       const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.1, 0.18), whiteShoeMat);
-      shoe.position.set(0.42, 0.45, legZ);
+      shoe.position.set(0.42, 0.44, legZ);
       rider.add(shoe);
     });
 
@@ -442,11 +442,18 @@ export class AssetFactory {
       group.add(grip);
     });
 
-    // --- REAR BODY COWL (Proper clearance: lowered and flattened so rear wheel is visible and seat is unclipped) ---
-    const cowlGeo = new THREE.SphereGeometry(0.58, 22, 18);
-    cowlGeo.scale(1.20, 0.54, 0.78);
+    // --- REAR BODY & ENGINE COWL (Bajaj Chetak Iconic Full-Body Contours) ---
+    // 1. Central Body Core: Solidly connects floorboard (y=0.42) to underside of seat (y=0.88) with ZERO gap!
+    const bodyCore = new THREE.Mesh(new THREE.BoxGeometry(1.28, 0.46, 0.52), paintMat);
+    bodyCore.position.set(-0.30, 0.65, 0);
+    bodyCore.castShadow = true;
+    group.add(bodyCore);
+
+    // 2. Sculpted Bulbous Engine Cowls (Curved Chetak Side Pods covering rear mechanics)
+    const cowlGeo = new THREE.SphereGeometry(0.52, 24, 20);
+    cowlGeo.scale(1.26, 0.78, 0.82);
     const cowl = new THREE.Mesh(cowlGeo, paintMat);
-    cowl.position.set(-0.40, 0.64, 0);
+    cowl.position.set(-0.34, 0.64, 0);
     cowl.castShadow = true;
     group.add(cowl);
 
@@ -457,37 +464,37 @@ export class AssetFactory {
     rearFender.position.set(-0.76, 0.40, 0);
     group.add(rearFender);
 
-    // --- CURVED BAJAJ CHETAK DUAL-TONE SEAT WITH PIPING (Elevated above cowl) ---
+    // --- CURVED BAJAJ CHETAK DUAL-TONE SEAT (Flush on top of body: base at y=0.88, cushion at y=0.96) ---
     const seatGroup = new THREE.Group();
-    seatGroup.position.set(-0.20, 1.14, 0);
+    seatGroup.position.set(-0.20, 0.96, 0);
 
-    // Main contoured cushion
-    const seatBase = new THREE.Mesh(new THREE.BoxGeometry(1.22, 0.18, 0.56), seatLeatherMat);
+    // Main contoured seat cushion
+    const seatBase = new THREE.Mesh(new THREE.BoxGeometry(1.24, 0.16, 0.56), seatLeatherMat);
     seatBase.castShadow = true;
     seatGroup.add(seatBase);
 
     // Raised pillion contour at back
-    const seatBack = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.10, 0.52), seatTanMat);
-    seatBack.position.set(-0.28, 0.10, 0);
+    const seatBack = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.08, 0.52), seatTanMat);
+    seatBack.position.set(-0.28, 0.08, 0);
     seatGroup.add(seatBack);
 
     // Golden Piping Seam Edge around seat
-    const piping = new THREE.Mesh(new THREE.BoxGeometry(1.24, 0.025, 0.58), seamPipingMat);
-    piping.position.y = 0.02;
+    const piping = new THREE.Mesh(new THREE.BoxGeometry(1.26, 0.02, 0.58), seamPipingMat);
+    piping.position.y = 0.01;
     seatGroup.add(piping);
 
-    // Chrome Pillion Grab-Rail (Iconic Chetak handle firmly attached with solid mounting posts)
-    const grabRail = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.022, 8, 16, Math.PI), chromeMat);
+    // Chrome Pillion Grab-Rail (Iconic Chetak handle securely hugging the rear of seat)
+    const grabRail = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.022, 8, 22, Math.PI), chromeMat);
     grabRail.rotation.y = Math.PI / 2;
-    grabRail.rotation.x = -Math.PI / 6;
-    grabRail.position.set(-0.66, 0.16, 0);
+    grabRail.rotation.x = Math.PI / 2;
+    grabRail.position.set(-0.62, 0.04, 0);
     seatGroup.add(grabRail);
 
-    // Solid vertical mounting posts connecting grab rail into seat base
-    [-0.14, 0.14].forEach(gz => {
-      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.16, 8), chromeMat);
-      post.position.set(-0.66, 0.06, gz);
-      seatGroup.add(post);
+    // Solid chrome mounting brackets anchoring handle directly into seat metal base
+    [-0.22, 0.22].forEach(gz => {
+      const bracket = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.035, 0.03), chromeMat);
+      bracket.position.set(-0.58, 0.02, gz);
+      seatGroup.add(bracket);
     });
 
     group.add(seatGroup);
@@ -1451,5 +1458,192 @@ export class AssetFactory {
     });
 
     return barrier;
+  }
+
+  // 15. Stylized Pixar Indian Chachi (Auntie at Sheesh Mahal talking urgently on phone)
+  static createCartoonChachi() {
+    const chachi = new THREE.Group();
+    chachi.name = "CartoonChachi";
+
+    const skinMat = new THREE.MeshStandardMaterial({ color: 0xf3bd94, roughness: 0.5 });
+    const sareePinkMat = new THREE.MeshStandardMaterial({ color: 0xdb2777, roughness: 0.65 }); // Royal Magenta Pink
+    const blouseMat = new THREE.MeshStandardMaterial({ color: 0x9d174d, roughness: 0.55 });
+    const zariGoldMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.8, roughness: 0.25 });
+    const hairMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.4 });
+    const gajraWhiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6 });
+    const phoneMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.8, roughness: 0.2 });
+    const screenMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+
+    // Torso / Saree Drape
+    const torsoGroup = new THREE.Group();
+    torsoGroup.position.set(0, 1.22, 0);
+
+    const chest = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.24, 0.60, 16), blouseMat);
+    torsoGroup.add(chest);
+
+    // Diagonal Saree Pallu across chest
+    const pallu = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.65, 0.32), sareePinkMat);
+    pallu.rotation.z = -0.35;
+    pallu.position.set(0.04, 0.02, 0.05);
+    torsoGroup.add(pallu);
+
+    // Gold Zari border on pallu
+    const palluBorder = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.66, 0.33), zariGoldMat);
+    palluBorder.rotation.z = -0.35;
+    palluBorder.position.set(0.11, 0.02, 0.05);
+    torsoGroup.add(palluBorder);
+
+    // Neck
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.12, 0.18, 12), skinMat);
+    neck.position.set(0, 0.38, 0);
+    torsoGroup.add(neck);
+
+    // Head
+    const headGroup = new THREE.Group();
+    headGroup.position.set(0, 0.66, 0);
+
+    const headGeo = new THREE.SphereGeometry(0.32, 22, 22);
+    headGeo.scale(1.0, 1.05, 1.0);
+    const head = new THREE.Mesh(headGeo, skinMat);
+    headGroup.add(head);
+
+    // Neat hair parted in middle
+    const hair = new THREE.Mesh(new THREE.SphereGeometry(0.35, 20, 20, 0, Math.PI * 2, 0, Math.PI * 0.68), hairMat);
+    hair.position.set(0, 0.06, -0.04);
+    headGroup.add(hair);
+
+    // Traditional Bun (Juda) at back of head
+    const juda = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16), hairMat);
+    juda.position.set(0, -0.05, -0.34);
+    headGroup.add(juda);
+
+    // White Jasmine Flower Garland (Gajra) wrapped around Juda
+    const gajra = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.04, 8, 16), gajraWhiteMat);
+    gajra.position.set(0, -0.05, -0.34);
+    headGroup.add(gajra);
+
+    // Traditional Red Bindi on forehead
+    const bindi = new THREE.Mesh(new THREE.CircleGeometry(0.025, 12), new THREE.MeshBasicMaterial({ color: 0xbe123c }));
+    bindi.position.set(0, 0.11, 0.33);
+    headGroup.add(bindi);
+
+    // Expressive cartoon eyes
+    [-0.11, 0.11].forEach(eZ => {
+      const sclera = new THREE.Mesh(new THREE.SphereGeometry(0.075, 12, 12), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+      sclera.scale.set(1.0, 1.15, 0.5);
+      sclera.position.set(eZ, 0.04, 0.29);
+      headGroup.add(sclera);
+
+      const iris = new THREE.Mesh(new THREE.CircleGeometry(0.042, 12), new THREE.MeshBasicMaterial({ color: 0x451a03 }));
+      iris.position.set(eZ, 0.04, 0.33);
+      headGroup.add(iris);
+
+      const hl = new THREE.Mesh(new THREE.CircleGeometry(0.012, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+      hl.position.set(eZ + 0.01, 0.055, 0.332);
+      headGroup.add(hl);
+    });
+
+    // Gold Jhumka Earrings
+    [-0.32, 0.32].forEach(jZ => {
+      const stud = new THREE.Mesh(new THREE.SphereGeometry(0.03, 8, 8), zariGoldMat);
+      stud.position.set(jZ, 0.02, 0);
+      headGroup.add(stud);
+
+      const bell = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.08, 10), zariGoldMat);
+      bell.position.set(jZ, -0.06, 0);
+      headGroup.add(bell);
+    });
+
+    // Nose & gentle mouth
+    const nose = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 10), skinMat);
+    nose.position.set(0, -0.04, 0.33);
+    headGroup.add(nose);
+
+    const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.025, 0.02), new THREE.MeshBasicMaterial({ color: 0xbe123c }));
+    mouth.position.set(0, -0.14, 0.30);
+    headGroup.add(mouth);
+
+    torsoGroup.add(headGroup);
+
+    // Left Arm resting naturally by side with gold bangles
+    const leftArmPivot = new THREE.Group();
+    leftArmPivot.position.set(0.32, 0.22, 0);
+    const armUpperL = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.055, 0.35, 10), blouseMat);
+    armUpperL.position.y = -0.17;
+    leftArmPivot.add(armUpperL);
+    const forearmL = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.05, 0.32, 10), skinMat);
+    forearmL.position.y = -0.48;
+    leftArmPivot.add(forearmL);
+    const banglesL = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.015, 6, 12), zariGoldMat);
+    banglesL.position.y = -0.58;
+    banglesL.rotation.x = Math.PI / 2;
+    leftArmPivot.add(banglesL);
+    const handL = new THREE.Mesh(new THREE.SphereGeometry(0.065, 8, 8), skinMat);
+    handL.position.y = -0.66;
+    leftArmPivot.add(handL);
+    torsoGroup.add(leftArmPivot);
+
+    // RIGHT ARM: BENT HOLDING PHONE TO EAR (Talking on phone!)
+    const phoneArmPivot = new THREE.Group();
+    phoneArmPivot.position.set(-0.32, 0.22, 0);
+
+    const armUpperR = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.055, 0.32, 10), blouseMat);
+    armUpperR.position.y = -0.16;
+    phoneArmPivot.add(armUpperR);
+
+    // Forearm bent up bringing phone to ear
+    const forearmR = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.05, 0.34, 10), skinMat);
+    forearmR.position.set(0.12, 0.14, 0.12);
+    forearmR.rotation.set(-1.6, 0.3, -0.4);
+    phoneArmPivot.add(forearmR);
+
+    // Gold Bangles on right wrist
+    const banglesR = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.015, 6, 12), zariGoldMat);
+    banglesR.position.set(0.10, 0.32, 0.15);
+    banglesR.rotation.x = Math.PI / 2;
+    phoneArmPivot.add(banglesR);
+
+    // Right Hand holding phone
+    const handR = new THREE.Mesh(new THREE.SphereGeometry(0.065, 8, 8), skinMat);
+    handR.position.set(0.08, 0.38, 0.18);
+    phoneArmPivot.add(handR);
+
+    // Smartphone
+    const phone = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.16, 0.02), phoneMat);
+    phone.position.set(0.06, 0.40, 0.22);
+    phone.rotation.set(-0.2, 0.4, 0.1);
+    phoneArmPivot.add(phone);
+
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.065, 0.13), screenMat);
+    screen.position.set(0.06, 0.40, 0.231);
+    screen.rotation.set(-0.2, 0.4, 0.1);
+    phoneArmPivot.add(screen);
+
+    torsoGroup.add(phoneArmPivot);
+    chachi.add(torsoGroup);
+
+    // Flowing Long Saree Skirt & Pleats
+    const sareeSkirt = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.38, 0.95, 18), sareePinkMat);
+    sareeSkirt.position.set(0, 0.48, 0);
+    sareeSkirt.castShadow = true;
+    chachi.add(sareeSkirt);
+
+    // Gold Zari Border along the bottom of the saree
+    const bottomZari = new THREE.Mesh(new THREE.CylinderGeometry(0.382, 0.385, 0.08, 18), zariGoldMat);
+    bottomZari.position.set(0, 0.05, 0);
+    chachi.add(bottomZari);
+
+    // Saree Pleats in front
+    const pleats = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.85, 0.08), sareePinkMat);
+    pleats.position.set(0, 0.45, 0.32);
+    chachi.add(pleats);
+
+    chachi.userData = {
+      headGroup,
+      phoneArmPivot,
+      torsoGroup
+    };
+
+    return chachi;
   }
 }

@@ -98,6 +98,12 @@ class Game {
     this.cow.rotation.y = -Math.PI / 2;
     this.scene.add(this.cow);
 
+    // Chachi Character at Sheesh Mahal Palace Gate (x = 42.2, z = 1.2)
+    this.chachi = AssetFactory.createCartoonChachi();
+    this.chachi.position.set(42.2, 0, 1.2);
+    this.chachi.rotation.y = -Math.PI / 2 + 0.35; // Angled facing camera & mandap
+    this.scene.add(this.chachi);
+
     // Scattered Puzzle Items
     this.items = [];
 
@@ -300,9 +306,9 @@ class Game {
 
     audio.playPhoneRing();
 
-    // Position camera framing the illuminated Sheesh Mahal palace gate
-    this.camera.position.set(40.5, 3.2, 5.5);
-    this.camera.lookAt(43.0, 2.2, 0);
+    // Position camera framing Chachi talking on phone at Sheesh Mahal
+    this.camera.position.set(40.2, 1.9, 3.2);
+    this.camera.lookAt(42.2, 1.35, 1.2);
   }
 
   endCutscene() {
@@ -773,7 +779,17 @@ class Game {
         this.items = this.items.filter(it => it !== nearestItem);
         this.scene.remove(nearestItem);
         this.player.add(nearestItem);
-        nearestItem.position.set(0, 1.0, 0.4);
+
+        // Position item directly in Chacha's hands in front of torso
+        nearestItem.position.set(0, 0.88, 0.48);
+        nearestItem.rotation.set(0, 0, 0);
+
+        // Bring both arms forward to firmly hold the object
+        if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
+          this.player.userData.leftArmPivot.rotation.set(-1.25, -0.15, -0.22);
+          this.player.userData.rightArmPivot.rotation.set(-1.25, 0.15, 0.22);
+        }
+
         audio.playBrickThud();
         this.promptTip.innerHTML = `Carrying: <b>${nearestItem.userData.title}</b>. Press [E] to use or drop!`;
         return;
@@ -832,6 +848,10 @@ class Game {
 
           this.plankPlaced = true;
           this.inventory = null;
+          if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
+            this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
+            this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
+          }
           this.updateMeter(50);
           audio.playPlankSnap();
           this.triggerJugaadToast('🎉 JUGAAD 2: TIMBER BRIDGE READY! (+25%)');
@@ -856,6 +876,10 @@ class Game {
           this.scene.add(carried);
           carried.position.set(21.5, 0, -2.8);
           this.inventory = null;
+          if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
+            this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
+            this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
+          }
           this.stage = 3;
           this.updateMeter(75);
 
@@ -882,6 +906,10 @@ class Game {
       carried.position.set(pPos.x, 0, pPos.z);
       this.items.push(carried);
       this.inventory = null;
+      if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
+        this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
+        this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
+      }
       this.promptTip.textContent = `Dropped ${carried.userData.title}.`;
       return;
     }
@@ -933,9 +961,18 @@ class Game {
       const t = this.cutsceneTime;
 
       if (t < 2.5) {
-        // Focus on Sheesh Mahal palace gate
-        this.camera.position.set(40.5, 3.2, 5.5);
-        this.camera.lookAt(43.0, 2.2, 0);
+        // Focus on Chachi talking urgently on phone at Sheesh Mahal
+        this.camera.position.set(40.2, 1.9, 3.2);
+        this.camera.lookAt(42.2, 1.35, 1.2);
+
+        // Animated head nod & phone gesture while talking
+        if (this.chachi && this.chachi.userData.headGroup) {
+          this.chachi.userData.headGroup.rotation.x = Math.sin(time * 6) * 0.07;
+          this.chachi.userData.headGroup.rotation.z = 0.12 + Math.sin(time * 4) * 0.04;
+          if (this.chachi.userData.phoneArmPivot) {
+            this.chachi.userData.phoneArmPivot.rotation.x = Math.sin(time * 5) * 0.05;
+          }
+        }
       } else if (t < 5.2) {
         // Smooth cinematic tracking shot backwards along the entire road
         const u = (t - 2.5) / 2.7; // 0 to 1
@@ -1050,14 +1087,30 @@ class Game {
         const swing = Math.sin(this.player.userData.walkPhase) * 0.65;
         this.player.userData.leftLegPivot.rotation.x = swing;
         this.player.userData.rightLegPivot.rotation.x = -swing;
-        this.player.userData.leftArmPivot.rotation.x = -swing * 0.75;
-        this.player.userData.rightArmPivot.rotation.x = swing * 0.75;
+
+        if (this.inventory) {
+          // TWO-HANDED CARRY ANIMATION: Arms stay raised forward holding object with subtle walking bob
+          const holdBob = Math.sin(this.player.userData.walkPhase * 2) * 0.04;
+          this.player.userData.leftArmPivot.rotation.set(-1.25 + holdBob, -0.15, -0.22);
+          this.player.userData.rightArmPivot.rotation.set(-1.25 - holdBob, 0.15, 0.22);
+        } else {
+          this.player.userData.leftArmPivot.rotation.set(-swing * 0.75, 0, 0);
+          this.player.userData.rightArmPivot.rotation.set(swing * 0.75, 0, 0);
+        }
         this.player.userData.torsoGroup.position.y = 1.25 + Math.abs(Math.sin(this.player.userData.walkPhase * 2)) * 0.05;
       } else {
         this.player.userData.leftLegPivot.rotation.x *= 0.8;
         this.player.userData.rightLegPivot.rotation.x *= 0.8;
-        this.player.userData.leftArmPivot.rotation.x *= 0.8;
-        this.player.userData.rightArmPivot.rotation.x *= 0.8;
+        if (this.inventory) {
+          // Stationary carry: Both arms held forward holding item
+          this.player.userData.leftArmPivot.rotation.set(-1.25, -0.15, -0.22);
+          this.player.userData.rightArmPivot.rotation.set(-1.25, 0.15, 0.22);
+        } else {
+          this.player.userData.leftArmPivot.rotation.x *= 0.8;
+          this.player.userData.leftArmPivot.rotation.z *= 0.8;
+          this.player.userData.rightArmPivot.rotation.x *= 0.8;
+          this.player.userData.rightArmPivot.rotation.z *= 0.8;
+        }
         this.player.userData.torsoGroup.position.y = THREE.MathUtils.lerp(this.player.userData.torsoGroup.position.y, 1.25, 0.1);
       }
 
