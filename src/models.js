@@ -1015,6 +1015,146 @@ export class AssetFactory {
     return trenchGroup;
   }
 
+  // 5B. Construction Debris, Rubble Mound & Barricade on Sidewalk (Blocking Footpath beside Trench)
+  static createFootpathRubble() {
+    const group = new THREE.Group();
+    group.name = "FootpathConstructionRubble";
+
+    const earthMat = new THREE.MeshStandardMaterial({ color: 0x3d2010, roughness: 0.96 });
+    const concreteMat = new THREE.MeshStandardMaterial({ color: 0x78716c, roughness: 0.9 });
+    const gravelMat = new THREE.MeshStandardMaterial({ color: 0x57534e, roughness: 0.95 });
+    const pipeMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.35, metalness: 0.4 });
+    const pipeBandMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.3, metalness: 0.8 });
+    const yellowMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.5 });
+    const blackMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.7 });
+    const steelMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.7, roughness: 0.4 });
+
+    // 1. Excavated earth mounds across sidewalk
+    const moundGeo1 = new THREE.ConeGeometry(1.6, 0.9, 10);
+    const mound1 = new THREE.Mesh(moundGeo1, earthMat);
+    mound1.position.set(-0.6, 0.45, -0.3);
+    mound1.scale.set(1.4, 1.0, 1.1);
+    mound1.castShadow = true;
+    mound1.receiveShadow = true;
+    group.add(mound1);
+
+    const moundGeo2 = new THREE.ConeGeometry(1.5, 0.85, 10);
+    const mound2 = new THREE.Mesh(moundGeo2, earthMat);
+    mound2.position.set(0.7, 0.42, 0.3);
+    mound2.scale.set(1.3, 1.0, 1.2);
+    mound2.castShadow = true;
+    mound2.receiveShadow = true;
+    group.add(mound2);
+
+    const moundGeo3 = new THREE.ConeGeometry(1.2, 0.65, 8);
+    const mound3 = new THREE.Mesh(moundGeo3, gravelMat);
+    mound3.position.set(0.1, 0.32, -0.7);
+    mound3.scale.set(1.2, 1.0, 0.9);
+    mound3.castShadow = true;
+    mound3.receiveShadow = true;
+    group.add(mound3);
+
+    // 2. Heavy concrete blocks & shattered curb slabs
+    const block1 = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.55, 0.6), concreteMat);
+    block1.position.set(-1.0, 0.28, 0.5);
+    block1.rotation.set(0.15, 0.4, 0.1);
+    block1.castShadow = true;
+    group.add(block1);
+
+    const block2 = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.45, 0.5), concreteMat);
+    block2.position.set(1.1, 0.22, -0.4);
+    block2.rotation.set(-0.2, 0.6, -0.15);
+    block2.castShadow = true;
+    group.add(block2);
+
+    const slab1 = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.22, 0.7), concreteMat);
+    slab1.position.set(-0.2, 0.55, 0.4);
+    slab1.rotation.set(0.3, -0.2, -0.25);
+    slab1.castShadow = true;
+    group.add(slab1);
+
+    // Scattered debris stones
+    for (let i = 0; i < 18; i++) {
+      const sx = (Math.random() - 0.5) * 3.4;
+      const sz = (Math.random() - 0.5) * 2.2;
+      const sGeo = new THREE.DodecahedronGeometry(0.1 + Math.random() * 0.15);
+      const stone = new THREE.Mesh(sGeo, i % 2 === 0 ? concreteMat : gravelMat);
+      stone.position.set(sx, 0.1 + Math.random() * 0.2, sz);
+      stone.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+      stone.castShadow = true;
+      group.add(stone);
+    }
+
+    // 3. Large blue PVC drainage pipes stacked
+    const pipe1 = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 3.2, 16), pipeMat);
+    pipe1.rotation.z = Math.PI / 2;
+    pipe1.position.set(0, 0.28, 0.95);
+    pipe1.castShadow = true;
+    group.add(pipe1);
+
+    [-1.2, 0, 1.2].forEach(px => {
+      const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.30, 0.30, 0.08, 16), pipeBandMat);
+      ring.rotation.z = Math.PI / 2;
+      ring.position.set(px, 0.28, 0.95);
+      group.add(ring);
+    });
+
+    const pipe2 = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 2.6, 16), pipeMat);
+    pipe2.rotation.set(0.12, 0.15, Math.PI / 2 + 0.1);
+    pipe2.position.set(0.2, 0.68, 0.65);
+    pipe2.castShadow = true;
+    group.add(pipe2);
+
+    // 4. Municipal Caution A-Frame Barricades facing approaching pedestrians from left (x = -1.6) and right (x = 1.6)
+    [-1.55, 1.55].forEach((bx) => {
+      const barGroup = new THREE.Group();
+      barGroup.position.set(bx, 0, -0.3);
+
+      // Steel legs (A-frame)
+      const legL = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 1.1, 8), steelMat);
+      legL.position.set(0, 0.52, -0.4);
+      legL.rotation.x = 0.25;
+      barGroup.add(legL);
+
+      const legR = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 1.1, 8), steelMat);
+      legR.position.set(0, 0.52, 0.4);
+      legR.rotation.x = -0.25;
+      barGroup.add(legR);
+
+      // Crossbars with yellow/black diagonal warning stripes
+      for (let barY of [0.45, 0.78]) {
+        const barBoard = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.18, 1.05), yellowMat);
+        barBoard.position.set(0, barY, 0);
+        barGroup.add(barBoard);
+
+        // Black hazard stripes
+        for (let s = -0.38; s <= 0.38; s += 0.18) {
+          const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.065, 0.18, 0.07), blackMat);
+          stripe.position.set(0, barY, s);
+          stripe.rotation.x = 0.35;
+          barGroup.add(stripe);
+        }
+      }
+
+      // Small warning light / flasher on top
+      const lampStand = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.12, 8), steelMat);
+      lampStand.position.set(0, 0.94, 0);
+      barGroup.add(lampStand);
+
+      const warningLamp = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.08, 10), new THREE.MeshStandardMaterial({
+        color: 0xf97316,
+        emissive: 0xea580c,
+        emissiveIntensity: 0.6
+      }));
+      warningLamp.position.set(0, 1.02, 0);
+      barGroup.add(warningLamp);
+
+      group.add(barGroup);
+    });
+
+    return group;
+  }
+
   // --- PUZZLE ITEMS ---
   static createBrick() {
     const group = new THREE.Group();

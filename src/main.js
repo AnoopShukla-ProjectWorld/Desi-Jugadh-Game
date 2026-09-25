@@ -109,6 +109,11 @@ class Game {
     this.trench.position.set(45.8, 0, 0);
     this.scene.add(this.trench);
 
+    // Excavated Construction Rubble & Municipal Barricade on Sidewalk beside Trench
+    this.footpathRubble = AssetFactory.createFootpathRubble();
+    this.footpathRubble.position.set(45.8, 0.08, -5.0);
+    this.scene.add(this.footpathRubble);
+
     // Cartoon Cow at x = 62.0, z = -0.2 (Level 3 Roadblock past trench)
     this.cow = AssetFactory.createCartoonCow();
     this.cow.position.set(62.0, 0, -0.2);
@@ -221,7 +226,10 @@ class Game {
       // 5. Sheesh Mahal Palace Facade Walls & Side Wings (at x = 80.0)
       { type: 'box', minX: 79.6, maxX: 80.6, minZ: -6.0, maxZ: -1.35, name: 'PalaceWallLeft' },
       { type: 'box', minX: 79.6, maxX: 80.6, minZ: 1.35, maxZ: 6.0, name: 'PalaceWallRight' },
-      { type: 'box', minX: 83.0, maxX: 95.0, minZ: -6.0, maxZ: 6.0, name: 'PalaceBackBoundary' }
+      { type: 'box', minX: 83.0, maxX: 95.0, minZ: -6.0, maxZ: 6.0, name: 'PalaceBackBoundary' },
+
+      // 6. Footpath Excavated Construction Rubble & Municipal Barricade (Blocks pedestrian bypass around trench)
+      { type: 'box', minX: 43.6, maxX: 48.0, minZ: -6.5, maxZ: -3.3, name: 'FootpathRubble' }
     ];
 
     // Dazed Character (Spawned after accident)
@@ -2056,7 +2064,8 @@ class Game {
       }
 
       // --- TRENCH CROSSING LOGIC FOR WALKING CHACHA ---
-      if (this.player.position.x >= 44.0 && this.player.position.x <= 47.6) {
+      // Open road pit void exists strictly between road edges (z: -3.3 to 3.3)
+      if (this.player.position.x >= 44.0 && this.player.position.x <= 47.6 && this.player.position.z > -3.3 && this.player.position.z < 3.3) {
         let onPlank = false;
         if (this.plankPlaced && Math.abs(this.player.position.z - this.plankZ) <= this.plankHalfWidth) {
           if (this.placedPlankType === 'short_plank') {
@@ -2450,6 +2459,12 @@ class Game {
         this.promptTip.innerHTML = '✨ Press <b>[E]</b> to Pick up Placed Phatta';
         return;
       }
+    }
+
+    // Check proximity to Footpath Construction Rubble Barrier (x = 45.8, z = -5.0)
+    if (!this.inventory && pPos.z <= -3.2 && Math.hypot(pPos.x - 45.8, pPos.z - (-5.0)) < 2.6) {
+      this.promptTip.innerHTML = '🛑 <b>Rasta Band Hai!</b> Nagar Nigam ka malba & pipes pade hain!';
+      return;
     }
 
     if (!this.inventory) {
