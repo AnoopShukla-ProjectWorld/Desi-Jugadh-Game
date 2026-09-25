@@ -1366,15 +1366,60 @@ class Game {
   handleAction() {
     if (this.isFalling) return;
 
-    // 0. IF RIDING: Instant Dismount (No speed restrictions, no horn!)
+    // 0. IF RIDING:
     if (this.isRiding) {
+      const inParkingBay = (
+        this.scooter.position.x >= 71.8 &&
+        this.scooter.position.x <= 76.2 &&
+        this.scooter.position.z <= -1.1 &&
+        this.scooter.position.z >= -3.3
+      );
+
+      if (this.stage === 3 && inParkingBay) {
+        // Manual Parking Climax! Player steered into VIP bay and pressed [E] to park Chetak!
+        this.setStage(4);
+        this.isRiding = false;
+        this.scooterSpeed = 0;
+        this.scooter.userData.riderMesh.visible = false;
+        audio.stopScooterEngine();
+
+        // Chetak's kickstand snaps off!
+        audio.playPlankSnap();
+        audio.playBrickThud();
+
+        // Chetak falls onto its side in the parking slot
+        this.scooter.userData.setFallenState(true);
+
+        // Hide bouncing arrow once parked
+        if (this.parkingArrow) this.parkingArrow.visible = false;
+
+        // Dismount Chacha standing upright next to fallen scooter
+        this.player.position.set(this.scooter.position.x - 0.7, 0, this.scooter.position.z + 1.0);
+        this.player.rotation.set(0, 0.35, 0);
+        this.player.visible = true;
+
+        this.triggerJugaadToast('⚠️ KHATTT! CHETAK KA STAND TOOT GAYA!');
+        this.showDialogue(
+          'Chacha',
+          'Arey baap re baap! Parking slot me stand lagate hi Chetak ka kickstand toot ke alag ho gaya! Baaraat aane wali hai aur gaadi zameen par giri padi hai! Mandap ke malbe se Laal Eent dhundo aur Chetak ko khada karo!'
+        );
+        this.questText.textContent = 'Crisis 4: Kickstand toot gaya! Mandap ke paas se Laal Eent [E] uthao aur Chetak ko khada karo!';
+        this.promptTip.innerHTML = 'Mandap ke construction malbe se Laal Eent dhundo [E] | Chetak ko khada karo!';
+        return;
+      }
+
+      // Normal dismount anywhere else on the road
       this.isRiding = false;
       this.scooterSpeed = 0;
       this.player.position.set(this.scooter.position.x, 0, this.scooter.position.z + 1.1);
       this.player.visible = true;
       this.scooter.userData.riderMesh.visible = false;
       audio.stopScooterEngine();
-      this.promptTip.textContent = 'Dismounted scooter. Press [E] near scooter to mount again.';
+      if (this.stage === 3) {
+        this.promptTip.innerHTML = 'Dismounted. Pehle Chetak ko baayein VIP Parking Bay me mod kar le jaayein aur park karein!';
+      } else {
+        this.promptTip.textContent = 'Dismounted scooter. Press [E] near scooter to mount again.';
+      }
       return;
     }
 
@@ -2227,8 +2272,8 @@ class Game {
           this.scooterSpeed *= 0.96;
         }
 
-        // Steer across road width
-        if (this.keys.up) this.scooter.position.z = Math.max(-2.5, this.scooter.position.z - 3.5 * delta);
+        // Steer across road width (Up/W steers left towards curbside VIP parking bay at z = -2.2, Down/S steers right)
+        if (this.keys.up) this.scooter.position.z = Math.max(-2.9, this.scooter.position.z - 3.5 * delta);
         if (this.keys.down) this.scooter.position.z = Math.min(2.5, this.scooter.position.z + 3.5 * delta);
 
         this.scooter.position.x += this.scooterSpeed * delta;
@@ -2319,43 +2364,31 @@ class Game {
       const camTargetY = this.isFalling ? THREE.MathUtils.lerp(1.4, -1.6, Math.min(1, Math.max(0, -this.scooter.position.y / 2.15))) : 1.4;
       this.camera.lookAt(this.scooter.position.x + 2, camTargetY, this.scooter.position.z);
 
-      // --- 4. DESTINATION ARRIVAL CLIMAX: VIP PARKING BAY & KICKSTAND SNAP OUTSIDE SHEESH MAHAL GATE! ---
+      // --- 4. DESTINATION ARRIVAL: SHEESH MAHAL GATE & VIP ROADSIDE PARKING BAY ---
       if (this.stage === 3) {
-        if (this.scooter.position.x >= 70.0 && this.scooter.position.x < 73.0) {
-          this.promptTip.innerHTML = '🅿️ Aage VIP Parking Bay hai! Slow down karke Chetak park karein!';
-        } else if (this.scooter.position.x >= 73.0 && this.scooter.position.x < 73.6) {
-          this.promptTip.innerHTML = '🅿️ Parking Bay me Chetak park karne ke liye slow down karein!';
+        // Gate Barrier: Scooter cannot enter wedding palace gate or red carpet!
+        if (this.scooter.position.x > 74.2 && this.scooter.position.z > -1.2) {
+          this.scooter.position.x = 74.2;
+          this.scooterSpeed = 0;
+          this.promptTip.innerHTML = '⛔ <b>Sheesh Mahal Gate:</b> Scooter andar le jana mana hai! Baayein VIP Parking Bay me mod kar lagayein!';
+        } else if (this.scooter.position.x > 75.8) {
+          this.scooter.position.x = 75.8;
+          this.scooterSpeed = 0;
         }
 
-        // Trigger parking & kickstand snap when arriving inside roadside parking bay slot (x >= 73.6)
-        if (this.scooter.position.x >= 73.6) {
-          this.setStage(4);
-          this.isRiding = false;
-          this.scooterSpeed = 0;
-          this.scooter.position.set(74.0, 0, -2.2);
-          audio.stopScooterEngine();
-          audio.playPlankSnap();
-          audio.playBrickThud();
+        const inParkingBay = (
+          this.scooter.position.x >= 71.8 &&
+          this.scooter.position.x <= 76.2 &&
+          this.scooter.position.z <= -1.1 &&
+          this.scooter.position.z >= -3.3
+        );
 
-          // Hide bouncing arrow once parked
-          if (this.parkingArrow) this.parkingArrow.visible = false;
-
-          // Chetak's kickstand snaps! Scooter falls onto its side in the parking slot
-          this.scooter.userData.setFallenState(true);
-          this.scooter.userData.riderMesh.visible = false;
-
-          // Dismount Chacha standing upright next to the fallen scooter in roadside parking slot
-          this.player.position.set(73.2, 0, -1.2);
-          this.player.rotation.set(0, 0.35, 0);
-          this.player.visible = true;
-
-          this.triggerJugaadToast('⚠️ KHATTT! CHETAK KA STAND TOOT GAYA!');
-          this.showDialogue(
-            'Chacha',
-            'Arey baap re baap! Parking slot me lagate hi Chetak ka kickstand toot ke alag ho gaya! Baaraat aane wali hai aur gaadi zameen par giri padi hai! Mandap ke malbe se Laal Eent dhundo aur Chetak ko khada karo!'
-          );
-          this.questText.textContent = 'Crisis 4: Kickstand toot gaya! Mandap ke paas se Laal Eent [E] uthao aur Chetak ko khada karo!';
-          this.promptTip.innerHTML = 'Mandap ke construction malbe se Laal Eent dhundo [E] | Chetak ko khada karo!';
+        if (inParkingBay) {
+          this.promptTip.innerHTML = '🅿️ <b>VIP Parking Bay:</b> Chetak park karne ke liye <b>[E]</b> dabayein!';
+        } else if (this.scooter.position.x >= 71.0) {
+          this.promptTip.innerHTML = '🅿️ Aage baayein VIP Parking Bay hai! Steering modkar slot me le jaayein!';
+        } else if (this.scooter.position.x >= 65.0) {
+          this.promptTip.innerHTML = 'Sheesh Mahal aa gaya! Sadak ke kinare bane VIP Parking Bay me Chetak park karein!';
         }
       }
     }
