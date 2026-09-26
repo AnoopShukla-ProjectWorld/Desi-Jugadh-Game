@@ -1269,36 +1269,36 @@ export class AssetFactory {
     const group = new THREE.Group();
     group.name = "Item_Broom";
 
-    const woodMat = new THREE.MeshStandardMaterial({ color: 0xa16207, roughness: 0.8 });
-    const strawMat = new THREE.MeshStandardMaterial({ color: 0xca8a04, roughness: 0.95 });
-    const wireMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.8, roughness: 0.3 });
+    const woodMat = new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.75 });
+    const strawMat = new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.85 });
+    const wireMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.5 }); // Red wire binding for authentic desi look
 
-    // Straight Bamboo Handle lying along X-axis
-    const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 1.05, 8), woodMat);
+    // Sturdy Bamboo Handle lying along X-axis
+    const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.25, 10), woodMat);
     handle.rotation.z = Math.PI / 2;
-    handle.position.set(-0.15, 0.06, 0);
+    handle.position.set(-0.2, 0.12, 0);
     handle.castShadow = true;
     group.add(handle);
 
-    // Natural bound straw bristles bundle extending from the handle along X-axis
-    const bristles = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.48, 12), strawMat);
+    // Thick bound straw bristles bundle extending from the handle along X-axis
+    const bristles = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.62, 14), strawMat);
     bristles.rotation.z = -Math.PI / 2;
-    bristles.position.set(0.54, 0.06, 0);
+    bristles.position.set(0.62, 0.12, 0);
     bristles.castShadow = true;
     group.add(bristles);
 
-    // Metal / Twine binding collars wrapping around the straw base
-    [-0.04, 0.04].forEach(offX => {
-      const binding = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.04, 12), wireMat);
+    // Desi Red Twine binding collars wrapping around the straw base
+    [-0.06, 0.06].forEach(offX => {
+      const binding = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.05, 14), wireMat);
       binding.rotation.z = Math.PI / 2;
-      binding.position.set(0.34 + offX, 0.06, 0);
+      binding.position.set(0.38 + offX, 0.12, 0);
       group.add(binding);
     });
 
     group.userData = {
       type: 'broom',
       isCorrect: false,
-      title: 'Purani Jhadu (Broom)',
+      title: 'Desi Phool Jhadu (Broom)',
       rejectMsg: '⚠️ CRACK! Jhadu toot gayi — Scooter ka wazan nahi sambhal payi!'
     };
     return group;

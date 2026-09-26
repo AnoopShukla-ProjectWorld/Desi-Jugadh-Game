@@ -183,19 +183,21 @@ class Game {
     this.items.push(grass);
 
     // Level 4 Climax Puzzle Props on Sidewalk / Footpath near Sheesh Mahal (z = -3.8)
-    // Only Laal Eent is the correct stand; broom and tyre are authentic distractors on the footpath
+    // Sidewalk top surface is y = 0.255m; items placed at y = 0.28-0.34m so they are 100% visible and unburied!
     const brick = AssetFactory.createBrick();
-    brick.position.set(74.8, 0.16, -3.8);
+    brick.position.set(74.8, 0.28, -3.8);
     this.scene.add(brick);
     this.items.push(brick);
 
     const broom = AssetFactory.createBroom();
-    broom.position.set(75.6, 0.12, -3.9);
+    broom.position.set(75.6, 0.32, -3.85);
+    broom.rotation.set(0.08, 0.35, 0.04);
     this.scene.add(broom);
     this.items.push(broom);
 
     const tyre = AssetFactory.createOldTyre();
-    tyre.position.set(76.4, 0.12, -3.8);
+    tyre.position.set(76.4, 0.30, -3.8);
+    tyre.rotation.set(Math.PI / 2, 0, 0.3);
     this.scene.add(tyre);
     this.items.push(tyre);
 
@@ -1486,15 +1488,23 @@ class Game {
       return;
     }
 
-    // 1B. Empty-handed interaction near fallen Chetak in Stage 4
-    if (!this.inventory && this.stage === 4 && distToScooter < 3.2) {
-      audio.playBrickThud();
-      this.showDialogue(
-        'Chacha',
-        'Chetak ka stand toota hua hai, scooter khada nahi ho pa raha! Footpath ke malbe se Laal Eent [E] uthao aur stand ki jagah lagao!'
-      );
-      this.promptTip.innerHTML = '⚠️ Chetak zameen par giri hai! Footpath ke malbe se <b>Laal Eent</b> [E] uthao!';
-      return;
+    // 1B. Empty-handed interaction near fallen Chetak in Stage 4 (ONLY if not near an item)
+    if (!this.inventory && this.stage === 4) {
+      let nearbyItemExists = false;
+      this.items.forEach(it => {
+        if (Math.hypot(pPos.x - it.position.x, pPos.z - it.position.z) < 2.5) {
+          nearbyItemExists = true;
+        }
+      });
+      if (!nearbyItemExists && distToScooter < 1.8) {
+        audio.playBrickThud();
+        this.showDialogue(
+          'Chacha',
+          'Chetak ka stand toota hua hai, scooter khada nahi ho pa raha! Footpath ke malbe se Laal Eent [E] uthao aur stand ki jagah lagao!'
+        );
+        this.promptTip.innerHTML = '⚠️ Chetak zameen par giri hai! Footpath ke malbe se <b>Laal Eent</b> [E] uthao!';
+        return;
+      }
     }
 
     // 2. Priority: Broken Phone on ground takes precedence over Kabaad Dher wheel!
@@ -1881,7 +1891,8 @@ class Game {
       // Drop item anywhere
       this.player.remove(carried);
       this.scene.add(carried);
-      carried.position.set(pPos.x, 0.08, pPos.z);
+      const dropY = pPos.z <= -3.2 ? 0.30 : 0.08;
+      carried.position.set(pPos.x, dropY, pPos.z);
       carried.rotation.set(0, 0, 0);
       this.items.push(carried);
       this.inventory = null;
@@ -2276,20 +2287,10 @@ class Game {
 
       this.updatePrompt();
 
-      // Automatic Proximity for Kabaad ka Dher Radial Wheel (left sidewalk x = -9.2, z = -2.8)
-      if (this.stage === 0) {
+      // Close Kabaad ka Dher Radial Wheel if Chacha walks away from Kabaad Dher or advances stage
+      if (this.radialWheelModal && this.radialWheelModal.style.display === 'flex') {
         const distToJunk = this.player.position.distanceTo(new THREE.Vector3(-9.2, 0.32, -2.8));
-        if (distToJunk < 1.8) {
-          if (!this.radialWheelModal || this.radialWheelModal.style.display !== 'flex') {
-            this.openRadialWheel();
-          }
-        } else {
-          if (this.radialWheelModal && this.radialWheelModal.style.display === 'flex') {
-            this.closeRadialWheel();
-          }
-        }
-      } else {
-        if (this.radialWheelModal && this.radialWheelModal.style.display === 'flex') {
+        if (distToJunk >= 2.5 || this.stage !== 0) {
           this.closeRadialWheel();
         }
       }
@@ -2734,11 +2735,6 @@ class Game {
         return;
       }
 
-      if (this.stage === 4 && pPos.distanceTo(this.scooter.position) < 3.2) {
-        this.promptTip.innerHTML = '⚠️ Chetak zameen par giri hai! Footpath ke malbe se <b>Laal Eent</b> [E] uthayein!';
-        return;
-      }
-
       let nearestItem = null;
       let minDist = 2.8;
       this.items.forEach(it => {
@@ -2761,6 +2757,11 @@ class Game {
           return;
         }
         this.promptTip.innerHTML = `✨ Press <b>[E]</b> to Inspect / Pick up <b>${nearestItem.userData.title}</b>`;
+        return;
+      }
+
+      if (this.stage === 4 && pPos.distanceTo(this.scooter.position) < 2.0) {
+        this.promptTip.innerHTML = '⚠️ Chetak zameen par giri hai! Footpath ke malbe se <b>Laal Eent</b> [E] uthayein!';
         return;
       }
 
