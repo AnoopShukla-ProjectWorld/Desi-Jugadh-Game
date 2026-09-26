@@ -1339,12 +1339,17 @@
   <div id="settings-modal">
     <div class="settings-card">
       <div class="settings-tabs">
-        <button id="btn-tab-controls" class="settings-tab-btn active">🎮 CONTROLS GUIDE</button>
-        <button id="btn-tab-tech" class="settings-tab-btn">🛠️ TECH ARCHITECTURE & ORIGINALITY</button>
+        <button id="btn-tab-controls" class="settings-tab-btn active">🎮 CONTROLS</button>
+        <button id="btn-tab-tech" class="settings-tab-btn">🛠️ TECH STACK</button>
+        <button id="btn-tab-team" class="settings-tab-btn">👥 CREATORS & TEAM</button>
       </div>
 
       <!-- TAB 1: CONTROLS GUIDE -->
       <div id="tab-content-controls">
+        <div style="background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; font-size: 0.86rem; color: #93c5fd; display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 1.25rem;">💻</span>
+          <span><strong>Recommended Device:</strong> Best played on <strong>Laptop / Desktop (16:9 Widescreen)</strong> with Keyboard for the full 60 FPS 3D cinematic experience! (Touch D-Pad provided on mobile).</span>
+        </div>
         <div class="setting-item">
           <span>Movement (4 Directions):</span>
           <span class="kbd-tag">W, A, S, D / Arrow Keys</span>
@@ -1425,6 +1430,45 @@
           </div>
           <div class="tech-doc-desc">
             State machine handles: <em>Opening Comic Cutscene ➔ Stage 1: Toota Phone Jugaad ➔ Stage 2: Phatte Ka Pul ➔ Stage 3: Gau Mata Feeding ➔ Stage 4: Laal Eent Kickstand ➔ Victory Mandap Entrance</em>. Features 3-disaster life tracking, countdown timer, and persistent localStorage telemetry.
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: CREATORS & TEAM CREDITS -->
+      <div id="tab-content-team" style="display: none;">
+        <!-- Header Banner -->
+        <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.05)); border: 1.5px solid #f59e0b; border-radius: 14px; padding: 12px 18px; margin-bottom: 14px; text-align: center;">
+          <div style="font-size: 1.05rem; font-weight: 800; color: #fef08a;">🏆 MP Game Udaan 2026 Hackathon Team</div>
+          <div style="font-size: 0.85rem; color: #cbd5e1; margin-top: 4px;">An original, indigenously developed 3D desi adventure game.</div>
+        </div>
+
+        <!-- Creator 1: Anoop Shukla -->
+        <div class="tech-doc-card" style="border-left: 4px solid #f59e0b;">
+          <div class="tech-doc-header">
+            <span class="tech-doc-title">👑 Anoop Shukla</span>
+            <span class="tech-doc-badge" style="background: #b45309; color: #fef08a; border-color: #f59e0b;">Team Head & Architect</span>
+          </div>
+          <div class="tech-doc-desc">
+            <strong>Key Responsibilities:</strong> Game Concept & Vision, Core 3D WebGL Engine (Three.js) Architecture, Procedural 3D Mesh Modeling, Physics Pipeline & Finite State Machine Implementation.
+          </div>
+        </div>
+
+        <!-- Creator 2: Sujeet P. Singh -->
+        <div class="tech-doc-card" style="border-left: 4px solid #38bdf8;">
+          <div class="tech-doc-header">
+            <span class="tech-doc-title">⭐ Sujeet P. Singh</span>
+            <span class="tech-doc-badge" style="background: #0369a1; color: #bae6fd; border-color: #38bdf8;">Core Developer & Level Designer</span>
+          </div>
+          <div class="tech-doc-desc">
+            <strong>Key Responsibilities:</strong> Gameplay Mechanics & Level Progression, Visual Choreography & Item Interactions, Desi Jugaad Story Planning, and Quality & Performance Engineering.
+          </div>
+        </div>
+
+        <!-- Equal Contribution Statement -->
+        <div class="tech-doc-card" style="background: rgba(30, 27, 75, 0.5); border: 1px dashed rgba(165, 180, 252, 0.35); text-align: center;">
+          <div style="font-size: 0.86rem; color: #e0e7ff; line-height: 1.6;">
+            🤝 <strong>Equal Creative & Technical Partnership:</strong><br />
+            Both creators collaborated equally (50-50) from initial whiteboard brainstorming to 3D asset generation, Web Audio sound design, and full codebase integration.
           </div>
         </div>
       </div>

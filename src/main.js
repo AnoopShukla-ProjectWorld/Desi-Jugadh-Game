@@ -1361,27 +1361,24 @@ class Game {
       });
     }
 
-    // Modal Tab Switching: Controls Guide vs Tech Architecture & Originality
+    // Modal Tab Switching: Controls vs Tech Architecture vs Creators & Team
     const btnTabControls = document.getElementById('btn-tab-controls');
     const btnTabTech = document.getElementById('btn-tab-tech');
+    const btnTabTeam = document.getElementById('btn-tab-team');
     const tabContentControls = document.getElementById('tab-content-controls');
     const tabContentTech = document.getElementById('tab-content-tech');
+    const tabContentTeam = document.getElementById('tab-content-team');
 
-    if (btnTabControls && btnTabTech && tabContentControls && tabContentTech) {
-      btnTabControls.addEventListener('click', () => {
-        btnTabControls.classList.add('active');
-        btnTabTech.classList.remove('active');
-        tabContentControls.style.display = 'block';
-        tabContentTech.style.display = 'none';
-      });
+    const switchTab = (activeBtn, activeContent) => {
+      [btnTabControls, btnTabTech, btnTabTeam].forEach(btn => btn && btn.classList.remove('active'));
+      [tabContentControls, tabContentTech, tabContentTeam].forEach(content => content && (content.style.display = 'none'));
+      if (activeBtn) activeBtn.classList.add('active');
+      if (activeContent) activeContent.style.display = 'block';
+    };
 
-      btnTabTech.addEventListener('click', () => {
-        btnTabTech.classList.add('active');
-        btnTabControls.classList.remove('active');
-        tabContentTech.style.display = 'block';
-        tabContentControls.style.display = 'none';
-      });
-    }
+    if (btnTabControls) btnTabControls.addEventListener('click', () => switchTab(btnTabControls, tabContentControls));
+    if (btnTabTech) btnTabTech.addEventListener('click', () => switchTab(btnTabTech, tabContentTech));
+    if (btnTabTeam) btnTabTeam.addEventListener('click', () => switchTab(btnTabTeam, tabContentTeam));
   }
 
   initStats() {
