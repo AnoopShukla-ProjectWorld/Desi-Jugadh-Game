@@ -626,10 +626,11 @@
       width: 100%;
       height: 100%;
       pointer-events: none;
-      display: flex;
+      display: none;
       flex-direction: column;
       justify-content: space-between;
       padding: 16px 20px;
+      z-index: 100;
     }
     .hud-top {
       display: flex;
@@ -1354,10 +1355,9 @@
       <div class="dialogue-speaker" id="dialogue-speaker">🗣️ Chacha</div>
       <div class="dialogue-text" id="dialogue-text">"He Bhagwan! Phone gir ke do tukde ho gaya! Mandap me lagan ka muhurat nikla jaa raha hai!"</div>
     </div>
-    </div>
 
     <div id="prompt-tip" class="prompt-tip">
-      <span>💡</span> <span id="prompt-text">W/A/S/D to Move | [E] to Interact/Pick | [Space] to Honk</span>
+      <span>💡</span> <span id="prompt-text"></span>
     </div>
 
     <div class="left-controls">
@@ -1375,6 +1375,7 @@
       <button id="btn-honk" class="btn-act" title="Honk Horn">📢</button>
       <button id="btn-e" class="btn-act btn-action-e" title="Jugaad Action (E)">🔧 [E]</button>
     </div>
+  </div>
 
     <div id="jugaad-popup" class="jugaad-popup">
       🎉 JUGAAD SUCCESSFUL! +100 SWAG 🎉

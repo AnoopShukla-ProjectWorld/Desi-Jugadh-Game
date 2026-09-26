@@ -151,6 +151,9 @@ class Game {
     // Kabaad Ka Dher (Tools & Scrap Corner at left sidewalk corner x = -9.2, z = -2.8)
     this.junkPile = AssetFactory.createJunkToolCorner();
     this.junkPile.position.set(-9.2, 0.32, -2.8);
+    if (this.junkPile.userData && this.junkPile.userData.labelMesh) {
+      this.junkPile.userData.labelMesh.visible = false;
+    }
     this.scene.add(this.junkPile);
 
     // Level 2 Plank 1: Long Sturdy Timber Bridge (4.2m) leaning against Building Wall near Trench (x = 39.0)
@@ -443,6 +446,7 @@ class Game {
     this.cutsceneTime = 0;
     this.cutscenePhase = 1;
     this.phoneDropped = false;
+    this.keys = { left: false, right: false, up: false, down: false };
 
     // Reset phone drop pieces visibility (strictly 2 pieces: screen and back)
     if (this.fallingPhoneMesh) this.fallingPhoneMesh.visible = false;
@@ -462,8 +466,15 @@ class Game {
     this.player.visible = false;
     if (this.player.userData.setPhoneCallPose) this.player.userData.setPhoneCallPose(false);
 
+    // Hide junk pile label and gameplay UI during cutscene
+    if (this.junkPile && this.junkPile.userData && this.junkPile.userData.labelMesh) {
+      this.junkPile.userData.labelMesh.visible = false;
+    }
+
     const uiOverlay = document.getElementById('ui-overlay');
     if (uiOverlay) uiOverlay.style.display = 'none';
+
+    if (this.promptTip) this.promptTip.innerHTML = '';
 
     const overlay = document.getElementById('cutscene-overlay');
     if (overlay) {
@@ -487,9 +498,13 @@ class Game {
     if (!this.isCutscene) return;
     this.isCutscene = false;
 
-    // Show gameplay UI overlay now that cutscene is finished
+    // Show gameplay UI overlay now that cutscene is finished and phone has dropped
     const uiOverlay = document.getElementById('ui-overlay');
     if (uiOverlay) uiOverlay.style.display = 'flex';
+
+    if (this.junkPile && this.junkPile.userData && this.junkPile.userData.labelMesh) {
+      this.junkPile.userData.labelMesh.visible = true;
+    }
 
     // Ensure Chacha's doors remain open
     if (this.chachaHome) this.chachaHome.userData.openDoors();
@@ -528,7 +543,7 @@ class Game {
       'Arre miyaan! Screen aur back cover dono alag ho gaye! Pehle toota phone uthao ya baayin taraf Kabaad Dher se jugaad tool chuno!'
     );
     this.questText.textContent = 'Level 1: Toota phone theek karo! Kabaad Dher se tool chuno ya toota phone uthao!';
-    this.promptTip.innerHTML = 'Toota Phone uthayein ya Kabaad Dher ke paas jayein!';
+    this.promptTip.innerHTML = '✨ Press <b>[E]</b> to Pick up Broken Phone Pieces!';
   }
 
   setStage(newStage) {
@@ -545,6 +560,10 @@ class Game {
 
     const uiOverlay = document.getElementById('ui-overlay');
     if (uiOverlay) uiOverlay.style.display = 'flex';
+
+    if (this.junkPile && this.junkPile.userData && this.junkPile.userData.labelMesh) {
+      this.junkPile.userData.labelMesh.visible = true;
+    }
 
     const cutOverlay = document.getElementById('cutscene-overlay');
     if (cutOverlay) cutOverlay.style.display = 'none';
@@ -942,8 +961,10 @@ class Game {
       if (!audio.musicPlaying) audio.startDesiBGM();
 
       // Skip cutscene on Space / Enter / Escape
-      if (this.isCutscene && (e.code === 'Space' || e.code === 'Enter' || e.code === 'Escape')) {
-        this.endCutscene();
+      if (this.isCutscene) {
+        if (e.code === 'Space' || e.code === 'Enter' || e.code === 'Escape') {
+          this.endCutscene();
+        }
         return;
       }
 
@@ -967,6 +988,7 @@ class Game {
     }
 
     window.addEventListener('keyup', (e) => {
+      if (this.isCutscene) return;
       if (e.code === 'ArrowLeft' || e.code === 'KeyA') this.keys.left = false;
       if (e.code === 'ArrowRight' || e.code === 'KeyD') this.keys.right = false;
       if (e.code === 'ArrowUp' || e.code === 'KeyW') this.keys.up = false;
@@ -979,6 +1001,7 @@ class Game {
       if (!btn) return;
       btn.addEventListener('pointerdown', (e) => {
         e.stopPropagation();
+        if (this.isCutscene) return;
         audio.init();
         if (!audio.musicPlaying) audio.startDesiBGM();
         this.keys[key] = true;
@@ -996,6 +1019,7 @@ class Game {
     if (btnE) {
       btnE.addEventListener('pointerdown', (e) => {
         e.stopPropagation();
+        if (this.isCutscene) return;
         audio.init();
         if (!audio.musicPlaying) audio.startDesiBGM();
         this.handleAction();
@@ -1006,6 +1030,7 @@ class Game {
     if (btnHonk) {
       btnHonk.addEventListener('pointerdown', (e) => {
         e.stopPropagation();
+        if (this.isCutscene) return;
         audio.init();
         audio.playHorn();
       });
@@ -1226,6 +1251,8 @@ class Game {
       btnBackHome.addEventListener('click', () => {
         sessionStorage.removeItem('bhopali_in_game');
         sessionStorage.removeItem('bhopali_stage');
+        const uiOverlay = document.getElementById('ui-overlay');
+        if (uiOverlay) uiOverlay.style.display = 'none';
         if (landingScreen) landingScreen.style.display = 'flex';
         audio.stopScooterEngine();
         if (this.isRiding) {
@@ -1364,7 +1391,7 @@ class Game {
 
   // Handle Pick, Place, Inspect, and Mount
   handleAction() {
-    if (this.isFalling) return;
+    if (this.isFalling || this.isCutscene) return;
 
     // 0. IF RIDING:
     if (this.isRiding) {
@@ -2558,6 +2585,7 @@ class Game {
   }
 
   updatePrompt() {
+    if (this.isCutscene) return;
     const pPos = this.player.position;
 
     // Check broken phone pieces first (takes precedence over Kabaad Dher prompt)
