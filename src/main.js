@@ -1193,22 +1193,40 @@ class Game {
         }
       };
 
-      // 1. Start flight immediately on page load (0ms delay)
-      requestAnimationFrame(stepFlight);
+      // User Interaction Launch: Guarantees 100% audio unlock per browser Autoplay policy!
+      let flightStarted = false;
 
-      // 2. Play supersonic plane whoosh audio ONLY for the flight
-      audio.playPlaneWhoosh();
+      const launchFlight = (e) => {
+        if (flightStarted) return;
+        flightStarted = true;
+        if (e && e.stopPropagation) e.stopPropagation();
 
-      // If browser autoplay policy initially suspended audio on page reload,
-      // allow first click to resume it ONLY while plane is still airborne!
-      const unlockDuringFlight = () => {
-        if (!flightEnded) {
-          audio.init();
-          audio.playPlaneWhoosh();
+        introScreen.removeEventListener('pointerdown', launchFlight);
+        window.removeEventListener('keydown', onKeyDown);
+
+        const prompt = document.getElementById('intro-launch-prompt');
+        if (prompt) {
+          prompt.style.opacity = '0';
+          prompt.style.transition = 'opacity 0.2s ease';
+          setTimeout(() => { prompt.style.display = 'none'; }, 220);
         }
-        window.removeEventListener('pointerdown', unlockDuringFlight);
+
+        // Initialize WebAudio & HTML5 audio synchronously inside explicit user gesture
+        audio.init();
+        audio.playPlaneWhoosh();
+
+        // Launch smooth constant-speed supersonic flight!
+        requestAnimationFrame(stepFlight);
       };
-      window.addEventListener('pointerdown', unlockDuringFlight);
+
+      const onKeyDown = (e) => {
+        if (e.code === 'Space' || e.code === 'Enter') {
+          launchFlight(e);
+        }
+      };
+
+      introScreen.addEventListener('pointerdown', launchFlight);
+      window.addEventListener('keydown', onKeyDown);
     }
 
     // 2. Landing Screen & Sound Toggle
