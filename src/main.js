@@ -1557,20 +1557,22 @@ class Game {
     const pPos = this.player.position;
     const distToScooter = pPos.distanceTo(this.scooter.position);
 
-    // 1. MOUNT SCOOTER (Priority when standing near Chetak with empty hands)
-    if (!this.inventory && this.stage < 4 && distToScooter < 3.2) {
+    // 1. MOUNT SCOOTER (Priority when standing near Chetak)
+    if (distToScooter < 3.2) {
       if (this.stage === 0) {
         audio.playBrickThud();
         this.triggerJugaadToast('🔒 Chetak Locked: Pehle toota phone repair karein!');
         return;
       }
-      this.isRiding = true;
-      this.player.visible = false;
-      this.scooter.userData.riderMesh.visible = true;
-      audio.startScooterEngine();
-      this.questText.textContent = 'Dhyan se chalayein! Sadak par aage badhein!';
-      this.promptTip.innerHTML = 'Drive [W/S/A/D] | [H/Space] Honk | [E] Dismount';
-      return;
+      if (!this.inventory && this.stage < 4) {
+        this.isRiding = true;
+        this.player.visible = false;
+        this.scooter.userData.riderMesh.visible = true;
+        audio.startScooterEngine();
+        this.questText.textContent = 'Dhyan se chalayein! Sadak par aage badhein!';
+        this.promptTip.innerHTML = 'Drive [W/S/A/D] | [H/Space] Honk | [E] Dismount';
+        return;
+      }
     }
 
     // 1B. Empty-handed interaction near fallen Chetak in Stage 4 (ONLY if not near an item)
@@ -1684,12 +1686,12 @@ class Game {
         if (isPlank) {
           if (this.stage === 0) {
             audio.playBrickThud();
-            this.triggerJugaadToast('🔒 Abhi iski zaroorat nahi hai. Pehle toota phone theek karein!');
+            this.triggerJugaadToast('🔒 Phatta Locked: Pehle toota phone theek karein!');
             return;
           }
           if (!this.trenchEncountered) {
             audio.playBrickThud();
-            this.triggerJugaadToast('🔒 Pehle Chetak Scooter lekar aao!');
+            this.triggerJugaadToast('🔒 Phatta Locked: Pehle Chetak scooter chala kar sadak par aao!');
             return;
           }
         }
@@ -2831,12 +2833,14 @@ class Game {
       return;
     }
 
+    // Chetak Locked check in Stage 0 (always visible near scooter)
+    if (this.stage === 0 && pPos.distanceTo(this.scooter.position) < 3.2) {
+      this.promptTip.innerHTML = '🔒 <b>Chetak Locked:</b> Pehle toota phone repair karein!';
+      return;
+    }
+
     if (!this.inventory) {
       if (this.stage < 4 && pPos.distanceTo(this.scooter.position) < 3.2) {
-        if (this.stage === 0) {
-          this.promptTip.innerHTML = '🔒 <b>Chetak Locked</b>: Pehle toota phone repair karein!';
-          return;
-        }
         this.promptTip.innerHTML = '✨ Press <b>[E]</b> to Kickstart & Mount Chetak Scooter!';
         return;
       }
@@ -2855,11 +2859,11 @@ class Game {
       if (nearestItem) {
         const isPlank = nearestItem.userData.type === 'plank' || nearestItem.userData.type === 'short_plank';
         if (isPlank && this.stage === 0) {
-          this.promptTip.innerHTML = '🔒 <b>Lakdi ka Phatta</b> (Abhi iski zaroorat nahi hai)';
+          this.promptTip.innerHTML = '🔒 <b>Phatta Locked:</b> Pehle toota phone theek karein!';
           return;
         }
         if (isPlank && !this.trenchEncountered) {
-          this.promptTip.innerHTML = '🔒 <b>Lakdi ka Phatta</b> (Pehle Chetak lekar aao)';
+          this.promptTip.innerHTML = '🔒 <b>Phatta Locked:</b> Pehle Chetak scooter chala kar sadak par aao!';
           return;
         }
         this.promptTip.innerHTML = `✨ Press <b>[E]</b> to Inspect / Pick up <b>${nearestItem.userData.title}</b>`;
