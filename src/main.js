@@ -1361,44 +1361,32 @@ class Game {
       });
     }
 
-    // Modal Tabs Switching (Controls vs Tech Architecture)
+    // Modal Tab Switching: Controls Guide vs Tech Architecture & Originality
     const btnTabControls = document.getElementById('btn-tab-controls');
     const btnTabTech = document.getElementById('btn-tab-tech');
-    const paneControls = document.getElementById('tab-pane-controls');
-    const paneTech = document.getElementById('tab-pane-tech');
+    const tabContentControls = document.getElementById('tab-content-controls');
+    const tabContentTech = document.getElementById('tab-content-tech');
 
-    if (btnTabControls && btnTabTech && paneControls && paneTech) {
+    if (btnTabControls && btnTabTech && tabContentControls && tabContentTech) {
       btnTabControls.addEventListener('click', () => {
         btnTabControls.classList.add('active');
         btnTabTech.classList.remove('active');
-        paneControls.classList.add('active');
-        paneTech.classList.remove('active');
+        tabContentControls.style.display = 'block';
+        tabContentTech.style.display = 'none';
       });
 
       btnTabTech.addEventListener('click', () => {
         btnTabTech.classList.add('active');
         btnTabControls.classList.remove('active');
-        paneTech.classList.add('active');
-        paneControls.classList.remove('active');
-      });
-    }
-
-    // Reset Progress Button (Clean slate back to 0)
-    const btnResetStats = document.getElementById('btn-reset-stats');
-    if (btnResetStats) {
-      btnResetStats.addEventListener('click', () => {
-        localStorage.setItem('bhopali_stars', '0');
-        localStorage.setItem('bhopali_total_swag', '0');
-        localStorage.setItem('bhopali_high_score', '0');
-        this.initStats();
-        this.triggerJugaadToast('🔄 ALL STATS RESET TO 0!');
+        tabContentTech.style.display = 'block';
+        tabContentControls.style.display = 'none';
       });
     }
   }
 
   initStats() {
-    let savedStars = localStorage.getItem('bhopali_stars') || '0';
-    let savedTotalSwag = localStorage.getItem('bhopali_total_swag') || localStorage.getItem('bhopali_swag') || '0';
+    let savedStars = localStorage.getItem('bhopali_stars') || '3';
+    let savedTotalSwag = localStorage.getItem('bhopali_total_swag') || localStorage.getItem('bhopali_swag') || '1000';
     let savedHighScore = localStorage.getItem('bhopali_high_score') || '0';
 
     const topStars = document.getElementById('top-stars');
