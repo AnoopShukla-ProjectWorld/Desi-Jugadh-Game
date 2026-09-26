@@ -1041,7 +1041,9 @@ class Game {
     if (btnReplay) {
       btnReplay.addEventListener('click', () => {
         sessionStorage.removeItem('bhopali_stage');
-        sessionStorage.removeItem('bhopali_in_game');
+        sessionStorage.setItem('bhopali_in_game', 'true');
+        sessionStorage.setItem('bhopali_restart_flow', 'intro_conversation');
+        sessionStorage.setItem('bhopali_skip_flight', 'true');
         window.location.reload();
       });
     }
@@ -1060,22 +1062,26 @@ class Game {
       });
     }
 
-    // Game Over Restart button
+    // Game Over Restart button ("Phir Se Koshish Karo") -> Starts fresh run from intro conversation
     const btnRestartGame = document.getElementById('btn-restart-game');
     if (btnRestartGame) {
       btnRestartGame.addEventListener('click', () => {
         sessionStorage.removeItem('bhopali_stage');
-        sessionStorage.removeItem('bhopali_in_game');
+        sessionStorage.setItem('bhopali_in_game', 'true');
+        sessionStorage.setItem('bhopali_restart_flow', 'intro_conversation');
+        sessionStorage.setItem('bhopali_skip_flight', 'true');
         window.location.reload();
       });
     }
 
-    // Game Over Home / Main Menu button
+    // Game Over Home / Main Menu button -> Goes directly to Home Screen without flying plane intro
     const btnGameOverHome = document.getElementById('btn-game-over-home');
     if (btnGameOverHome) {
       btnGameOverHome.addEventListener('click', () => {
         sessionStorage.removeItem('bhopali_stage');
         sessionStorage.removeItem('bhopali_in_game');
+        sessionStorage.removeItem('bhopali_restart_flow');
+        sessionStorage.setItem('bhopali_skip_flight', 'true');
         window.location.reload();
       });
     }
@@ -1085,11 +1091,15 @@ class Game {
 
     // Check if player was already playing in-game (session persistence on F5 reload)
     const wasInGame = sessionStorage.getItem('bhopali_in_game') === 'true';
+    const skipFlight = sessionStorage.getItem('bhopali_skip_flight') === 'true';
+    if (skipFlight) {
+      sessionStorage.removeItem('bhopali_skip_flight');
+    }
 
     // 1. Supersonic Paper Plane Intro Launch Screen (Constant-Speed Arc-Length Flight)
     const introScreen = document.getElementById('intro-screen');
     const plane = document.getElementById('flying-plane');
-    if (wasInGame) {
+    if (wasInGame || skipFlight) {
       if (introScreen) introScreen.style.display = 'none';
     } else if (introScreen && plane) {
       // Cubic Bezier curve control points matching user's exact red marker trajectory
@@ -1216,11 +1226,6 @@ class Game {
     const landingScreen = document.getElementById('landing-screen');
     const settingsModal = document.getElementById('settings-modal');
 
-    if (wasInGame) {
-      if (landingScreen) landingScreen.style.display = 'none';
-      this.resumeInGameSession();
-    }
-
     const startGame = () => {
       sessionStorage.setItem('bhopali_in_game', 'true');
       this.setStage(0);
@@ -1241,6 +1246,16 @@ class Game {
       if (!audio.musicPlaying) audio.startDesiBGM();
       this.startCutscene();
     };
+
+    const restartFlow = sessionStorage.getItem('bhopali_restart_flow');
+    if (restartFlow === 'intro_conversation') {
+      sessionStorage.removeItem('bhopali_restart_flow');
+      if (landingScreen) landingScreen.style.display = 'none';
+      startGame();
+    } else if (wasInGame) {
+      if (landingScreen) landingScreen.style.display = 'none';
+      this.resumeInGameSession();
+    }
 
     const btnBackHome = document.getElementById('btn-back-home');
     if (btnBackHome) {
