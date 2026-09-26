@@ -16,6 +16,12 @@ class Game {
     this.plankHalfWidth = 0.95; // Sturdy bridge width
     this.placedPlankType = null;
     this.placedPlankMesh = null;
+    this.longPlankPlaced = false;
+    this.longPlankMesh = null;
+    this.longPlankZ = 0;
+    this.shortPlankPlaced = false;
+    this.shortPlankMesh = null;
+    this.shortPlankZ = 0;
 
     // Opening Cutscene State
     this.isCutscene = false;
@@ -1506,17 +1512,39 @@ class Game {
     }
 
     // 2. Pick up an already placed plank from trench to swap or test
-    if (!this.inventory && this.plankPlaced && this.placedPlankMesh && this.stage === 1) {
-      const distToPlaced = Math.hypot(pPos.x - this.placedPlankMesh.position.x, pPos.z - this.placedPlankMesh.position.z);
-      if (distToPlaced < 2.5) {
-        this.inventory = this.placedPlankMesh;
-        this.scene.remove(this.placedPlankMesh);
+    if (!this.inventory && this.stage === 1) {
+      let targetMesh = null;
+      let minPlankDist = 2.5;
+      [this.longPlankMesh, this.shortPlankMesh, this.placedPlankMesh].forEach(mesh => {
+        if (mesh && mesh.parent === this.scene) {
+          const d = Math.hypot(pPos.x - mesh.position.x, pPos.z - mesh.position.z);
+          if (d < minPlankDist) {
+            minPlankDist = d;
+            targetMesh = mesh;
+          }
+        }
+      });
+
+      if (targetMesh) {
+        this.inventory = targetMesh;
+        this.scene.remove(targetMesh);
         this.player.add(this.inventory);
         this.inventory.position.set(0, 1.28, 0.56);
         this.inventory.rotation.set(0.35, 0, 0);
-        this.plankPlaced = false;
-        this.placedPlankType = null;
-        this.placedPlankMesh = null;
+
+        if (targetMesh === this.longPlankMesh) {
+          this.longPlankPlaced = false;
+          this.longPlankMesh = null;
+          this.plankPlaced = false;
+        } else if (targetMesh === this.shortPlankMesh) {
+          this.shortPlankPlaced = false;
+          this.shortPlankMesh = null;
+        }
+        if (targetMesh === this.placedPlankMesh) {
+          this.placedPlankMesh = null;
+          this.plankPlaced = this.longPlankPlaced;
+        }
+
         if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
           this.player.userData.leftArmPivot.rotation.set(-1.25, -0.15, -0.22);
           this.player.userData.rightArmPivot.rotation.set(-1.25, 0.15, 0.22);
@@ -1663,29 +1691,22 @@ class Game {
         }
       }
 
-      // CRISIS 2: Near 3D Deep Chasm (11, 0, 0)
-      const distToTrench = pPos.distanceTo(this.trench.position);
-      if (this.stage === 1 && distToTrench < 3.8) {
+      // CRISIS 2: Near 3D Deep Chasm
+      const distToTrench = Math.hypot(pPos.x - 45.8, pPos.z);
+      if (this.stage === 1 && distToTrench < 5.0) {
         if (carried.userData.type === 'plank') {
-          // If a short plank was already placed, restore it back to wall
-          if (this.placedPlankMesh && this.placedPlankMesh !== carried) {
-            this.scene.remove(this.placedPlankMesh);
-            this.placedPlankMesh.position.set(41.5, 1.05, -5.0);
-            this.placedPlankMesh.rotation.set(-0.14, Math.PI / 2, Math.PI / 2);
-            this.scene.add(this.placedPlankMesh);
-            if (!this.items.includes(this.placedPlankMesh)) this.items.push(this.placedPlankMesh);
-          }
-
           // Snap long plank (4.2m) across trench spanning from Platform 1 (x=44.0) to Platform 2 (x=47.6)!
           this.player.remove(carried);
           this.scene.add(carried);
           
-          this.plankZ = Math.max(-2.2, Math.min(2.2, pPos.z)); // Place bridge at current lane!
-          carried.position.set(45.8, 0.09, this.plankZ);
+          this.longPlankZ = Math.max(-2.4, Math.min(2.4, pPos.z)); // Place bridge at current lane!
+          this.plankZ = this.longPlankZ;
+          carried.position.set(45.8, 0.09, this.longPlankZ);
           carried.rotation.set(0, 0, 0);
 
+          this.longPlankPlaced = true;
+          this.longPlankMesh = carried;
           this.plankPlaced = true;
-          this.placedPlankType = 'plank';
           this.placedPlankMesh = carried;
           this.inventory = null;
           if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
@@ -1697,32 +1718,22 @@ class Game {
           this.triggerJugaadToast('🎉 JUGAAD 2: TIMBER BRIDGE READY! (+25%)');
           this.showDialogue(
             'Chacha',
-            'Phatta lag gaya! Bridge taiyaar hai! Ab Chetak par baitho [E] aur sambhalke bridge cross karo!'
+            'Bada phatta lag gaya! Bridge taiyaar hai! Ab Chetak par baitho [E] aur sambhalke bridge cross karo!'
           );
           this.questText.textContent = 'Scooter par baitho [E] aur dhyan se lakdi ke phatte ke upar se drive karo!';
           this.promptTip.innerHTML = 'Press <b>[E]</b> near scooter to mount | Drive across plank carefully!';
           return;
         } else if (carried.userData.type === 'short_plank') {
-          // If another plank was already placed, restore it back to wall
-          if (this.placedPlankMesh && this.placedPlankMesh !== carried) {
-            this.scene.remove(this.placedPlankMesh);
-            this.placedPlankMesh.position.set(39.0, 2.05, -5.0);
-            this.placedPlankMesh.rotation.set(-0.14, Math.PI / 2, Math.PI / 2);
-            this.scene.add(this.placedPlankMesh);
-            if (!this.items.includes(this.placedPlankMesh)) this.items.push(this.placedPlankMesh);
-          }
-
           // Place 2.2m short plank (spans halfway: x=44.0 to 46.2)
           this.player.remove(carried);
           this.scene.add(carried);
           
-          this.plankZ = Math.max(-2.2, Math.min(2.2, pPos.z));
-          carried.position.set(45.1, 0.09, this.plankZ);
+          this.shortPlankZ = Math.max(-2.4, Math.min(2.4, pPos.z));
+          carried.position.set(45.1, 0.09, this.shortPlankZ);
           carried.rotation.set(0, 0, 0);
 
-          this.plankPlaced = true;
-          this.placedPlankType = 'short_plank';
-          this.placedPlankMesh = carried;
+          this.shortPlankPlaced = true;
+          this.shortPlankMesh = carried;
           this.inventory = null;
           if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
             this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
@@ -2082,15 +2093,12 @@ class Game {
             }
           } else if (c.type === 'box') {
             const curZ = this.player.position.z;
+            const prevX = this.player.position.x;
             if (curZ > c.minZ - pR && curZ < c.maxZ + pR) {
-              if (nextX > c.minX - pR && nextX < c.maxX + pR) {
-                if (vx > 0) nextX = c.minX - pR;
-                else if (vx < 0) nextX = c.maxX + pR;
-                else {
-                  const dL = Math.abs(nextX - (c.minX - pR));
-                  const dR = Math.abs(nextX - (c.maxX + pR));
-                  nextX = dL < dR ? c.minX - pR : c.maxX + pR;
-                }
+              if (vx > 0 && prevX <= c.minX - pR && nextX > c.minX - pR) {
+                nextX = c.minX - pR;
+              } else if (vx < 0 && prevX >= c.maxX + pR && nextX < c.maxX + pR) {
+                nextX = c.maxX + pR;
               }
             }
           }
@@ -2108,15 +2116,12 @@ class Game {
               nextZ += (dz / dist) * push;
             }
           } else if (c.type === 'box') {
+            const prevZ = this.player.position.z;
             if (nextX > c.minX - pR && nextX < c.maxX + pR) {
-              if (nextZ > c.minZ - pR && nextZ < c.maxZ + pR) {
-                if (vz > 0) nextZ = c.minZ - pR;
-                else if (vz < 0) nextZ = c.maxZ + pR;
-                else {
-                  const dT = Math.abs(nextZ - (c.minZ - pR));
-                  const dB = Math.abs(nextZ - (c.maxZ + pR));
-                  nextZ = dT < dB ? c.minZ - pR : c.maxZ + pR;
-                }
+              if (vz > 0 && prevZ <= c.minZ - pR && nextZ > c.minZ - pR) {
+                nextZ = c.minZ - pR;
+              } else if (vz < 0 && prevZ >= c.maxZ + pR && nextZ < c.maxZ + pR) {
+                nextZ = c.maxZ + pR;
               }
             }
           }
@@ -2184,17 +2189,21 @@ class Game {
       // Open road pit void exists strictly between road edges (z: -3.3 to 3.3)
       if (this.player.position.x >= 44.0 && this.player.position.x <= 47.6 && this.player.position.z > -3.3 && this.player.position.z < 3.3) {
         let onPlank = false;
-        if (this.plankPlaced && Math.abs(this.player.position.z - this.plankZ) <= this.plankHalfWidth) {
-          if (this.placedPlankType === 'short_plank') {
-            // Short plank (2.2m) placed at 45.1 only extends up to x = 46.2!
-            if (this.player.position.x <= 46.2) {
-              onPlank = true;
-            }
-          } else {
-            // Long plank (4.2m) safely spans full 3.6m gap!
+        // Check long plank bridge (fully spans 44.0 to 47.6)
+        if (this.longPlankPlaced && Math.abs(this.player.position.z - this.longPlankZ) <= this.plankHalfWidth) {
+          onPlank = true;
+        }
+        // Check short plank distractor (only spans halfway up to x = 46.2)
+        if (this.shortPlankPlaced && Math.abs(this.player.position.z - this.shortPlankZ) <= this.plankHalfWidth) {
+          if (this.player.position.x <= 46.2) {
             onPlank = true;
           }
         }
+        // Fallback for older plankPlaced compatibility
+        if (this.plankPlaced && !this.longPlankPlaced && Math.abs(this.player.position.z - this.plankZ) <= this.plankHalfWidth) {
+          onPlank = true;
+        }
+
         if (onPlank) {
           if (!this.isFalling) this.player.position.y = 0.09;
         } else if (!this.isFalling) {
@@ -2205,8 +2214,9 @@ class Game {
       }
 
       this.camera.position.x = THREE.MathUtils.lerp(this.camera.position.x, this.player.position.x + 3.2, 0.06);
+      this.camera.position.y = THREE.MathUtils.lerp(this.camera.position.y, 2.4, 0.06);
       this.camera.position.z = THREE.MathUtils.lerp(this.camera.position.z, this.player.position.z + 8.8, 0.06);
-      const camTargetY = this.isFalling ? THREE.MathUtils.lerp(1.3, -1.6, Math.min(1, Math.max(0, -this.player.position.y / 2.15))) : 1.3;
+      const camTargetY = this.isFalling ? THREE.MathUtils.lerp(1.3, -0.4, Math.min(1, Math.max(0, -this.player.position.y / 2.15))) : 1.3;
       this.camera.lookAt(this.player.position.x + 1, camTargetY, this.player.position.z);
 
       this.updatePrompt();
@@ -2328,17 +2338,21 @@ class Game {
       // --- TRENCH CRASH CHECK FOR SCOOTER ---
       if (this.scooter.position.x >= 44.0 && this.scooter.position.x <= 47.6) {
         let onPlank = false;
-        if (this.plankPlaced && Math.abs(this.scooter.position.z - this.plankZ) <= this.plankHalfWidth) {
-          if (this.placedPlankType === 'short_plank') {
-            // Short plank (2.2m) placed at 45.1 only extends up to x = 46.2!
-            if (this.scooter.position.x <= 46.2) {
-              onPlank = true;
-            }
-          } else {
-            // Long plank (4.2m) safely spans full 3.6m gap!
+        // Check long plank bridge (fully spans 44.0 to 47.6)
+        if (this.longPlankPlaced && Math.abs(this.scooter.position.z - this.longPlankZ) <= this.plankHalfWidth) {
+          onPlank = true;
+        }
+        // Check short plank distractor (only spans halfway up to x = 46.2)
+        if (this.shortPlankPlaced && Math.abs(this.scooter.position.z - this.shortPlankZ) <= this.plankHalfWidth) {
+          if (this.scooter.position.x <= 46.2) {
             onPlank = true;
           }
         }
+        // Fallback for older plankPlaced compatibility
+        if (this.plankPlaced && !this.longPlankPlaced && Math.abs(this.scooter.position.z - this.plankZ) <= this.plankHalfWidth) {
+          onPlank = true;
+        }
+
         if (onPlank) {
           if (!this.isFalling) this.scooter.position.y = 0.18;
         } else if (!this.isFalling) {
@@ -2387,8 +2401,9 @@ class Game {
       audio.setEngineSpeed(Math.abs(this.scooterSpeed) / this.maxSpeed);
 
       this.camera.position.x = THREE.MathUtils.lerp(this.camera.position.x, this.scooter.position.x + 4.5, 0.08);
+      this.camera.position.y = THREE.MathUtils.lerp(this.camera.position.y, 2.4, 0.08);
       this.camera.position.z = THREE.MathUtils.lerp(this.camera.position.z, this.scooter.position.z + 8.8, 0.08);
-      const camTargetY = this.isFalling ? THREE.MathUtils.lerp(1.4, -1.6, Math.min(1, Math.max(0, -this.scooter.position.y / 2.15))) : 1.4;
+      const camTargetY = this.isFalling ? THREE.MathUtils.lerp(1.4, -0.4, Math.min(1, Math.max(0, -this.scooter.position.y / 2.15))) : 1.4;
       this.camera.lookAt(this.scooter.position.x + 2, camTargetY, this.scooter.position.z);
 
       // --- 4. DESTINATION ARRIVAL: SHEESH MAHAL GATE & VIP ROADSIDE PARKING BAY ---
@@ -2491,6 +2506,21 @@ class Game {
     if (this.isFalling) {
       const activeObj = this.isRiding ? this.scooter : this.player;
 
+      // Keep camera smoothly framed at elevated height y = 2.4 overlooking the pit
+      if (this.isRiding) {
+        this.camera.position.x = THREE.MathUtils.lerp(this.camera.position.x, this.scooter.position.x + 4.5, 0.08);
+        this.camera.position.y = THREE.MathUtils.lerp(this.camera.position.y, 2.4, 0.08);
+        this.camera.position.z = THREE.MathUtils.lerp(this.camera.position.z, this.scooter.position.z + 8.8, 0.08);
+        const camTargetY = THREE.MathUtils.lerp(1.4, -0.4, Math.min(1, Math.max(0, -this.scooter.position.y / 2.15)));
+        this.camera.lookAt(this.scooter.position.x + 2, camTargetY, this.scooter.position.z);
+      } else {
+        this.camera.position.x = THREE.MathUtils.lerp(this.camera.position.x, this.player.position.x + 3.2, 0.06);
+        this.camera.position.y = THREE.MathUtils.lerp(this.camera.position.y, 2.4, 0.06);
+        this.camera.position.z = THREE.MathUtils.lerp(this.camera.position.z, this.player.position.z + 8.8, 0.06);
+        const camTargetY = THREE.MathUtils.lerp(1.3, -0.4, Math.min(1, Math.max(0, -this.player.position.y / 2.15)));
+        this.camera.lookAt(this.player.position.x + 1, camTargetY, this.player.position.z);
+      }
+
       if (!this.trenchLanded) {
         this.trenchFallVel = (this.trenchFallVel || -1.5) - 22.0 * delta;
         activeObj.position.y += this.trenchFallVel * delta;
@@ -2536,15 +2566,16 @@ class Game {
 
           // 5. Allow player to clearly see Chacha/scooter down in the pit for 1.8 seconds, then safely respawn
           setTimeout(() => {
+            const respawnZ = this.longPlankPlaced ? this.longPlankZ : (this.shortPlankPlaced ? this.shortPlankZ : 0);
             if (this.isRiding) {
-              this.scooter.position.set(41.5, 0, this.plankPlaced ? this.plankZ : 0);
+              this.scooter.position.set(41.5, 0, respawnZ);
               this.scooter.rotation.set(0, 0, 0);
               this.scooter.position.y = 0;
               this.isFalling = false;
               this.trenchLanded = false;
               audio.startScooterEngine();
             } else {
-              this.player.position.set(41.5, 0, this.plankPlaced ? this.plankZ : 0);
+              this.player.position.set(41.5, 0, respawnZ);
               this.player.rotation.set(0, 0, 0);
               this.player.position.y = 0;
               this.isFalling = false;
@@ -2605,11 +2636,21 @@ class Game {
       return;
     }
 
-    // Check proximity to an already placed plank at trench
-    if (!this.inventory && this.plankPlaced && this.placedPlankMesh && this.stage === 1) {
-      const distToPlaced = Math.hypot(pPos.x - this.placedPlankMesh.position.x, pPos.z - this.placedPlankMesh.position.z);
-      if (distToPlaced < 2.5) {
-        this.promptTip.innerHTML = '✨ Press <b>[E]</b> to Pick up Placed Phatta';
+    // Check proximity to an already placed plank at trench to pick up or swap
+    if (!this.inventory && this.stage === 1) {
+      let nearestPlaced = null;
+      let minPlacedDist = 2.5;
+      [this.longPlankMesh, this.shortPlankMesh, this.placedPlankMesh].forEach(plankMesh => {
+        if (plankMesh && plankMesh.parent === this.scene) {
+          const dist = Math.hypot(pPos.x - plankMesh.position.x, pPos.z - plankMesh.position.z);
+          if (dist < minPlacedDist) {
+            minPlacedDist = dist;
+            nearestPlaced = plankMesh;
+          }
+        }
+      });
+      if (nearestPlaced) {
+        this.promptTip.innerHTML = `✨ Press <b>[E]</b> to Pick up Placed ${nearestPlaced.userData.title || 'Phatta'}`;
         return;
       }
     }
