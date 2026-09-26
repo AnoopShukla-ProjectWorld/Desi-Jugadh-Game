@@ -182,20 +182,20 @@ class Game {
     this.scene.add(grass);
     this.items.push(grass);
 
-    // Level 4 Climax Brick Item (Placed near Sheesh Mahal wedding construction debris at x = 75.5)
+    // Level 4 Climax Puzzle Props on Sidewalk / Footpath near Sheesh Mahal (z = -3.8)
+    // Only Laal Eent is the correct stand; broom and tyre are authentic distractors on the footpath
     const brick = AssetFactory.createBrick();
-    brick.position.set(75.5, 0, -2.2);
+    brick.position.set(74.8, 0.16, -3.8);
     this.scene.add(brick);
     this.items.push(brick);
 
-    // Other street props / distractors
     const broom = AssetFactory.createBroom();
-    broom.position.set(8.5, 0, 1.8);
+    broom.position.set(75.6, 0.12, -3.9);
     this.scene.add(broom);
     this.items.push(broom);
 
     const tyre = AssetFactory.createOldTyre();
-    tyre.position.set(52.5, 0, 1.8);
+    tyre.position.set(76.4, 0.12, -3.8);
     this.scene.add(tyre);
     this.items.push(tyre);
 
@@ -1356,10 +1356,17 @@ class Game {
     }
 
     this.triggerJugaadToast('💥 ACCIDENT! GAU MATA SE TAKKAR! 💥');
-    this.showDialogue(
-      'Chacha',
-      'ARRE BAAP RE! ACCIDENT HO GAYA! Gau Mata se takra gaye! Pehle sabzi market se roti & ghaas laake unhe side karna tha miyaan!'
-    );
+    if (this.cow && this.cow.userData && this.cow.userData.isDistracted) {
+      this.showDialogue(
+        'Chacha',
+        'ARRE BAAP RE! ACCIDENT HO GAYA! Gau Mata roadside me aaram se ghaas char rahi thi, vahan scooter kyu chadha diya miyaan?! Sadak par dhyan se chalao!'
+      );
+    } else {
+      this.showDialogue(
+        'Chacha',
+        'ARRE BAAP RE! ACCIDENT HO GAYA! Gau Mata se takra gaye! Pehle sabzi market se roti & ghaas laake unhe side karna tha miyaan!'
+      );
+    }
 
     const accModal = document.getElementById('accident-modal');
     if (accModal) {
@@ -1476,6 +1483,17 @@ class Game {
       );
       this.questText.textContent = 'Dhyan se chalayein! Sadak par aage badhein!';
       this.promptTip.innerHTML = 'Drive [W/S/A/D] | [H/Space] Honk | [E] Dismount';
+      return;
+    }
+
+    // 1B. Empty-handed interaction near fallen Chetak in Stage 4
+    if (!this.inventory && this.stage === 4 && distToScooter < 3.2) {
+      audio.playBrickThud();
+      this.showDialogue(
+        'Chacha',
+        'Chetak ka stand toota hua hai, scooter khada nahi ho pa raha! Footpath ke malbe se Laal Eent [E] uthao aur stand ki jagah lagao!'
+      );
+      this.promptTip.innerHTML = '⚠️ Chetak zameen par giri hai! Footpath ke malbe se <b>Laal Eent</b> [E] uthao!';
       return;
     }
 
@@ -1754,7 +1772,7 @@ class Game {
 
       // CRISIS 3: Near Cow (62.0, 0, -0.2)
       const distToCow = pPos.distanceTo(this.cow.position);
-      if (this.stage === 2 && distToCow < 3.6) {
+      if ((this.stage === 1 || this.stage === 2) && distToCow < 3.6) {
         if (carried.userData.type === 'grass') {
           this.player.remove(carried);
           this.scene.add(carried);
@@ -1818,7 +1836,44 @@ class Game {
           this.weddingWalkTimer = 0;
           return;
         } else {
-          this.showDialogue('Chacha', carried.userData.rejectMsg || 'Yeh cheez scooter ka stand nahi ban sakti! Wedding tent ke malbe se Laal Eent dhundo!');
+          // Non-brick item (broom, tyre, etc.): Scooter tries to balance, collapses, and falls over!
+          this.player.remove(carried);
+          this.scene.add(carried);
+          carried.position.set(this.scooter.position.x - 0.25, 0.08, this.scooter.position.z - 0.65);
+          this.items.push(carried);
+          this.inventory = null;
+
+          if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
+            this.player.userData.leftArmPivot.rotation.set(0, 0, 0);
+            this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
+          }
+
+          this.scooter.userData.setFallenState(true);
+          this.shakeDuration = 0.35;
+
+          if (carried.userData.type === 'broom') {
+            audio.playPlankSnap();
+            audio.playBrickThud();
+            this.showDialogue(
+              'Chacha',
+              'DHADAM! 💥 Arre jhadu se 100 kg ki Chetak scooter kaise khadi hogi miyaan? Jhadu phat se toot gayi aur Chetak phir gir gayi! Footpath ke malbe se solid Laal Eent dhundo!'
+            );
+          } else if (carried.userData.type === 'tyre') {
+            audio.playSplash();
+            audio.playBrickThud();
+            this.showDialogue(
+              'Chacha',
+              'DHADAM! 💥 Arre tyre toh gol hai, fisal kar nikal gaya! Chetak phir se zameen par dharraam se gir gayi! Footpath ke malbe se chakor Laal Eent dhundo!'
+            );
+          } else {
+            audio.playPlankSnap();
+            this.showDialogue(
+              'Chacha',
+              carried.userData.rejectMsg || 'DHADAM! 💥 Yeh cheez scooter ka 100 kg wazan nahi jhel payi! Scooter phir gir gayi! Footpath ke malbe se solid Laal Eent dhundo!'
+            );
+          }
+          this.triggerJugaadToast('❌ SCOOTER PHIR GIR GAYI! LAAL EENT DHUNDO!');
+          this.promptTip.innerHTML = '⚠️ Stand toot gaya! Footpath ke malbe se <b>Laal Eent</b> dhundo!';
           return;
         }
       }
@@ -2360,12 +2415,19 @@ class Game {
         }
       }
 
-      // Progress from Stage 1 to Stage 2 once trench is safely crossed!
+      // Progress from Stage 1 to Stage 2 (or Stage 3 if cow already distracted by walking Chacha)
       if (this.stage === 1 && this.plankPlaced && this.scooter.position.x > 48.3) {
-        this.setStage(2);
-        this.triggerJugaadToast('✨ TRENCH CROSSED! KEEP GOING! ✨');
-        this.showDialogue('Chacha', 'Wah miyaan! Phatte ke upar se nikal gaye! Ab aage VIP road badho!');
-        this.questText.textContent = 'Aage sadak par dekhein! Gau Mata raste me aaram kar rahi hain!';
+        if (this.cow.userData.isDistracted) {
+          this.setStage(3);
+          this.triggerJugaadToast('✨ TRENCH CROSSED & ROAD IS CLEAR! ✨');
+          this.showDialogue('Chacha', 'Wah miyaan! Phatte ke upar se nikal gaye aur Gau Mata bhi side ho chuki hain! Ab full throttle Sheesh Mahal bhagao!');
+          this.questText.textContent = 'Full throttle bhagao! Sheesh Mahal gate me entry maaro!';
+        } else {
+          this.setStage(2);
+          this.triggerJugaadToast('✨ TRENCH CROSSED! KEEP GOING! ✨');
+          this.showDialogue('Chacha', 'Wah miyaan! Phatte ke upar se nikal gaye! Ab aage VIP road badho!');
+          this.questText.textContent = 'Aage sadak par dekhein! Gau Mata raste me aaram kar rahi hain!';
+        }
       }
 
       // STAGE 2: Cow Roadblock Warning & Prompt before Cow if NOT distracted
@@ -2383,11 +2445,12 @@ class Game {
       }
 
       // --- COW ACCIDENT COLLISION CHECK ---
-      const distToCow = Math.hypot(
-        this.scooter.position.x - this.cow.position.x,
-        this.scooter.position.z - this.cow.position.z
-      );
-      if (distToCow < 2.6 && !this.isAccident && !this.cow.userData.isDistracted) {
+      const dxCow = Math.abs(this.scooter.position.x - this.cow.position.x);
+      const dzCow = Math.abs(this.scooter.position.z - this.cow.position.z);
+      const isCowHit = this.cow.userData.isDistracted
+        ? (dxCow < 1.8 && dzCow < 1.3) // Direct collision with cow at roadside eating grass
+        : (dxCow < 2.2 && dzCow < 1.5); // Roadblock collision in center road
+      if (isCowHit && !this.isAccident) {
         this.triggerCowAccident();
         return;
       }
@@ -2671,6 +2734,11 @@ class Game {
         return;
       }
 
+      if (this.stage === 4 && pPos.distanceTo(this.scooter.position) < 3.2) {
+        this.promptTip.innerHTML = '⚠️ Chetak zameen par giri hai! Footpath ke malbe se <b>Laal Eent</b> [E] uthayein!';
+        return;
+      }
+
       let nearestItem = null;
       let minDist = 2.8;
       this.items.forEach(it => {
@@ -2709,7 +2777,7 @@ class Game {
         }
       } else if (this.stage === 1 && pPos.distanceTo(this.trench.position) < 3.4) {
         this.promptTip.innerHTML = `✨ Press <b>[E]</b> to place <b>${this.inventory.userData.title}</b> across Trench!`;
-      } else if (this.stage === 2 && pPos.distanceTo(this.cow.position) < 3.6) {
+      } else if ((this.stage === 1 || this.stage === 2) && pPos.distanceTo(this.cow.position) < 3.6) {
         this.promptTip.innerHTML = `✨ Press <b>[E]</b> to offer <b>${this.inventory.userData.title}</b> to Gau Mata!`;
       } else if (this.stage === 4 && pPos.distanceTo(this.scooter.position) < 3.4) {
         this.promptTip.innerHTML = `✨ Press <b>[E]</b> to prop up Chetak with <b>${this.inventory.userData.title}</b>!`;
