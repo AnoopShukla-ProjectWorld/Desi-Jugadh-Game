@@ -419,10 +419,6 @@ class Game {
     this.jugaadPopup = document.getElementById('jugaad-popup');
     this.victoryModal = document.getElementById('victory-modal');
 
-    this.showDialogue(
-      'Chacha',
-      'Arre bhagyawan ka urgent phone aa raha hai Sheesh Mahal se!'
-    );
     if (this.questText) this.questText.textContent = '📞 Chachi ka urgent call suniye...';
     this.initRadialWheel();
   }
@@ -555,12 +551,8 @@ class Game {
     this.camera.position.set(-3.2, 2.1, 0.2);
     this.camera.lookAt(-6.0, 1.25, -3.4);
 
-    this.showDialogue(
-      'Chacha',
-      'Arre miyaan! Screen aur back cover dono alag ho gaye! Pehle toota phone uthao ya baayin taraf Kabaad Dher se jugaad tool chuno!'
-    );
-    this.questText.textContent = 'Level 1: Toota phone theek karo! Kabaad Dher se tool chuno ya toota phone uthao!';
-    this.promptTip.innerHTML = '✨ Press <b>[E]</b> to Pick up Broken Phone Pieces!';
+    this.questText.textContent = 'Toota phone theek karein aur Chetak scooter par sawar hon!';
+    this.promptTip.innerHTML = '✨ Toota Phone uthayein [E] ya Kabaad Dher se tool chunein!';
   }
 
   setStage(newStage) {
@@ -605,9 +597,8 @@ class Game {
       this.camera.position.set(-3.2, 2.1, 0.2);
       this.camera.lookAt(-6.0, 1.25, -3.4);
 
-      this.questText.textContent = 'Level 1: Toota phone theek karo! Kabaad Dher se tool chuno ya toota phone uthao!';
+      this.questText.textContent = 'Toota phone theek karein aur Chetak scooter par sawar hon!';
       this.promptTip.innerHTML = '✨ Toota Phone uthayein [E] ya baayin taraf Kabaad Dher se tool chunein!';
-      this.showDialogue('Chacha', 'Phone to toot gaya! Pehle phone uthao ya Kabaad Dher se jugaad tool chuno!');
     } else if (savedStage === 1) {
       this.updateMeter(25);
       if (this.chachaHome) this.chachaHome.userData.openDoors();
@@ -616,9 +607,8 @@ class Game {
       this.scooter.userData.riderMesh.visible = false;
       this.camera.position.set(1.5, 2.4, 7.5);
       this.camera.lookAt(0, 1.3, 0);
-      this.questText.textContent = 'Crisis 2: Sadak par gehra gaddha khuda hai! Phatta dhundo aur pull banao!';
+      this.questText.textContent = 'Sadak par 2m gehra gaddha hai! Lakdi ka phatta lagakar pull banayein!';
       this.promptTip.innerHTML = '✨ Press <b>[E]</b> to Kickstart & Mount Chetak Scooter!';
-      this.showDialogue('Chacha', 'Phone to theek ho gaya! Ab Chetak par baitho aur VIP road niklo!');
     } else if (savedStage === 2) {
       this.updateMeter(50);
       if (this.chachaHome) this.chachaHome.userData.openDoors();
@@ -630,7 +620,7 @@ class Game {
       this.scooter.position.set(49.0, 0, 0);
       this.camera.position.set(53.5, 2.2, 8.8);
       this.camera.lookAt(51.0, 1.4, 0);
-      this.questText.textContent = 'Aage sadak par dekhein! Gau Mata raste me aaram kar rahi hain!';
+      this.questText.textContent = 'Gau Mata sadak par aaram kar rahi hain! Taazi ghaas khilayein!';
       this.promptTip.innerHTML = 'Gau Mata ke paas badhein | Watch road!';
     } else if (savedStage === 3) {
       this.updateMeter(75);
@@ -659,9 +649,8 @@ class Game {
       this.player.visible = true;
       this.camera.position.set(76.5, 2.1, 7.8);
       this.camera.lookAt(74.5, 1.25, -1.8);
-      this.questText.textContent = 'Crisis 4: Kickstand toot gaya! Mandap ke paas se Laal Eent [E] uthao aur Chetak ko khada karo!';
-      this.promptTip.innerHTML = 'Mandap ke construction malbe se Laal Eent dhundo [E] | Chetak ko khada karo!';
-      this.showDialogue('Chacha', 'Arey baap re! Parking me Chetak ka stand toot gaya! Malbe se Laal Eent dhundo!');
+      this.questText.textContent = 'Chetak ka stand toot gaya! Deewal ke paas pade samaan se scooter ko khada karein!';
+      this.promptTip.innerHTML = 'Deewal ke paas dekhein [E] | Chetak ko khada karein!';
     } else {
       // Stage 5 or invalid: clean restart from initial point (Stage 0)
       this.setStage(0);
@@ -778,10 +767,6 @@ class Game {
         audio.playPhoneRebootSound();
         audio.playJugaadSuccess();
         this.triggerJugaadToast('🎉 JUGAAD 1: RUBBER BAND SE PHONE REPAIRED! (+300 PTS)');
-        this.showDialogue(
-          'Chacha',
-          'Wah miyaan! Ek number jugaad! Mithai wali rubber band se phone ekdum mast jud gaya aur jeb me rakh liya! Screen on ho gayi aur GPS map chal raha hai! Ab Chetak scooter par baitho [E]!'
-        );
         this.questText.textContent = 'Phone jeb me rakh liya! Chetak Scooter par baitho [E] aur VIP Road Sheesh Mahal ki taraf nikal pado!';
         this.promptTip.innerHTML = 'Press <b>[E]</b> near Chetak Scooter to Kickstart & Mount!';
         return;
@@ -801,10 +786,6 @@ class Game {
         audio.playPhoneRebootSound();
         audio.playJugaadSuccess();
         this.triggerJugaadToast('🩹 JUGAAD 1: TAPE SE PHONE JUD GAYA! (+100 PTS)');
-        this.showDialogue(
-          'Chacha',
-          'Chalo kaam chal gaya! Tape se phone jud toh gaya aur jeb me daal liya! Ab jaldi Chetak scooter par baitho [E]!'
-        );
         this.questText.textContent = 'Phone jeb me rakh liya! Chetak Scooter par baitho [E] aur VIP Road Sheesh Mahal ki taraf nikal pado!';
         this.promptTip.innerHTML = 'Press <b>[E]</b> near Chetak Scooter to Kickstart & Mount!';
         return;
@@ -812,10 +793,7 @@ class Game {
         audio.playBrickThud();
         this.addScore(-50, 0);
         this.spawnFloatingScore('⚠️ -50 SWAG! TOO THICK!', this.player.position);
-        this.showDialogue(
-          'Chacha',
-          'Miyaan! Itni moti rassi se mobile baandhoge toh jeb me kaise ghusega? Kabaad se koi patli cheez chuno!'
-        );
+        this.promptTip.innerHTML = '⚠️ Rassi bahut moti hai! Kabaad Dher [E] se patla jugaad chuno!';
         return;
       } else if (toolType === 'hammer') {
         // CATASTROPHIC DISASTER!
@@ -853,14 +831,6 @@ class Game {
       }
 
       audio.playBrickThud();
-      if (toolType === 'hammer') {
-        this.showDialogue('Chacha', 'Hathoda utha toh liya miyaan, par phone par galti se bhi mat chala dena!');
-      } else if (toolType === 'rubber') {
-        this.showDialogue('Chacha', 'Shabash! Pili rubber band le li, ab zameen par pade toote phone ke paas jaakar [E] dabao!');
-      } else if (toolType === 'tape') {
-        this.showDialogue('Chacha', 'Cello tape le li, ab zameen par pade toote phone ke paas jaakar [E] dabao!');
-      }
-
       this.promptTip.innerHTML = `Carrying: <b>${toolMesh.userData.title}</b>. Toota Phone ke paas jakar [E] dabayein!`;
     }
   }
@@ -900,11 +870,6 @@ class Game {
     this.spawnFloatingScore('💥 -200 SWAG POINTS! PHONE CHUR-CHUR!', new THREE.Vector3(smashPos.x, 1.2, smashPos.z));
     this.triggerJugaadToast('💥 DISASTER! PHONE PAR HATHODA MAAR DIYA! (-200 PTS)');
 
-    this.showDialogue(
-      'Chacha',
-      'ARRE MIYAAN! Pagla gaye ho kya?! Mobile par hathoda kaun maarta hai?! Poora kachumar nikal gaya!'
-    );
-
     // Comic shock animation for Chacha
     if (this.player.userData.leftArmPivot && this.player.userData.rightArmPivot) {
       this.player.userData.leftArmPivot.rotation.set(-2.2, 0.35, -0.65);
@@ -943,11 +908,7 @@ class Game {
         this.player.userData.headGroup.rotation.set(0, 0, 0);
       }
 
-      this.showDialogue(
-        'Chacha',
-        'Shukr hai bhagwan ka, screen aur back cover bach gaye! Ab hathoda chhod kar Kabaad Dher se dhang ka jugaad chuno!'
-      );
-      this.promptTip.innerHTML = 'Kabaad Dher ke paas jayein | Rubber Band ya Cello Tape chuno!';
+      this.promptTip.innerHTML = '⚠️ Kabaad Dher [E] ke paas jayein | Rubber Band ya Cello Tape chuno!';
     }, 2800);
   }
 
@@ -1463,18 +1424,7 @@ class Game {
       this.cow.userData.headGroup.rotation.x = -0.3;
     }
 
-    this.triggerJugaadToast('💥 ACCIDENT! GAU MATA SE TAKKAR! 💥');
-    if (this.cow && this.cow.userData && this.cow.userData.isDistracted) {
-      this.showDialogue(
-        'Chacha',
-        'ARRE BAAP RE! ACCIDENT HO GAYA! Gau Mata roadside me aaram se ghaas char rahi thi, vahan scooter kyu chadha diya miyaan?! Sadak par dhyan se chalao!'
-      );
-    } else {
-      this.showDialogue(
-        'Chacha',
-        'ARRE BAAP RE! ACCIDENT HO GAYA! Gau Mata se takra gaye! Pehle sabzi market se roti & ghaas laake unhe side karna tha miyaan!'
-      );
-    }
+    this.triggerJugaadToast('💥 ACCIDENT! GAU MATA SE TAKKAR! (-1 HEART)');
 
     const accModal = document.getElementById('accident-modal');
     if (accModal && this.lives > 0) {
@@ -1549,10 +1499,10 @@ class Game {
         this.triggerJugaadToast('⚠️ KHATTT! CHETAK KA STAND TOOT GAYA!');
         this.showDialogue(
           'Chacha',
-          'Arey baap re baap! Parking slot me stand lagate hi Chetak ka kickstand toot ke alag ho gaya! Baaraat aane wali hai aur gaadi zameen par giri padi hai! Mandap ke malbe se Laal Eent dhundo aur Chetak ko khada karo!'
+          'Arey baap re! Chetak ka stand toot gaya! Ab kisi cheez ke sahare khada karna padega... Deewal ke paas kuch samaan pada hai, unse prayas karta hoon!'
         );
-        this.questText.textContent = 'Crisis 4: Kickstand toot gaya! Mandap ke paas se Laal Eent [E] uthao aur Chetak ko khada karo!';
-        this.promptTip.innerHTML = 'Mandap ke construction malbe se Laal Eent dhundo [E] | Chetak ko khada karo!';
+        this.questText.textContent = 'Chetak ka stand toot gaya! Deewal ke paas pade samaan se scooter ko khada karein!';
+        this.promptTip.innerHTML = 'Deewal ke paas dekhein [E] | Chetak ko khada karein!';
         return;
       }
 
@@ -1585,10 +1535,6 @@ class Game {
       this.player.visible = false;
       this.scooter.userData.riderMesh.visible = true;
       audio.startScooterEngine();
-      this.showDialogue(
-        'Chacha',
-        'Dhup-dhup-dhup! Scooter start! Ab steering sambhalo, aur dhyan se sadak par aage badho!'
-      );
       this.questText.textContent = 'Dhyan se chalayein! Sadak par aage badhein!';
       this.promptTip.innerHTML = 'Drive [W/S/A/D] | [H/Space] Honk | [E] Dismount';
       return;
@@ -1604,11 +1550,7 @@ class Game {
       });
       if (!nearbyItemExists && distToScooter < 1.8) {
         audio.playBrickThud();
-        this.showDialogue(
-          'Chacha',
-          'Chetak ka stand toota hua hai, scooter khada nahi ho pa raha! Footpath ke malbe se Laal Eent [E] uthao aur stand ki jagah lagao!'
-        );
-        this.promptTip.innerHTML = '⚠️ Chetak zameen par giri hai! Footpath ke malbe se <b>Laal Eent</b> [E] uthao!';
+        this.promptTip.innerHTML = '⚠️ Chetak zameen par giri hai! Deewal ke paas pade samaan [E] se khada karein!';
         return;
       }
     }
@@ -1632,8 +1574,7 @@ class Game {
         }
 
         audio.playBrickThud();
-        this.showDialogue('Chacha', 'Haan! Phone ke dono tukde samet liye! Ab baayin taraf Kabaad Dher [E] se jugaad tool chuno!');
-        this.promptTip.innerHTML = 'Toota Phone haath me hai! Kabaad Dher se tool chuno!';
+        this.promptTip.innerHTML = 'Toota Phone haath me hai! Kabaad Dher [E] se tool chuno!';
         return;
       }
     }
@@ -1773,11 +1714,6 @@ class Game {
           audio.playPhoneRebootSound();
           audio.playJugaadSuccess();
           this.triggerJugaadToast('🎉 JUGAAD 1: RUBBER BAND SE PHONE REPAIRED! (+300 PTS)');
-
-          this.showDialogue(
-            'Chacha',
-            'Wah miyaan! Ek number jugaad! Mithai wali rubber band se phone ekdum mast jud gaya aur jeb me rakh liya! Screen on ho gayi aur GPS map chal raha hai! Ab driveway me Chetak scooter par baitho [E]!'
-          );
           this.questText.textContent = 'Phone jeb me rakh liya! Driveway me Chetak Scooter par baitho [E] aur Sheesh Mahal ki taraf nikal pado!';
           this.promptTip.innerHTML = 'Press <b>[E]</b> near Chetak Scooter to Kickstart & Mount!';
           return;
@@ -1806,11 +1742,6 @@ class Game {
           audio.playPhoneRebootSound();
           audio.playJugaadSuccess();
           this.triggerJugaadToast('🩹 JUGAAD 1: TAPE SE PHONE JUD GAYA! (+100 PTS)');
-
-          this.showDialogue(
-            'Chacha',
-            'Chalo kaam chal gaya! Tape se phone jud toh gaya aur jeb me daal liya! Ab jaldi Chetak scooter par baitho [E]!'
-          );
           this.questText.textContent = 'Phone jeb me rakh liya! Driveway me Chetak Scooter par baitho [E] aur Sheesh Mahal ki taraf nikal pado!';
           this.promptTip.innerHTML = 'Press <b>[E]</b> near Chetak Scooter to Kickstart & Mount!';
         } else if (carried.userData.type === 'hammer') {
@@ -1819,10 +1750,10 @@ class Game {
         } else if (carried.userData.type === 'rope') {
           this.addScore(-50, 0);
           this.spawnFloatingScore('⚠️ -50 SWAG! TOO THICK!', pPos);
-          this.showDialogue('Chacha', 'Miyaan! Itni moti rassi se mobile baandhoge toh jeb me kaise ghusega? Kabaad Dher [E] se rubber band ya tape chuno!');
+          this.promptTip.innerHTML = '⚠️ Rassi bahut moti hai! Kabaad Dher [E] se patla jugaad chuno!';
           return;
         } else {
-          this.showDialogue('Chacha', carried.userData.rejectMsg || 'Is cheez se phone theek nahi hoga! Deewal ke paas Kabaad Dher se jugaad tool chuno!');
+          this.promptTip.innerHTML = '⚠️ Is cheez se phone theek nahi hoga! Kabaad Dher [E] se tool chuno!';
           return;
         }
       }
@@ -1852,11 +1783,7 @@ class Game {
           this.updateMeter(50);
           audio.playPlankSnap();
           this.triggerJugaadToast('🎉 JUGAAD 2: TIMBER BRIDGE READY! (+25%)');
-          this.showDialogue(
-            'Chacha',
-            'Bada phatta lag gaya! Bridge taiyaar hai! Ab Chetak par baitho [E] aur sambhalke bridge cross karo!'
-          );
-          this.questText.textContent = 'Scooter par baitho [E] aur dhyan se lakdi ke phatte ke upar se drive karo!';
+          this.questText.textContent = 'Bridge taiyaar! Chetak par baitho [E] aur dhyan se phatte ke upar se niklo!';
           this.promptTip.innerHTML = 'Press <b>[E]</b> near scooter to mount | Drive across plank carefully!';
           return;
         } else if (carried.userData.type === 'short_plank') {
@@ -1876,14 +1803,10 @@ class Game {
             this.player.userData.rightArmPivot.rotation.set(0, 0, 0);
           }
           audio.playPlankSnap();
-          this.showDialogue(
-            'Chacha',
-            'Yeh phatta gaddhe se chhota pad gaya! Dono kinaron par tik hi nahi paya!'
-          );
-          this.promptTip.innerHTML = 'Phatta aadhe gaddhe par tika hai! Dhyan se dekhein!';
+          this.promptTip.innerHTML = '⚠️ Yeh phatta gaddhe se chhota hai! Dono kinaron par nahi tik paya!';
           return;
         } else {
-          this.showDialogue('Chacha', carried.userData.rejectMsg || 'Isse bridge nahi banega!');
+          this.promptTip.innerHTML = '⚠️ Is cheez se bridge nahi banega! Lakdi ka phatta laayein!';
           return;
         }
       }
@@ -1909,15 +1832,11 @@ class Game {
           this.addScore(250, 1);
           this.spawnFloatingScore('+250 SWAG 🐮 GAU MATA KHUSH!', this.cow.position);
           this.triggerJugaadToast('🎉 JUGAAD 3: GAU MATA RASTA CLEAR! (+25%)');
-          this.showDialogue(
-            'Chacha',
-            'Gau Mata khush, rasta saaf! Ab jaldi se scooter pe baitho [E] aur full throttle VIP road se Sheesh Mahal bhagao!'
-          );
-          this.questText.textContent = 'Scooter par baitho [E] aur full speed Sheesh Mahal gate me entry maaro!';
+          this.questText.textContent = 'Gau Mata khush, rasta saaf! Chetak par baitho [E] aur Sheesh Mahal bhagao!';
           this.promptTip.innerHTML = 'Press <b>[E]</b> to Mount Scooter | Race to Sheesh Mahal!';
           return;
         } else {
-          this.showDialogue('Chacha', carried.userData.rejectMsg || 'Gau Mata isko nahi khayengi!');
+          this.promptTip.innerHTML = '⚠️ Gau Mata isko nahi khayengi! Taazi Ghaas khilayein!';
           return;
         }
       }
@@ -1946,7 +1865,7 @@ class Game {
           this.triggerJugaadToast('🏆 JUGAAD 4: LAAL EENT KA SOLID STAND! (+25%)');
           this.showDialogue(
             'Chachi',
-            'Arey wah! Laal Eent se Chetak shaahi style me khadi ho gayi aur Guddu ka sehra bhi bach gaya! Chalo ab jaldi mandap ke andar aao!'
+            'Arey wah! Chetak shaahi style me khadi ho gayi aur Guddu ka sehra bhi bach gaya! Chalo ab jaldi mandap ke andar aao!'
           );
           this.questText.textContent = '🌟 CONGRATULATIONS! Chacha & Chachi entering Sheesh Mahal!';
           this.promptTip.innerHTML = '100% Desi Swag Champion! 🏆';
@@ -1976,26 +1895,16 @@ class Game {
           if (carried.userData.type === 'broom') {
             audio.playPlankSnap();
             audio.playBrickThud();
-            this.showDialogue(
-              'Chacha',
-              'DHADAM! 💥 Arre jhadu se 100 kg ki Chetak scooter kaise khadi hogi miyaan? Jhadu phat se toot gayi aur Chetak phir gir gayi! Footpath ke malbe se solid Laal Eent dhundo!'
-            );
+            this.promptTip.innerHTML = '⚠️ Jhadu scooter ka wazan nahi sambhal payi aur toot gayi!';
           } else if (carried.userData.type === 'tyre') {
             audio.playSplash();
             audio.playBrickThud();
-            this.showDialogue(
-              'Chacha',
-              'DHADAM! 💥 Arre tyre toh gol hai, fisal kar nikal gaya! Chetak phir se zameen par dharraam se gir gayi! Footpath ke malbe se chakor Laal Eent dhundo!'
-            );
+            this.promptTip.innerHTML = '⚠️ Gol tyre fisal gaya aur scooter phir se gir gayi!';
           } else {
             audio.playPlankSnap();
-            this.showDialogue(
-              'Chacha',
-              carried.userData.rejectMsg || 'DHADAM! 💥 Yeh cheez scooter ka 100 kg wazan nahi jhel payi! Scooter phir gir gayi! Footpath ke malbe se solid Laal Eent dhundo!'
-            );
+            this.promptTip.innerHTML = '⚠️ Yeh cheez scooter ka 100 kg wazan nahi jhel payi!';
           }
-          this.triggerJugaadToast('❌ SCOOTER PHIR GIR GAYI! LAAL EENT DHUNDO!');
-          this.promptTip.innerHTML = '⚠️ Stand toot gaya! Footpath ke malbe se <b>Laal Eent</b> dhundo!';
+          this.triggerJugaadToast('❌ STAND TOOT GAYA! SCOOTER GIR GAYI!');
           return;
         }
       }
@@ -2482,11 +2391,7 @@ class Game {
         // Phone not repaired yet! Cannot accelerate forward without GPS Google Map!
         if (this.keys.right || this.keys.up || this.keys.down) {
           this.scooterSpeed = 0;
-          this.showDialogue(
-            'Chacha',
-            'Arre miyaan! Bhopal ki bhool-bhulaiya jaisi tang galiyon me bina GPS Google Map ke mandap tak kaise pahuchenge?! Pandit ji gusse me hain! Pehle zameen se toota mobile theek karo!'
-          );
-          this.promptTip.innerHTML = 'Press <b>[E]</b> to Dismount Chetak | Pehle toota mobile theek karein!';
+          this.promptTip.innerHTML = '⚠️ GPS map nahi chal raha! Pehle toota mobile [E] theek karein!';
         }
       } else {
         if (this.keys.right) {
@@ -2555,12 +2460,10 @@ class Game {
         if (this.cow.userData.isDistracted) {
           this.setStage(3);
           this.triggerJugaadToast('✨ TRENCH CROSSED & ROAD IS CLEAR! ✨');
-          this.showDialogue('Chacha', 'Wah miyaan! Phatte ke upar se nikal gaye aur Gau Mata bhi side ho chuki hain! Ab full throttle Sheesh Mahal bhagao!');
           this.questText.textContent = 'Full throttle bhagao! Sheesh Mahal gate me entry maaro!';
         } else {
           this.setStage(2);
           this.triggerJugaadToast('✨ TRENCH CROSSED! KEEP GOING! ✨');
-          this.showDialogue('Chacha', 'Wah miyaan! Phatte ke upar se nikal gaye! Ab aage VIP road badho!');
           this.questText.textContent = 'Aage sadak par dekhein! Gau Mata raste me aaram kar rahi hain!';
         }
       }
@@ -2794,12 +2697,8 @@ class Game {
           this.addScore(-150, 0);
           this.spawnFloatingScore('🌊 -150 SWAG! PIT FALL!', activeObj.position);
 
-          // 4. Toast & Dialogue
-          this.triggerJugaadToast('💥 CHHAPAAK! GADDHE KE PAANI AUR PATTHARON MEIN GIRE!');
-          this.showDialogue(
-            'Chacha',
-            'Arey Baap Re! 2 meter gehre gaddhe ke paani aur pattharon par dharraam se gire! Phatte ke upar se nikalna tha!'
-          );
+          // 4. Toast
+          this.triggerJugaadToast('💥 CHHAPAAK! GADDHE MEIN GIRE! (-1 HEART)');
 
           // 5. Allow player to clearly see Chacha/scooter down in the pit for 1.8 seconds, then safely respawn (only if lives remain)
           setTimeout(() => {
