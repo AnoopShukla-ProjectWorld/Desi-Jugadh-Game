@@ -33,6 +33,13 @@ class Game {
     this.warningBarrier = null;
     this.trenchEncountered = false;
 
+    // Chances (3 Hearts for Major Accidents) & 3-Minute Muhurat Timer
+    this.lives = 3;
+    this.gameTimer = 180; // Exactly 3:00 minutes (180 seconds)
+    this.timerRunning = false; // Starts ticking ONLY after Chacha finishes phone call cutscene!
+    this.currentRunScore = 0;
+    this.isGameOver = false;
+
     this.keys = { left: false, right: false, up: false, down: false };
 
     this.initScene();
@@ -505,6 +512,8 @@ class Game {
   endCutscene() {
     if (!this.isCutscene) return;
     this.isCutscene = false;
+    this.timerRunning = true; // 3-Minute Muhurat Timer starts counting down now!
+    this.updateTimerDisplay();
 
     // Show gameplay UI overlay now that cutscene is finished and phone has dropped
     const uiOverlay = document.getElementById('ui-overlay');
@@ -565,6 +574,8 @@ class Game {
     const savedStage = parseInt(sessionStorage.getItem('bhopali_stage') || '0', 10);
     this.stage = savedStage;
     this.isCutscene = false;
+    this.timerRunning = true;
+    this.updateTimerDisplay();
 
     const uiOverlay = document.getElementById('ui-overlay');
     if (uiOverlay) uiOverlay.style.display = 'flex';
@@ -799,6 +810,8 @@ class Game {
         return;
       } else if (toolType === 'rope') {
         audio.playBrickThud();
+        this.addScore(-50, 0);
+        this.spawnFloatingScore('⚠️ -50 SWAG! TOO THICK!', this.player.position);
         this.showDialogue(
           'Chacha',
           'Miyaan! Itni moti rassi se mobile baandhoge toh jeb me kaise ghusega? Kabaad se koi patli cheez chuno!'
@@ -881,7 +894,8 @@ class Game {
     this.smashedPhoneMesh.position.set(smashPos.x, 0.32, smashPos.z);
     this.scene.add(this.smashedPhoneMesh);
 
-    // Score Penalty: -200 Swag Score!
+    // Deduct 1 Heart for Major Disaster & Score Penalty: -200 Swag Score!
+    this.deductLife('Hathoda se phone chur-chur kar diya! (-1 Heart)');
     this.addScore(-200, 0);
     this.spawnFloatingScore('💥 -200 SWAG POINTS! PHONE CHUR-CHUR!', new THREE.Vector3(smashPos.x, 1.2, smashPos.z));
     this.triggerJugaadToast('💥 DISASTER! PHONE PAR HATHODA MAAR DIYA! (-200 PTS)');
@@ -900,8 +914,9 @@ class Game {
       this.player.userData.headGroup.rotation.x = 0.3;
     }
 
-    // Auto-Recovery after 2.8 seconds
+    // Auto-Recovery after 2.8 seconds (only if lives remain)
     setTimeout(() => {
+      if (this.lives <= 0) return;
       if (this.smashedPhoneMesh) {
         this.scene.remove(this.smashedPhoneMesh);
         this.smashedPhoneMesh = null;
@@ -1076,7 +1091,33 @@ class Game {
     const btnAccRespawn = document.getElementById('btn-accident-respawn');
     if (btnAccRespawn) {
       btnAccRespawn.addEventListener('click', () => {
-        this.resetAfterAccident();
+        if (this.lives > 0) {
+          this.resetAfterAccident();
+        } else {
+          const accModal = document.getElementById('accident-modal');
+          if (accModal) accModal.style.display = 'none';
+          this.triggerGameOver('Gau Mata se takkar maar di aur 3 galtiyan ho gayin!');
+        }
+      });
+    }
+
+    // Game Over Restart button
+    const btnRestartGame = document.getElementById('btn-restart-game');
+    if (btnRestartGame) {
+      btnRestartGame.addEventListener('click', () => {
+        sessionStorage.removeItem('bhopali_stage');
+        sessionStorage.removeItem('bhopali_in_game');
+        window.location.reload();
+      });
+    }
+
+    // Game Over Home / Main Menu button
+    const btnGameOverHome = document.getElementById('btn-game-over-home');
+    if (btnGameOverHome) {
+      btnGameOverHome.addEventListener('click', () => {
+        sessionStorage.removeItem('bhopali_stage');
+        sessionStorage.removeItem('bhopali_in_game');
+        window.location.reload();
       });
     }
 
@@ -1249,6 +1290,18 @@ class Game {
       this.setStage(0);
       if (landingScreen) landingScreen.style.display = 'none';
       if (levelMapScreen) levelMapScreen.style.display = 'none';
+      
+      this.lives = 3;
+      this.updateLivesDisplay();
+      this.gameTimer = 180; // Exactly 3:00 minutes (180s)
+      this.timerRunning = false; // Starts ONLY after phone call cutscene!
+      this.updateTimerDisplay();
+      this.currentRunScore = 0;
+      this.isGameOver = false;
+
+      const hudScore = document.getElementById('hud-run-score');
+      if (hudScore) hudScore.textContent = '0';
+
       audio.init();
       if (!audio.musicPlaying) audio.startDesiBGM();
       this.startCutscene();
@@ -1262,6 +1315,8 @@ class Game {
         const uiOverlay = document.getElementById('ui-overlay');
         if (uiOverlay) uiOverlay.style.display = 'none';
         if (landingScreen) landingScreen.style.display = 'flex';
+        this.timerRunning = false;
+        this.initStats();
         audio.stopScooterEngine();
         if (this.isRiding) {
           this.isRiding = false;
@@ -1309,24 +1364,94 @@ class Game {
 
   initStats() {
     let savedStars = localStorage.getItem('bhopali_stars') || '3';
-    let savedScore = localStorage.getItem('bhopali_swag') || '1000';
+    let savedTotalSwag = localStorage.getItem('bhopali_total_swag') || localStorage.getItem('bhopali_swag') || '1000';
+    let savedHighScore = localStorage.getItem('bhopali_high_score') || '0';
+
     const topStars = document.getElementById('top-stars');
-    const topScore = document.getElementById('top-score');
+    const topTotalScore = document.getElementById('top-score');
+    const topHighScore = document.getElementById('top-high-score');
+
     if (topStars) topStars.textContent = savedStars;
-    if (topScore) topScore.textContent = savedScore;
+    if (topTotalScore) topTotalScore.textContent = savedTotalSwag;
+    if (topHighScore) topHighScore.textContent = savedHighScore;
+
+    this.updateLivesDisplay();
+    this.updateTimerDisplay();
+  }
+
+  updateLivesDisplay() {
+    const el = document.getElementById('lives-display');
+    if (!el) return;
+    let hearts = '';
+    for (let i = 0; i < 3; i++) {
+      hearts += i < this.lives ? '❤️' : '🖤';
+    }
+    el.textContent = hearts;
+  }
+
+  updateTimerDisplay() {
+    const el = document.getElementById('timer-display');
+    const badge = document.getElementById('timer-display-badge');
+    if (!el) return;
+    const m = Math.floor(this.gameTimer / 60);
+    const s = Math.floor(this.gameTimer % 60);
+    el.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+
+    if (badge) {
+      if (this.gameTimer <= 30 && this.gameTimer > 0) {
+        badge.style.borderColor = '#ef4444';
+        badge.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.85)';
+        badge.style.color = '#fca5a5';
+      } else {
+        badge.style.borderColor = '#f59e0b';
+        badge.style.boxShadow = '0 4px 15px rgba(245, 158, 11, 0.35)';
+        badge.style.color = '#fef08a';
+      }
+    }
+  }
+
+  deductLife(reason = 'Galti ho gayi!') {
+    if (this.isGameOver) return;
+    this.lives = Math.max(0, this.lives - 1);
+    this.updateLivesDisplay();
+    this.shakeDuration = 0.5;
+
+    if (this.lives <= 0) {
+      setTimeout(() => {
+        this.triggerGameOver('3 Galtiyan ho gayin! Shaadi ka shubh muhurat nikal gaya aur Chetak raste me phas gayi!');
+      }, 850);
+    }
+  }
+
+  triggerGameOver(reason) {
+    if (this.isGameOver) return;
+    this.isGameOver = true;
+    this.timerRunning = false;
+    this.scooterSpeed = 0;
+    audio.stopScooterEngine();
+    audio.playMetalCrash();
+
+    const accModal = document.getElementById('accident-modal');
+    if (accModal) accModal.style.display = 'none';
+
+    const modal = document.getElementById('game-over-modal');
+    const reasonEl = document.getElementById('game-over-reason');
+    if (reasonEl) reasonEl.textContent = reason;
+    if (modal) modal.style.display = 'flex';
   }
 
   addScore(points, stars = 0) {
-    let currentScore = parseInt(localStorage.getItem('bhopali_swag') || '1000', 10);
-    let currentStars = parseInt(localStorage.getItem('bhopali_stars') || '3', 10);
-    currentScore += points;
-    currentStars = Math.min(12, currentStars + stars);
-    localStorage.setItem('bhopali_swag', currentScore.toString());
-    localStorage.setItem('bhopali_stars', currentStars.toString());
-    const topStars = document.getElementById('top-stars');
-    const topScore = document.getElementById('top-score');
-    if (topStars) topStars.textContent = currentStars;
-    if (topScore) topScore.textContent = currentScore;
+    this.currentRunScore = Math.max(0, this.currentRunScore + points);
+    const hudScore = document.getElementById('hud-run-score');
+    if (hudScore) hudScore.textContent = this.currentRunScore;
+
+    if (stars > 0) {
+      let currentStars = parseInt(localStorage.getItem('bhopali_stars') || '3', 10);
+      currentStars = Math.min(12, currentStars + stars);
+      localStorage.setItem('bhopali_stars', currentStars.toString());
+      const topStars = document.getElementById('top-stars');
+      if (topStars) topStars.textContent = currentStars;
+    }
   }
 
   // Realistic Accident Animation Sequence
@@ -1339,6 +1464,11 @@ class Game {
     audio.playCowAlarmed();
 
     this.shakeDuration = 0.55;
+
+    // Deduct 1 Heart for Major Cow Collision and apply Score Penalty
+    this.deductLife('Gau Mata se takkar maar di! (-1 Heart)');
+    this.addScore(-150, 0);
+    this.spawnFloatingScore('💥 -150 SWAG! ACCIDENT!', this.scooter.position);
 
     // 1. Hide seated rider from scooter
     this.scooter.userData.riderMesh.visible = false;
@@ -1371,7 +1501,7 @@ class Game {
     }
 
     const accModal = document.getElementById('accident-modal');
-    if (accModal) {
+    if (accModal && this.lives > 0) {
       setTimeout(() => {
         accModal.style.display = 'flex';
       }, 1100);
@@ -1711,6 +1841,8 @@ class Game {
           this.triggerHammerDisaster();
           return;
         } else if (carried.userData.type === 'rope') {
+          this.addScore(-50, 0);
+          this.spawnFloatingScore('⚠️ -50 SWAG! TOO THICK!', pPos);
           this.showDialogue('Chacha', 'Miyaan! Itni moti rassi se mobile baandhoge toh jeb me kaise ghusega? Kabaad Dher [E] se rubber band ya tape chuno!');
           return;
         } else {
@@ -1798,6 +1930,8 @@ class Game {
           this.cow.userData.isDistracted = true;
           this.cow.userData.state = 'moving';
           audio.playCowMoo();
+          this.addScore(250, 1);
+          this.spawnFloatingScore('+250 SWAG 🐮 GAU MATA KHUSH!', this.cow.position);
           this.triggerJugaadToast('🎉 JUGAAD 3: GAU MATA RASTA CLEAR! (+25%)');
           this.showDialogue(
             'Chacha',
@@ -1860,6 +1994,8 @@ class Game {
 
           this.scooter.userData.setFallenState(true);
           this.shakeDuration = 0.35;
+          this.addScore(-50, 0);
+          this.spawnFloatingScore('❌ -50 SWAG! STAND TOOT GAYA!', this.scooter.position);
 
           if (carried.userData.type === 'broom') {
             audio.playPlankSnap();
@@ -2101,6 +2237,26 @@ class Game {
 
       this.renderer.render(this.scene, this.camera);
       return;
+    }
+
+    // --- GAME OVER GUARD ---
+    if (this.isGameOver) {
+      this.renderer.render(this.scene, this.camera);
+      return;
+    }
+
+    // --- GAME TIMER (3 MINUTES / 180s) ---
+    if (this.timerRunning && this.gameTimer > 0 && !this.isCutscene && !this.isWeddingWalk && !this.isGameOver) {
+      this.gameTimer -= delta;
+      if (this.gameTimer <= 0) {
+        this.gameTimer = 0;
+        this.timerRunning = false;
+        this.updateTimerDisplay();
+        this.triggerGameOver('⏰ SHUBH MUHURAT NIKAL GAYA! Pandit ji mandap chhod kar chale gaye aur Dulha bina sehre ke reh gaya!');
+        this.renderer.render(this.scene, this.camera);
+        return;
+      }
+      this.updateTimerDisplay();
     }
 
     // --- COIN ROTATION, BOBBING & PICKUP CHECK ---
@@ -2418,6 +2574,8 @@ class Game {
 
       // Progress from Stage 1 to Stage 2 (or Stage 3 if cow already distracted by walking Chacha)
       if (this.stage === 1 && this.plankPlaced && this.scooter.position.x > 48.3) {
+        this.addScore(200, 1);
+        this.spawnFloatingScore('+200 SWAG 🌉 BRIDGE CROSSED!', this.scooter.position);
         if (this.cow.userData.isDistracted) {
           this.setStage(3);
           this.triggerJugaadToast('✨ TRENCH CROSSED & ROAD IS CLEAR! ✨');
@@ -2537,6 +2695,40 @@ class Game {
 
       if (this.weddingWalkTimer > 2.8) {
         this.isWeddingWalk = false;
+        this.timerRunning = false; // Stop timer upon victory
+
+        const timeBonus = Math.max(0, Math.floor(this.gameTimer) * 5);
+        const finalRunScore = this.currentRunScore + timeBonus;
+
+        const vRun = document.getElementById('victory-run-score');
+        const vTime = document.getElementById('victory-time-bonus');
+        const vFinal = document.getElementById('victory-final-score');
+        const vHighMsg = document.getElementById('victory-high-score-msg');
+
+        if (vRun) vRun.textContent = `+${this.currentRunScore}`;
+        if (vTime) vTime.textContent = `+${timeBonus} (${Math.floor(this.gameTimer)}s left)`;
+        if (vFinal) vFinal.textContent = `${finalRunScore} Pts`;
+
+        // Update LocalStorage: Best High Score & Lifetime Total Swag
+        const prevHighScore = parseInt(localStorage.getItem('bhopali_high_score') || '0', 10);
+        const prevTotalSwag = parseInt(localStorage.getItem('bhopali_total_swag') || localStorage.getItem('bhopali_swag') || '1000', 10);
+
+        const newTotalSwag = prevTotalSwag + finalRunScore;
+        localStorage.setItem('bhopali_total_swag', newTotalSwag.toString());
+
+        if (finalRunScore > prevHighScore) {
+          localStorage.setItem('bhopali_high_score', finalRunScore.toString());
+          if (vHighMsg) vHighMsg.textContent = '🌟 NAYA RECORD! NEW HIGH SCORE! 🏆';
+        } else {
+          if (vHighMsg) vHighMsg.textContent = `🏆 Best High Score: ${prevHighScore} Pts`;
+        }
+
+        // Update Home & HUD badges
+        const topScoreEl = document.getElementById('top-score');
+        const topHighScoreEl = document.getElementById('top-high-score');
+        if (topScoreEl) topScoreEl.textContent = newTotalSwag.toString();
+        if (topHighScoreEl) topHighScoreEl.textContent = Math.max(prevHighScore, finalRunScore).toString();
+
         if (this.victoryModal) this.victoryModal.style.display = 'flex';
       }
     }
@@ -2621,6 +2813,11 @@ class Game {
           // 3. Screen Impact Shake
           this.shakeDuration = 0.45;
 
+          // Deduct 1 Heart for Pit Fall Crash & apply score penalty!
+          this.deductLife('Gaddhe ke paani aur pattharon me dharraam se gir gaye! (-1 Heart)');
+          this.addScore(-150, 0);
+          this.spawnFloatingScore('🌊 -150 SWAG! PIT FALL!', activeObj.position);
+
           // 4. Toast & Dialogue
           this.triggerJugaadToast('💥 CHHAPAAK! GADDHE KE PAANI AUR PATTHARON MEIN GIRE!');
           this.showDialogue(
@@ -2628,8 +2825,9 @@ class Game {
             'Arey Baap Re! 2 meter gehre gaddhe ke paani aur pattharon par dharraam se gire! Phatte ke upar se nikalna tha!'
           );
 
-          // 5. Allow player to clearly see Chacha/scooter down in the pit for 1.8 seconds, then safely respawn
+          // 5. Allow player to clearly see Chacha/scooter down in the pit for 1.8 seconds, then safely respawn (only if lives remain)
           setTimeout(() => {
+            if (this.lives <= 0) return;
             const respawnZ = this.longPlankPlaced ? this.longPlankZ : (this.shortPlankPlaced ? this.shortPlankZ : 0);
             if (this.isRiding) {
               this.scooter.position.set(41.5, 0, respawnZ);
