@@ -1064,11 +1064,9 @@ class Game {
       // Do NOT trigger in-game actions while on landing, map, or intro overlays!
       const landing = document.getElementById('landing-screen');
       const intro = document.getElementById('intro-screen');
-      const map = document.getElementById('level-map-screen');
       const radial = document.getElementById('radial-wheel-modal');
       if ((landing && landing.style.display !== 'none') ||
           (intro && intro.style.display !== 'none') ||
-          (map && map.style.display === 'flex') ||
           (radial && radial.style.display === 'flex')) {
         return;
       }
@@ -1253,35 +1251,12 @@ class Game {
       });
     }
 
-    // 3. Candy-Crush Roadmap Surprise Desi Hack Gift Boxes
-    const giftBox1 = document.getElementById('gift-box-1');
-    if (giftBox1) {
-      giftBox1.addEventListener('click', () => {
-        audio.init();
-        audio.playJugaadSuccess();
-        this.addScore(150, 0);
-        alert("🎁 DESI JUGAAD HACK #1 (Bhopal Scooter Secret):\n\n'Agar scooter ki kick jam ho jaye ya subah thand me start na ho — gaadi ko 45° right tilt karke 3 second ruko, phir single kick maaro, 100% start!'\n\n🏆 Bonus: +150 Desi Swag Points Added!");
-      });
-    }
-
-    const giftBox2 = document.getElementById('gift-box-2');
-    if (giftBox2) {
-      giftBox2.addEventListener('click', () => {
-        audio.init();
-        audio.playJugaadSuccess();
-        this.addScore(150, 0);
-        alert("🎁 DESI JUGAAD HACK #2 (Universal Desi Rule):\n\n'Gaadi ka fuse udd jaye toh mohalle ke paan wale se safety pin ya cigarette silver foil lo aur socket bypass karo! Desi jugaad zindabad!'\n\n🏆 Bonus: +150 Desi Swag Points Added!");
-      });
-    }
-
-    // Landing Screen & Winding Roadmap Menu Handlers
+    // Landing Screen & Game Session Handlers
     const landingScreen = document.getElementById('landing-screen');
-    const levelMapScreen = document.getElementById('level-map-screen');
     const settingsModal = document.getElementById('settings-modal');
 
     if (wasInGame) {
       if (landingScreen) landingScreen.style.display = 'none';
-      if (levelMapScreen) levelMapScreen.style.display = 'none';
       this.resumeInGameSession();
     }
 
@@ -1289,7 +1264,6 @@ class Game {
       sessionStorage.setItem('bhopali_in_game', 'true');
       this.setStage(0);
       if (landingScreen) landingScreen.style.display = 'none';
-      if (levelMapScreen) levelMapScreen.style.display = 'none';
       
       this.lives = 3;
       this.updateLivesDisplay();
@@ -1329,23 +1303,6 @@ class Game {
 
     const btnStart = document.getElementById('btn-start-game');
     if (btnStart) btnStart.addEventListener('click', startGame);
-
-    const nodeLevel1 = document.getElementById('node-level-1');
-    if (nodeLevel1) nodeLevel1.addEventListener('click', startGame);
-
-    const btnOpenMap = document.getElementById('btn-open-map');
-    if (btnOpenMap) {
-      btnOpenMap.addEventListener('click', () => {
-        if (levelMapScreen) levelMapScreen.style.display = 'flex';
-      });
-    }
-
-    const btnCloseMap = document.getElementById('btn-close-map');
-    if (btnCloseMap) {
-      btnCloseMap.addEventListener('click', () => {
-        if (levelMapScreen) levelMapScreen.style.display = 'none';
-      });
-    }
 
     const btnOpenSettings = document.getElementById('btn-open-settings');
     if (btnOpenSettings) {
