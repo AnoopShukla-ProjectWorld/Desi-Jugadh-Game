@@ -276,15 +276,15 @@ export class AssetFactory {
     const hairMat = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.4 });
     const whiteShoeMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.4 });
 
-    // Torso sitting on seat (x = -0.2, y = 1.34)
+    // Torso sitting on seat (x = -0.2, y = 1.42)
     const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.26, 0.58, 16), blueShirtMat);
-    torso.position.set(-0.2, 1.32, 0);
+    torso.position.set(-0.2, 1.42, 0);
     torso.rotation.z = -0.15; // Leaning slightly forward towards handlebar
     rider.add(torso);
 
     // Head
     const headGroup = new THREE.Group();
-    headGroup.position.set(-0.1, 1.82, 0);
+    headGroup.position.set(-0.1, 1.92, 0);
 
     const headGeo = new THREE.SphereGeometry(0.32, 22, 22);
     headGeo.scale(1.0, 1.08, 1.0);
@@ -334,23 +334,23 @@ export class AssetFactory {
     // Arms reaching forward to grip the handlebars (Handlebar at x = 0.75, y = 1.58)
     [-0.32, 0.32].forEach(armZ => {
       const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.065, 0.75, 8), blueShirtMat);
-      arm.position.set(0.25, 1.48, armZ);
-      arm.rotation.set(0, 0, -1.05); // Angled forward to handlebar grips
+      arm.position.set(0.32, 1.57, armZ);
+      arm.rotation.set(0, 0, -1.52); // Reaching cleanly forward to handlebar grips
       rider.add(arm);
 
       const hand = new THREE.Mesh(new THREE.SphereGeometry(0.075, 8, 8), skinMat);
-      hand.position.set(0.68, 1.56, armZ);
+      hand.position.set(0.72, 1.58, armZ);
       rider.add(hand);
     });
 
-    // Seated bent legs resting on floorboard
+    // Seated bent legs resting flush on seat cushion (surface y = 1.04) and floorboard
     [-0.22, 0.22].forEach(legZ => {
       const thigh = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.18, 0.18), denimPantsMat);
-      thigh.position.set(0.12, 1.02, legZ);
+      thigh.position.set(0.12, 1.13, legZ); // Bottom sits at y = 1.04, perfectly flush on seat top surface
       rider.add(thigh);
 
-      const shin = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.55, 0.18), denimPantsMat);
-      shin.position.set(0.38, 0.72, legZ);
+      const shin = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.64, 0.18), denimPantsMat);
+      shin.position.set(0.38, 0.76, legZ);
       rider.add(shin);
 
       const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.1, 0.18), whiteShoeMat);
