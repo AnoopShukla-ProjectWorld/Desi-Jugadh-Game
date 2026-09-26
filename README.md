@@ -3,7 +3,14 @@
 > **🏆 Official Entry for MP Game Udaan 2026 Hackathon**  
 > **Theme:** JUGAAD (Desi Problem Solving, Street Engineering & Comic Hacks)  
 > **Setting:** Authentic Streets of Old Bhopal, Madhya Pradesh  
-> **Platform:** WebGL / Three.js (Optimized for Laptop & Desktop Widescreen)
+> **Platform:** WebGL / Three.js (Optimized for Laptop & Desktop Widescreen)  
+> **🎮 Live Game URL:** [https://anoopshukla-projectworld.github.io/Desi-Jugadh-Game/](https://anoopshukla-projectworld.github.io/Desi-Jugadh-Game/)
+
+---
+
+### 🌐 Play Directly in Browser:
+👉 **[Click Here to Play "Bhopali Safar: The Great Desi Jugaad" Live](https://anoopshukla-projectworld.github.io/Desi-Jugadh-Game/)**  
+*(No install or download needed — runs instantly with WebGL & 3D Audio!)*
 
 ---
 
